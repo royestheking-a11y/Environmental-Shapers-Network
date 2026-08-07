@@ -288,27 +288,7 @@ export function HeroSection() {
               <SpinningBadge />
             </motion.div>
 
-            {/* Stats chip — top-left */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 1, duration: 0.5 }}
-              className="absolute top-16 left-0 bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl px-4 py-3 text-white z-20"
-            >
-              <div className="text-2xl font-black text-[#4CAF50]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>2.4M+</div>
-              <div className="text-xs text-white/70">Trees Planted</div>
-            </motion.div>
 
-            {/* Stats chip — bottom-left, clear of badge */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 1.1, duration: 0.5 }}
-              className="absolute bottom-10 left-0 bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl px-4 py-3 text-white z-20"
-            >
-              <div className="text-2xl font-black text-[#D6A95A]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>470+</div>
-              <div className="text-xs text-white/70">Projects Active</div>
-            </motion.div>
           </div>
         </div>
 

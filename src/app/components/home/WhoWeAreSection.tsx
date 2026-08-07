@@ -64,17 +64,18 @@ export function WhoWeAreSection() {
               Environmental Shapers Network (ESN) is a globally active NGO bringing together environmental scientists, frontline communities, youth advocates, researchers, and policymakers across 80+ countries. We operate at the intersection of ecology, social justice, and systemic innovation.
             </p>
             
-            <div className="flex items-center gap-8 mb-10">
-              <div className="bg-[#0A3D2A] text-white p-6 rounded-3xl w-32 h-32 flex flex-col justify-center items-center shrink-0 shadow-xl shadow-[#0A3D2A]/10">
-                <span className="text-4xl font-serif mb-1">7+</span>
-                <span className="text-[10px] uppercase tracking-wider opacity-80 text-center leading-tight">Years of<br/>Global Action</span>
-              </div>
-              <div className="relative rounded-3xl overflow-hidden w-full h-48 shadow-2xl shadow-gray-200/50">
+            <div className="relative mb-10 w-full rounded-3xl overflow-hidden shadow-2xl shadow-gray-200/50 group">
+              <div className="h-64 sm:h-80 w-full relative">
                 <img 
                   src="/Representing Bangladesh's Coastal Communities on the Global Stage.jpeg" 
                   alt="Environmental landscape"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0A3D2A]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                <div className="absolute bottom-6 left-6 bg-[#0A3D2A]/95 backdrop-blur-md text-white p-5 rounded-2xl w-32 flex flex-col justify-center items-center shadow-2xl border border-white/10">
+                  <span className="text-4xl font-serif mb-1">7+</span>
+                  <span className="text-[10px] uppercase tracking-wider opacity-80 text-center leading-tight">Years of<br/>Global Action</span>
+                </div>
               </div>
             </div>
 
