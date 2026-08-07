@@ -64,11 +64,6 @@ export function WhoWeAreSection() {
               Environmental Shapers Network (ESN) is a globally active NGO bringing together environmental scientists, frontline communities, youth advocates, researchers, and policymakers across 80+ countries. We operate at the intersection of ecology, social justice, and systemic innovation.
             </p>
             
-            <div className="flex items-center gap-5 mb-10 bg-white p-3 pr-8 rounded-full shadow-xl shadow-[#0A3D2A]/5 w-fit border border-[#0A3D2A]/10">
-              <div className="bg-[#0A3D2A] text-white w-14 h-14 rounded-full flex items-center justify-center text-2xl font-serif font-bold">7+</div>
-              <div className="text-xs font-bold text-[#0A3D2A] uppercase tracking-widest leading-snug">Years of<br/>Global Action</div>
-            </div>
-
             <div className="relative mb-10 w-full rounded-3xl overflow-hidden shadow-2xl shadow-gray-200/50 group">
               <div className="h-64 sm:h-80 w-full relative">
                 <img 
@@ -82,6 +77,16 @@ export function WhoWeAreSection() {
           </motion.div>
 
           <div className="space-y-8">
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="flex items-center gap-5 bg-white p-3 pr-8 rounded-full shadow-xl shadow-[#0A3D2A]/5 w-fit border border-[#0A3D2A]/10 mb-2"
+            >
+              <div className="bg-[#0A3D2A] text-white w-14 h-14 rounded-full flex items-center justify-center text-2xl font-serif font-bold">7+</div>
+              <div className="text-xs font-bold text-[#0A3D2A] uppercase tracking-widest leading-snug">Years of<br/>Global Action</div>
+            </motion.div>
+
             {features.map((feature, index) => {
               const Icon = resolveIcon(feature.iconName);
               return (
