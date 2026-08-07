@@ -242,8 +242,8 @@ export function HeroSection() {
               style={{ rotate: -4 }}
             >
               <img
-                src="https://images.unsplash.com/photo-1505118380757-91f5f5632de0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=600"
-                alt="Ocean"
+                src="/Speaking on Climate Adaptation and Resilience in South Asia- CEPCA 2024, Ottawa, Canada.jpeg"
+                alt="Speaking at CEPCA 2024"
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0B5D3F]/30 to-transparent" />
@@ -257,8 +257,8 @@ export function HeroSection() {
               className="absolute bottom-8 left-0 w-56 h-64 rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10"
             >
               <img
-                src="https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?auto=format&fit=crop&q=80&w=600"
-                alt="Nature"
+                src="/Representing Bangladesh's Coastal Communities on the Global Stage.jpeg"
+                alt="Representing Coastal Communities"
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0B5D3F]/30 to-transparent" />
@@ -272,8 +272,8 @@ export function HeroSection() {
               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-52 h-56 rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10 z-10"
             >
               <img
-                src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=600"
-                alt="Tree planting"
+                src="/meeting time.jpeg"
+                alt="Meeting and collaboration"
                 className="w-full h-full object-cover"
               />
             </motion.div>
