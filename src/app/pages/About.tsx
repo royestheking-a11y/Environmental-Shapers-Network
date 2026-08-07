@@ -300,6 +300,42 @@ export default function About() {
         </div>
       </section>
 
+      {/* ── Co-Founder's Message ───────────────────────────────────────────── */}
+      <section className="py-24 bg-white border-t border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 bg-[#D6A95A]/15 text-[#9E6B3C] text-xs font-bold px-4 py-2 rounded-full mb-5 uppercase tracking-widest">
+              <Quote size={12} fill="currentColor" /> Co-Founder's Message
+            </div>
+            <h2 className="text-[#0B5D3F] mb-4">A Message from Imran Hossain</h2>
+          </div>
+          
+          <div className="bg-[#F6FBF8] rounded-3xl p-8 sm:p-12 border border-[#4CAF50]/20 shadow-xl shadow-[#0B5D3F]/5 relative">
+            <Quote size={40} className="text-[#4CAF50]/20 absolute top-8 left-8" />
+            <div className="relative z-10 flex flex-col gap-6 text-gray-700 leading-relaxed text-lg sm:text-xl font-medium">
+              <p>
+                I am a climate leader, sustainability advocate, and entrepreneur committed to advancing climate resilience through innovation, policy engagement, and community action. As the Co-Founder of the Environmental Shapers Network (ESN), I lead initiatives focused on climate adaptation, the circular economy, plastic pollution reduction, environmental education, and youth empowerment. My mission is to transform environmental challenges into scalable, nature-positive solutions that create lasting social, environmental, and economic impact.
+              </p>
+              <p>
+                I have had the privilege of representing Bangladesh at global platforms, including the United Nations Climate Change Conferences (COP27 and COP28) and the United Nations General Assembly, where I have engaged with policymakers, scientists, and youth leaders to promote climate justice, sustainable development, and locally led adaptation.
+              </p>
+              <p>
+                My work combines climate innovation, environmental sustainability, Geographic Information Systems (GIS), and entrepreneurship to develop practical solutions for vulnerable communities. I aspire to build resilient, low-carbon societies while empowering young people to become the next generation of climate leaders and changemakers.
+              </p>
+            </div>
+            <div className="mt-8 pt-8 border-t border-gray-200 flex items-center justify-between">
+              <div>
+                <div className="font-black text-gray-900 text-lg" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Imran Hossain</div>
+                <div className="text-[#0B5D3F] font-bold text-sm">Co-Founder, ESN</div>
+              </div>
+              <div className="w-12 h-12 bg-[#0B5D3F] rounded-full flex items-center justify-center">
+                <Leaf className="text-white" size={20} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── Impact Statistics ─────────────────────────────────────────────────── */}
       <section className="py-24 bg-gradient-to-br from-[#0B5D3F] to-[#173B63] relative overflow-hidden">
         <div className="absolute inset-0 opacity-5">
