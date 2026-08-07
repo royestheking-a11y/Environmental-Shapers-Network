@@ -179,6 +179,21 @@ export function Footer() {
                 <span>www.esnglobal.org</span>
               </div>
             </div>
+
+            <div className="mt-6 flex flex-col gap-2 text-sm text-gray-400 bg-white/5 p-4 rounded-xl border border-white/10">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4">
+                <span className="text-gray-500">Organization:</span>
+                <span className="text-white font-medium text-left sm:text-right">Environmental Shapers Network</span>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4">
+                <span className="text-gray-500">Charity ID:</span>
+                <span className="text-white font-medium text-left sm:text-right">S-121367</span>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4">
+                <span className="text-gray-500">User ID:</span>
+                <span className="text-white font-medium text-left sm:text-right">enviro.sn@gmail.com</span>
+              </div>
+            </div>
           </div>
 
           {/* Link Columns */}

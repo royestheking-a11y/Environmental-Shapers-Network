@@ -80,7 +80,3 @@ This will generate optimized static files in the `dist/` directory.
 - `/src/app/components/home/`: Contains all the frontend dynamic sections (Hero, Mission, Stats, etc.).
 - `/src/app/pages/admin/`: Houses the comprehensive Admin Dashboard and its secure routes.
 - `/src/app/pages/admin/sections/`: Contains the specific CRUD views for each aspect of the website's content.
-
----
-
-*Original design inspiration available at [Figma Link](https://www.figma.com/design/TIElCBCpvVxAPwAPbeckTD/Premium-Environmental-Network-Website).*
