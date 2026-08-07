@@ -10,8 +10,8 @@ import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 
 const milestones = [
   {
-    year: "2015", title: "A Movement is Born", icon: Sprout, color: "#4CAF50",
-    desc: "ESN was founded in Dhaka after catastrophic monsoon floods were linked directly to climate change. Rizwan Ahmed and 11 fellow students pledged to turn grief into action — planting 1,000 mangrove saplings in their first weekend.",
+    year: "2019", title: "A Movement is Born", icon: Sprout, color: "#4CAF50",
+    desc: "ESN was founded in Dhaka after catastrophic monsoon floods were linked directly to climate change. Imran Hossain, Abu Hanif and fellow students pledged to turn grief into action — planting 1,000 mangrove saplings in their first weekend.",
   },
   {
     year: "2017", title: "Crossing Borders", icon: Globe2, color: "#0B5D3F",
@@ -41,27 +41,27 @@ const milestones = [
 
 const teamMembers = [
   {
-    name: "Rizwan Ahmed",
-    role: "Founder & Executive Director",
+    name: "Imran Hossain",
+    role: "Co-Founder",
     country: "Dhaka, Bangladesh",
-    bio: "Former flood-disaster volunteer turned global climate advocate. Rizwan has spoken at 3 UN Climate COPs and was named Time Magazine's 'Next Generation Leaders' in 2022.",
-    img: "https://images.unsplash.com/photo-1560220604-1985ebfe28b1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=400",
+    bio: "Former flood-disaster volunteer turned global climate advocate. Imran has spoken at UN Climate COPs.",
+    img: "",
     tags: ["Climate Policy", "Leadership"],
   },
   {
-    name: "Dr. Priya Sharma",
-    role: "Director of Research & Policy",
-    country: "New Delhi, India",
-    bio: "PhD in Environmental Science from IIT Delhi. Priya leads ESN's research agenda and has co-authored 14 peer-reviewed papers on mangrove carbon sequestration.",
-    img: "https://images.unsplash.com/photo-1630569266941-f8a348786bf0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=400",
-    tags: ["Research", "Policy"],
+    name: "Abu Hanif",
+    role: "Co-Founder",
+    country: "Dhaka, Bangladesh",
+    bio: "Passionate environmentalist and community leader. Abu Hanif has been instrumental in scaling our grassroots chapters globally.",
+    img: "",
+    tags: ["Community", "Strategy"],
   },
   {
     name: "Carlos Rodriguez",
     role: "Regional Director, Americas",
     country: "Bogotá, Colombia",
     bio: "Conservation biologist with 12 years in Amazonian field research. Carlos built ESN's Latin American network from 3 to 28 active countries in just four years.",
-    img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=400",
+    img: "",
     tags: ["Conservation", "Biodiversity"],
   },
   {
@@ -69,7 +69,7 @@ const teamMembers = [
     role: "Director of Community Programs",
     country: "Accra, Ghana",
     bio: "Community organizer and former UN Environment Programme fellow. Amara designed ESN's grassroots engagement model now used by 6,000+ local chapters worldwide.",
-    img: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=400",
+    img: "",
     tags: ["Community", "Inclusion"],
   },
   {
@@ -77,7 +77,7 @@ const teamMembers = [
     role: "Chief Technology Officer",
     country: "Seoul, South Korea",
     bio: "Former Google engineer turned climate-tech founder. Ji-yeon built ESN's open-source environmental monitoring network, now tracking 2,400+ ecosystem sites globally.",
-    img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=400",
+    img: "",
     tags: ["Technology", "Data"],
   },
   {
@@ -85,7 +85,7 @@ const teamMembers = [
     role: "Director of Partnerships",
     country: "Dubai, UAE",
     bio: "Negotiated ESN's landmark partnerships with UNDP, WWF, and 40+ corporate sustainability programs. Manages a portfolio of $24M in annual partner funding.",
-    img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=400",
+    img: "",
     tags: ["Partnerships", "Finance"],
   },
 ];
@@ -119,7 +119,7 @@ const values = [
 
 const impactStats = [
   { value: "80+", label: "Countries Active", sub: "Across 6 continents", icon: Globe2 },
-  { value: "1.2M+", label: "Trees Planted", sub: "Since 2015", icon: TreePine },
+  { value: "1.2M+", label: "Trees Planted", sub: "Since 2019", icon: TreePine },
   { value: "12,000+", label: "Local Chapters", sub: "In 80+ countries", icon: Users },
   { value: "$24M", label: "Annual Impact Budget", sub: "Invested in communities", icon: Heart },
   { value: "48K+", label: "Active Volunteers", sub: "Mobilized globally", icon: HandHeart },
@@ -131,7 +131,7 @@ const partners = [
 ];
 
 const recognitions = [
-  { title: "Time 100 Next", year: "2022", desc: "Rizwan Ahmed named among the most influential emerging leaders shaping the future." },
+  { title: "Time 100 Next", year: "2022", desc: "Imran Hossain named among the most influential emerging leaders shaping the future." },
   { title: "UN ECOSOC Status", year: "2019", desc: "Special Consultative Status with the United Nations Economic and Social Council." },
   { title: "Earthshot Prize Finalist", year: "2023", desc: "Shortlisted for Prince William's environmental prize for our Sundarbans restoration." },
   { title: "Fast Company World Changing Ideas", year: "2024", desc: "Recognized for our open-source environmental monitoring platform." },
@@ -165,7 +165,7 @@ export default function About() {
             {/* Left text */}
             <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
               <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white text-xs font-bold px-4 py-2 rounded-full mb-8 uppercase tracking-widest">
-                <Leaf size={12} className="text-[#4CAF50]" /> Founded 2015 · Dhaka, Bangladesh
+                <Leaf size={12} className="text-[#4CAF50]" /> Founded 2019 · Dhaka, Bangladesh
               </div>
               <h1 className="text-white mb-6 leading-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                 Shaping the World's<br />
@@ -190,7 +190,7 @@ export default function About() {
                 { v: "80+", l: "Countries", icon: Globe2 },
                 { v: "1.2M+", l: "Trees Planted", icon: TreePine },
                 { v: "12K+", l: "Local Chapters", icon: Users },
-                { v: "11 Yrs", l: "Of Impact", icon: Calendar },
+                { v: "7 Yrs", l: "Of Impact", icon: Calendar },
               ].map((s, i) => (
                 <motion.div
                   key={s.l}
@@ -233,14 +233,14 @@ export default function About() {
               <div className="relative bg-[#F6FBF8] border-l-4 border-[#4CAF50] rounded-r-2xl p-6 mb-8">
                 <Quote size={24} className="text-[#4CAF50]/40 mb-2" />
                 <p className="text-[#0B5D3F] italic leading-relaxed font-medium">
-                  "When the floods came and scientists confirmed climate change as the cause, I realized that hope without action was just a comfortable lie. We had to build something real."
+                  "When the floods came and scientists confirmed climate change as the cause, we realized that hope without action was just a comfortable lie. We had to build something real."
                 </p>
-                <div className="mt-3 text-sm font-bold text-gray-600">— Rizwan Ahmed, Founder</div>
+                <div className="mt-3 text-sm font-bold text-gray-600">— Imran Hossain & Abu Hanif, Co-Founders</div>
               </div>
 
               <div className="flex flex-col gap-5 text-gray-600 leading-relaxed">
                 <p>
-                  ESN was born in the summer of 2015, weeks after Bangladesh recorded its worst monsoon flooding in a generation. Scientists from MIT and IPCC confirmed what local communities already feared — climate change was amplifying these disasters. A group of 12 young people, led by Rizwan Ahmed, responded not with despair but with a plan.
+                  ESN was born in the summer of 2019, weeks after Bangladesh recorded its worst monsoon flooding in a generation. Scientists from MIT and IPCC confirmed what local communities already feared — climate change was amplifying these disasters. A group of young people, led by Imran Hossain and Abu Hanif, responded not with despair but with a plan.
                 </p>
                 <p>
                   They planted 1,000 mangrove seedlings in the Sundarbans that first weekend. Within six months, they had 400 volunteers. Within a year, they had their first international chapter in Kolkata. What followed was not a slow institutional climb but an organic explosion of communities joining a movement they felt was genuinely theirs.
@@ -312,7 +312,7 @@ export default function About() {
             <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white text-xs font-bold px-4 py-2 rounded-full mb-5 uppercase tracking-widest">
               <Target size={12} className="text-[#4CAF50]" /> Impact at Scale
             </div>
-            <h2 className="text-white mb-4">11 Years. One Planet.<br />Measurable Impact.</h2>
+            <h2 className="text-white mb-4">7 Years. One Planet.<br />Measurable Impact.</h2>
             <p className="text-white/65 text-lg max-w-xl mx-auto">Every number represents communities protected, ecosystems restored, and futures secured.</p>
           </motion.div>
 

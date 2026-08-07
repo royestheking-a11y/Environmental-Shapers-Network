@@ -132,7 +132,7 @@ export function MissionSection() {
                 </div>
 
                 <div className="grid grid-cols-3 gap-4 text-center">
-                  {[["2015", "Founded"], ["80+", "Countries"], ["2.4M", "Trees"]].map(([v, l]) => (
+                  {[["2019", "Founded"], ["80+", "Countries"], ["2.4M", "Trees"]].map(([v, l]) => (
                     <div key={l}>
                       <div className="text-2xl font-black text-[#4CAF50]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{v}</div>
                       <div className="text-xs text-white/60">{l}</div>

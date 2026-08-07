@@ -220,7 +220,7 @@ function AwardsPage() {
       <div className="max-w-6xl mx-auto px-6 py-16">
         <Breadcrumb current="Awards & Recognition" />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-12">
-          {[["24", "International Awards"], ["12", "Global Certifications"], ["190+", "Countries Recognized In"], ["2015", "Founded"]].map(([v, l]) => (
+          {[["24", "International Awards"], ["12", "Global Certifications"], ["190+", "Countries Recognized In"], ["2019", "Founded"]].map(([v, l]) => (
             <div key={l} className="bg-white rounded-2xl p-5 text-center border border-gray-100">
               <div className="text-2xl font-black text-[#0B5D3F]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{v}</div>
               <div className="text-xs text-gray-500 mt-1">{l}</div>
