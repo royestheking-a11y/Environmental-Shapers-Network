@@ -14,19 +14,19 @@ const milestones = [
     desc: "ESN was founded in Dhaka after catastrophic monsoon floods were linked directly to climate change. Imran Hossain, Abu Hanif and fellow students pledged to turn grief into action — planting 1,000 mangrove saplings in their first weekend.",
   },
   {
-    year: "2017", title: "Crossing Borders", icon: Globe2, color: "#0B5D3F",
+    year: "2020", title: "Crossing Borders", icon: Globe2, color: "#0B5D3F",
     desc: "Expanded to India and Nepal with our first cross-border reforestation program. The 'Green Corridor' project connected degraded forest patches across three nations, covering over 8,000 hectares.",
   },
   {
-    year: "2019", title: "UN Recognition", icon: Award, color: "#D6A95A",
+    year: "2021", title: "UN Recognition", icon: Award, color: "#D6A95A",
     desc: "Received ECOSOC Special Consultative Status — one of the youngest NGOs in history to achieve this recognition. We presented at the UNFCCC COP25 in Madrid, representing 34 countries.",
   },
   {
-    year: "2021", title: "50 Countries Reached", icon: MapPin, color: "#173B63",
+    year: "2023", title: "50 Countries Reached", icon: MapPin, color: "#173B63",
     desc: "Active projects and campus chapters now span 50 countries across 5 continents. Launched our flagship Youth Climate Leadership program, training 4,000+ youth advocates in their first cohort.",
   },
   {
-    year: "2023", title: "One Million Trees", icon: TreePine, color: "#4CAF50",
+    year: "2024", title: "One Million Trees", icon: TreePine, color: "#4CAF50",
     desc: "Celebrated the planting of our 1 millionth tree — a mangrove seedling in the Sundarbans, Bangladesh. The landmark was witnessed by community leaders, diplomats, and 300 volunteers from 40 countries.",
   },
   {
