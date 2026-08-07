@@ -81,7 +81,7 @@ export function WhoWeAreSection() {
               initial={{ opacity: 0, y: -20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="flex items-center gap-5 bg-white p-3 pr-8 rounded-full shadow-xl shadow-[#0A3D2A]/5 w-fit border border-[#0A3D2A]/10 mb-2"
+              className="flex items-center gap-5 bg-white p-3 pr-8 rounded-full shadow-xl shadow-[#0A3D2A]/5 w-fit border border-[#0A3D2A]/10 mb-12"
             >
               <div className="bg-[#0A3D2A] text-white w-14 h-14 rounded-full flex items-center justify-center text-2xl font-serif font-bold">7+</div>
               <div className="text-xs font-bold text-[#0A3D2A] uppercase tracking-widest leading-snug">Years of<br/>Global Action</div>
