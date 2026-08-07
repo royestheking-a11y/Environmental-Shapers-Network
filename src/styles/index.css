@@ -1,0 +1,26 @@
+@import './fonts.css';
+@import './tailwind.css';
+@import './theme.css';
+
+/* Hide default cursor so custom cursor shows cleanly */
+*, *::before, *::after {
+  cursor: none !important;
+}
+
+/* Restore cursor on mobile / touch devices */
+@media (hover: none) {
+  *, *::before, *::after {
+    cursor: auto !important;
+  }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Premium selection color */
+::selection {
+  background: #0B5D3F22;
+  color: #0B5D3F;
+}

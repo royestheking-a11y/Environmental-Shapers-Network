@@ -1,0 +1,786 @@
+import { useState, useEffect } from "react";
+import { useLocation, Link } from "react-router";
+import { motion, AnimatePresence } from "motion/react";
+import {
+  ChevronRight, Heart, Users, BookOpen, Handshake, Briefcase, ArrowRight,
+  CheckCircle2, MapPin, Globe2, Mail, Building2, Clock, Check,
+  Leaf, RefreshCw, Calendar, Star, Sprout, BarChart2, Megaphone,
+  Monitor, Pen, GraduationCap, Languages, UserCheck, Trophy,
+  Send, FileText, Phone, User, Info, AlertCircle
+} from "lucide-react";
+
+import { fetchFirestoreData, saveFirestoreData, useFirestoreData } from "../../lib/useFirestore";
+
+// ─── Shared helpers ────────────────────────────────────────────────────────────
+
+async function saveApplication(type: string, data: object) {
+  try {
+    const key = `esn_apps_${type}`;
+    const existing = await fetchFirestoreData<any[]>(key, []);
+    const app = {
+      id: Date.now(),
+      ...data,
+      type,
+      status: "Pending",
+      submittedAt: new Date().toISOString(),
+    };
+    await saveFirestoreData(key, [app, ...existing]);
+    return app;
+  } catch { return null; }
+}
+
+function SuccessCard({ title, sub, onReset }: { title: string; sub: string; onReset: () => void }) {
+  return (
+    <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-3xl border border-gray-100 shadow-xl p-10 text-center max-w-md mx-auto mt-8">
+      <div className="w-20 h-20 bg-[#4CAF50]/15 rounded-full flex items-center justify-center mx-auto mb-5">
+        <CheckCircle2 size={40} className="text-[#4CAF50]" />
+      </div>
+      <h3 className="font-black text-gray-900 mb-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{title}</h3>
+      <p className="text-gray-500 text-sm leading-relaxed mb-6">{sub}</p>
+      <div className="bg-[#F6FBF8] rounded-2xl p-4 mb-6 text-left">
+        {[["Review Time", "3–5 business days"], ["Notification", "Via email"], ["Status", "Pending review"]].map(([l, v]) => (
+          <div key={l} className="flex justify-between text-sm py-1.5 border-b border-gray-100 last:border-0">
+            <span className="text-gray-400">{l}</span>
+            <span className="font-semibold text-gray-800">{v}</span>
+          </div>
+        ))}
+      </div>
+      <button onClick={onReset} className="text-[#0B5D3F] text-sm font-semibold hover:underline">Submit Another Application</button>
+    </motion.div>
+  );
+}
+
+function PageHero({ title, sub, image, icon: Icon }: { title: string; sub: string; image: string; icon: React.ElementType }) {
+  return (
+    <section className="relative h-72 flex items-end overflow-hidden">
+      <img src={image} alt={title} className="absolute inset-0 w-full h-full object-cover" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#0a1a0e]/92 via-[#0a1a0e]/50 to-transparent" />
+      <div className="relative z-10 max-w-6xl mx-auto px-6 pb-10 w-full">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-10 h-10 rounded-xl bg-[#4CAF50]/25 flex items-center justify-center">
+              <Icon size={20} className="text-[#4CAF50]" />
+            </div>
+            <span className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider">Get Involved</span>
+          </div>
+          <h1 className="text-white mb-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 800 }}>{title}</h1>
+          <p className="text-white/70 max-w-xl">{sub}</p>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+function Breadcrumb({ current }: { current: string }) {
+  return (
+    <div className="flex items-center gap-2 text-sm text-gray-400 mb-8">
+      <Link to="/" className="hover:text-[#0B5D3F] transition-all">Home</Link>
+      <ChevronRight size={14} />
+      <span className="text-gray-700 font-medium">{current}</span>
+    </div>
+  );
+}
+
+function StatCard({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="bg-white rounded-2xl p-5 text-center border border-gray-100 shadow-sm">
+      <div className="font-black text-[#0B5D3F]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "1.5rem" }}>{value}</div>
+      <div className="text-xs text-gray-500 mt-1">{label}</div>
+    </div>
+  );
+}
+
+// ─── Volunteer Page ────────────────────────────────────────────────────────────
+
+function VolunteerPage() {
+  const defaultRoles = [
+    { id: 1, title: "Field Volunteer", location: "Bangladesh / Global", commitment: "4–8 hrs/week", skills: "Physical fitness, teamwork" },
+    { id: 2, title: "Research Assistant", location: "Remote / Global", commitment: "6–10 hrs/week", skills: "Research, data analysis" },
+    { id: 3, title: "Social Media Volunteer", location: "Remote", commitment: "4–6 hrs/week", skills: "Content creation, design" },
+  ];
+  const [roles, setRoles, loadingRoles] = useFirestoreData<any[]>("esn_volunteer_roles", defaultRoles);
+
+  const [selected, setSelected] = useState<string | null>(null);
+  const [form, setForm] = useState({ name: "", email: "", phone: "", country: "", motivation: "", skills: "", availability: "", role: "" });
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setTimeout(() => {
+      saveApplication("volunteer", { ...form, role: selected || form.role });
+      setLoading(false);
+      setSubmitted(true);
+    }, 1600);
+  };
+
+  const apply = (roleTitle: string) => {
+    setSelected(roleTitle);
+    setForm((f) => ({ ...f, role: roleTitle }));
+    setShowForm(true);
+    setTimeout(() => document.getElementById("vol-form")?.scrollIntoView({ behavior: "smooth" }), 50);
+  };
+
+  if (submitted) return (
+    <div className="bg-[#F6FBF8] min-h-screen">
+      <PageHero title="Volunteer With ESN" sub="Give your time, skills, and passion to protect the planet." image="https://images.unsplash.com/photo-1593113598332-cd288d649433?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400" icon={Heart} />
+      <div className="max-w-6xl mx-auto px-6 py-12">
+        <SuccessCard title="Application Received!" sub="Thank you for applying to volunteer with ESN. Our volunteer coordinator will review your application and get back to you within 3–5 business days." onReset={() => { setSubmitted(false); setShowForm(false); setForm({ name: "", email: "", phone: "", country: "", motivation: "", skills: "", availability: "", role: "" }); }} />
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="bg-[#F6FBF8] min-h-screen">
+      <PageHero title="Volunteer With ESN" sub="Give your time, skills, and passion to protect the planet — locally and globally." image="https://images.unsplash.com/photo-1593113598332-cd288d649433?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400" icon={Heart} />
+      <div className="max-w-6xl mx-auto px-6 py-16">
+        <Breadcrumb current="Volunteer" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-12">
+          {[["48K+", "Active Volunteers"], ["190+", "Countries"], ["800+", "Projects Supported"], ["92%", "Volunteer Satisfaction"]].map(([v, l]) => <StatCard key={l} value={v} label={l} />)}
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-10 mb-12">
+          <div>
+            <div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider mb-2">Why Volunteer</div>
+            <h2 className="text-gray-900 mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 2vw, 1.8rem)", fontWeight: 800 }}>Make a Real Difference</h2>
+            <p className="text-gray-600 leading-relaxed mb-5">ESN volunteers are at the heart of everything we do — from planting trees in Bangladesh to monitoring coral reefs in the Pacific. Your skills and time directly translate into environmental impact.</p>
+          </div>
+          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+            <div className="text-sm font-bold text-gray-800 mb-4">Volunteer Benefits</div>
+            {["Certificate of participation & service hours", "Access to ESN training library (200+ courses)", "Professional network across 80+ countries", "References for academic & career applications", "Invitation to annual ESN Volunteer Summit"].map((b) => (
+              <div key={b} className="flex items-start gap-2 mb-3"><CheckCircle2 size={14} className="text-[#4CAF50] shrink-0 mt-0.5" /><span className="text-sm text-gray-600">{b}</span></div>
+            ))}
+          </div>
+        </div>
+
+        <div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider mb-2">Open Roles</div>
+        <h2 className="text-gray-900 mb-6" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 2vw, 1.8rem)", fontWeight: 800 }}>Current Volunteer Opportunities</h2>
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5 mb-10">
+          {roles.map((r, i) => (
+            <motion.div key={r.title} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.07 }}
+              className={`bg-white rounded-2xl p-6 border-2 transition-all cursor-pointer ${selected === r.title && showForm ? "border-[#4CAF50] shadow-lg" : "border-gray-100 hover:border-[#4CAF50]/40 hover:shadow-md"}`}>
+              <div className="w-11 h-11 bg-[#0B5D3F]/10 rounded-xl flex items-center justify-center mb-3">
+                <Heart size={20} className="text-[#0B5D3F]" />
+              </div>
+              <div className="font-bold text-gray-900 mb-2">{r.title}</div>
+              <div className="text-xs text-gray-500 flex items-center gap-1 mb-1"><MapPin size={10} /> {r.location}</div>
+              <div className="text-xs text-gray-500 flex items-center gap-1 mb-3"><Clock size={10} /> {r.commitment}</div>
+              <div className="text-xs bg-[#0B5D3F]/8 text-[#0B5D3F] px-3 py-1.5 rounded-full inline-block mb-4">{r.skills}</div>
+              <button onClick={() => apply(r.title)} className="w-full flex items-center justify-center gap-2 bg-[#0B5D3F] text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-[#0a5237] transition-all">
+                Apply for this Role <ArrowRight size={13} />
+              </button>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Application Form */}
+        <AnimatePresence>
+          {showForm && (
+            <motion.div id="vol-form" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="bg-white rounded-3xl border border-gray-100 shadow-xl p-8 mb-8">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="font-black text-gray-900" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Volunteer Application</h3>
+                  {selected && <p className="text-sm text-[#0B5D3F] font-semibold mt-1">Role: {selected}</p>}
+                </div>
+                <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-700 transition-all text-sm">Cancel</button>
+              </div>
+              <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name *</label>
+                    <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all" placeholder="Your full name" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address *</label>
+                    <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all" placeholder="you@email.com" />
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
+                    <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all" placeholder="+880 XXXXXXXXXX" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Country *</label>
+                    <input required value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all" placeholder="e.g. Bangladesh" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Role Preference *</label>
+                  <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all">
+                    <option value="">Select a role</option>
+                    {roles.map((r) => <option key={r.title} value={r.title}>{r.title}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Your Skills & Experience *</label>
+                  <textarea required rows={3} value={form.skills} onChange={(e) => setForm({ ...form, skills: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all resize-none" placeholder="Describe your relevant skills and experience..." />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Availability *</label>
+                  <select required value={form.availability} onChange={(e) => setForm({ ...form, availability: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all">
+                    <option value="">Select availability</option>
+                    <option>1–3 hours/week</option>
+                    <option>3–5 hours/week</option>
+                    <option>5–10 hours/week</option>
+                    <option>10+ hours/week</option>
+                    <option>Full-time availability</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Why do you want to volunteer with ESN? *</label>
+                  <textarea required rows={4} value={form.motivation} onChange={(e) => setForm({ ...form, motivation: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all resize-none" placeholder="Tell us about your motivation and what you hope to contribute..." />
+                </div>
+                <button type="submit" disabled={loading} className="flex items-center justify-center gap-2 bg-[#0B5D3F] hover:bg-[#0a5237] disabled:opacity-60 text-white py-4 rounded-xl font-bold transition-all hover:scale-[1.01]">
+                  {loading ? <><RefreshCw size={16} className="animate-spin" /> Submitting…</> : <><Send size={16} /> Submit Volunteer Application</>}
+                </button>
+              </form>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {!showForm && (
+          <div className="bg-gradient-to-r from-[#0B5D3F] to-[#173B63] rounded-3xl p-10 text-white text-center mt-4">
+            <h3 className="text-white mb-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 3vw, 2rem)", fontWeight: 800 }}>Ready to Volunteer?</h3>
+            <p className="text-white/70 mb-8 max-w-md mx-auto">Choose a role above and click "Apply" to get started with your application.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Partnership Page ──────────────────────────────────────────────────────────
+
+function PartnerPage() {
+  const types = [
+    { icon: Building2, title: "Corporate Partners", desc: "Integrate environmental action into your CSR strategy. We design customized partnerships aligned with your sustainability goals.", examples: "Employee volunteering, offset programs, sponsorships", id: "corporate" },
+    { icon: Globe2, title: "Government & Institutional", desc: "We partner with national and local governments to scale environmental programs and co-design policy.", examples: "MoUs, joint programs, policy advisory", id: "government" },
+    { icon: BookOpen, title: "Academic & Research", desc: "Joint research, student placements, and knowledge exchange with universities and scientific institutions.", examples: "Research collaboration, fellowships, data sharing", id: "academic" },
+    { icon: Heart, title: "Foundation & Philanthropy", desc: "Strategic funding partnerships with foundations to scale proven programs and pilot innovations.", examples: "Project grants, endowments, challenge funds", id: "philanthropy" },
+  ];
+
+  const [form, setForm] = useState({ orgName: "", contactName: "", email: "", phone: "", type: "", website: "", description: "", budget: "", timeline: "" });
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setTimeout(() => {
+      saveApplication("partner", form);
+      setLoading(false);
+      setSubmitted(true);
+    }, 1600);
+  };
+
+  if (submitted) return (
+    <div className="bg-[#F6FBF8] min-h-screen">
+      <PageHero title="Partner With ESN" sub="Build a meaningful partnership that drives environmental impact at scale." image="https://images.unsplash.com/photo-1521791136064-7986c2920216?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400" icon={Handshake} />
+      <div className="max-w-6xl mx-auto px-6 py-12">
+        <SuccessCard title="Partnership Inquiry Received!" sub="Our partnerships team will review your inquiry and contact you within 5 business days to discuss next steps." onReset={() => { setSubmitted(false); setForm({ orgName: "", contactName: "", email: "", phone: "", type: "", website: "", description: "", budget: "", timeline: "" }); }} />
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="bg-[#F6FBF8] min-h-screen">
+      <PageHero title="Partner With ESN" sub="Build a meaningful partnership that drives environmental impact at scale." image="https://images.unsplash.com/photo-1521791136064-7986c2920216?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400" icon={Handshake} />
+      <div className="max-w-6xl mx-auto px-6 py-16">
+        <Breadcrumb current="Partner With Us" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-12">
+          {[["80+", "Active Partners"], ["$18M+", "Partner Funding 2025"], ["45", "Corporate Partners"], ["12", "Government Partners"]].map(([v, l]) => <StatCard key={l} value={v} label={l} />)}
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6 mb-14">
+          {types.map((t, i) => (
+            <motion.div key={t.title} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+              className="bg-white rounded-2xl p-7 border border-gray-100 hover:border-[#4CAF50]/30 hover:shadow-lg transition-all">
+              <div className="w-12 h-12 rounded-2xl bg-[#0B5D3F]/10 flex items-center justify-center mb-5"><t.icon size={22} className="text-[#0B5D3F]" /></div>
+              <div className="font-bold text-gray-900 mb-2">{t.title}</div>
+              <p className="text-sm text-gray-600 leading-relaxed mb-4">{t.desc}</p>
+              <div className="text-xs text-gray-400"><span className="font-semibold text-[#4CAF50]">Examples: </span>{t.examples}</div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Partnership Application Form */}
+        <div className="bg-white rounded-3xl border border-gray-100 shadow-xl p-8">
+          <div className="mb-8">
+            <div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider mb-2">Apply Now</div>
+            <h2 className="text-gray-900" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 2vw, 1.8rem)", fontWeight: 800 }}>Start a Partnership Conversation</h2>
+            <p className="text-gray-500 text-sm mt-2">Fill in the form below and our team will get back to you within 5 business days.</p>
+          </div>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Organization Name *</label>
+                <input required value={form.orgName} onChange={(e) => setForm({ ...form, orgName: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all" placeholder="Your organization" />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Contact Name *</label>
+                <input required value={form.contactName} onChange={(e) => setForm({ ...form, contactName: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all" placeholder="Your name" />
+              </div>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address *</label>
+                <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all" placeholder="contact@org.com" />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
+                <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all" placeholder="+1 XXX-XXX-XXXX" />
+              </div>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Partnership Type *</label>
+                <select required value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all">
+                  <option value="">Select type</option>
+                  {types.map((t) => <option key={t.id} value={t.title}>{t.title}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Website</label>
+                <input type="url" value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all" placeholder="https://yourorg.com" />
+              </div>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Estimated Budget / Contribution</label>
+                <select value={form.budget} onChange={(e) => setForm({ ...form, budget: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all">
+                  <option value="">Select range</option>
+                  <option>Under $10,000</option>
+                  <option>$10,000 – $50,000</option>
+                  <option>$50,000 – $100,000</option>
+                  <option>$100,000 – $500,000</option>
+                  <option>$500,000+</option>
+                  <option>Non-financial partnership</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Preferred Timeline</label>
+                <select value={form.timeline} onChange={(e) => setForm({ ...form, timeline: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all">
+                  <option value="">Select timeline</option>
+                  <option>Immediate (within 1 month)</option>
+                  <option>Short-term (1–3 months)</option>
+                  <option>Medium-term (3–6 months)</option>
+                  <option>Long-term (6+ months)</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Partnership Vision *</label>
+              <textarea required rows={4} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all resize-none" placeholder="Describe what you hope to achieve through this partnership..." />
+            </div>
+            <button type="submit" disabled={loading} className="flex items-center justify-center gap-2 bg-[#0B5D3F] hover:bg-[#0a5237] disabled:opacity-60 text-white py-4 rounded-xl font-bold transition-all hover:scale-[1.01]">
+              {loading ? <><RefreshCw size={16} className="animate-spin" /> Submitting…</> : <><Send size={16} /> Submit Partnership Inquiry</>}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Membership Page ───────────────────────────────────────────────────────────
+
+function MembershipPage() {
+  const tiers = [
+    { name: "Supporter", price: "$25/year", color: "#4CAF50", bg: "#F0FFF4", perks: ["ESN digital membership card", "Monthly impact newsletter", "Access to member events", "Voting rights at AGM"] },
+    { name: "Advocate", price: "$100/year", color: "#0B5D3F", bg: "#F0FBF4", perks: ["All Supporter benefits", "Exclusive member webinars", "Annual report hardcopy", "Name in annual report", "Priority event registration"], highlight: true },
+    { name: "Champion", price: "$500/year", color: "#173B63", bg: "#F0F4FF", perks: ["All Advocate benefits", "1:1 briefing with program team", "Recognition on ESN website", "Invitation to Leadership Summit", "Input on program priorities"] },
+  ];
+
+  const [selectedTier, setSelectedTier] = useState<string | null>(null);
+  const [form, setForm] = useState({ name: "", email: "", phone: "", country: "", occupation: "", reason: "" });
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setTimeout(() => {
+      saveApplication("member", { ...form, tier: selectedTier });
+      setLoading(false);
+      setSubmitted(true);
+    }, 1600);
+  };
+
+  if (submitted) return (
+    <div className="bg-[#F6FBF8] min-h-screen">
+      <PageHero title="ESN Membership" sub="Join our global community of environmental changemakers." image="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400" icon={Users} />
+      <div className="max-w-6xl mx-auto px-6 py-12">
+        <SuccessCard title="Membership Application Submitted!" sub={`Your ${selectedTier} membership application has been received. You'll receive a confirmation email with payment instructions within 24 hours.`} onReset={() => { setSubmitted(false); setShowForm(false); setSelectedTier(null); setForm({ name: "", email: "", phone: "", country: "", occupation: "", reason: "" }); }} />
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="bg-[#F6FBF8] min-h-screen">
+      <PageHero title="ESN Membership" sub="Join our global community of environmental changemakers and amplify your impact." image="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400" icon={Users} />
+      <div className="max-w-6xl mx-auto px-6 py-16">
+        <Breadcrumb current="Membership" />
+        <div className="text-center mb-12">
+          <div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider mb-2">Choose Your Tier</div>
+          <h2 className="text-gray-900 mb-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.5rem, 3vw, 2.2rem)", fontWeight: 800 }}>ESN Membership Plans</h2>
+          <p className="text-gray-500 max-w-xl mx-auto">Every membership tier directly funds environmental programs. Pick the level that works for you.</p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-6 mb-10">
+          {tiers.map((t, i) => (
+            <motion.div key={t.name} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+              className={`bg-white rounded-2xl p-8 border-2 transition-all relative ${t.highlight ? "border-[#0B5D3F] shadow-2xl shadow-green-900/10 scale-105" : "border-gray-100 hover:border-[#4CAF50]/30 hover:shadow-lg"}`}>
+              {t.highlight && <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#0B5D3F] text-white text-xs font-bold px-4 py-1.5 rounded-full">Most Popular</div>}
+              <div className="font-black mb-1" style={{ color: t.color, fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "1.1rem" }}>{t.name}</div>
+              <div className="font-black text-gray-900 mb-6" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "1.75rem" }}>{t.price}</div>
+              <div className="flex flex-col gap-3 mb-8">
+                {t.perks.map((p) => <div key={p} className="flex items-start gap-2"><CheckCircle2 size={14} className="text-[#4CAF50] shrink-0 mt-0.5" /><span className="text-sm text-gray-600">{p}</span></div>)}
+              </div>
+              <button onClick={() => { setSelectedTier(t.name); setShowForm(true); setTimeout(() => document.getElementById("mem-form")?.scrollIntoView({ behavior: "smooth" }), 50); }} className="w-full py-3 rounded-xl font-semibold text-sm transition-all hover:scale-[1.02]" style={{ backgroundColor: t.color, color: "white" }}>
+                Apply as {t.name}
+              </button>
+            </motion.div>
+          ))}
+        </div>
+
+        <AnimatePresence>
+          {showForm && (
+            <motion.div id="mem-form" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="bg-white rounded-3xl border border-gray-100 shadow-xl p-8">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="font-black text-gray-900" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Membership Application</h3>
+                  {selectedTier && <p className="text-sm text-[#0B5D3F] font-semibold mt-1">Plan: {selectedTier}</p>}
+                </div>
+                <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-700 transition-all text-sm">Cancel</button>
+              </div>
+              <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name *</label>
+                    <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all" placeholder="Your full name" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address *</label>
+                    <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all" placeholder="you@email.com" />
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Phone</label>
+                    <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all" placeholder="Your phone" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Country *</label>
+                    <input required value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all" placeholder="e.g. Bangladesh" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Occupation / Organization</label>
+                  <input value={form.occupation} onChange={(e) => setForm({ ...form, occupation: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all" placeholder="e.g. Student, Engineer, Teacher" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Why do you want to join ESN? *</label>
+                  <textarea required rows={4} value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all resize-none" placeholder="Share your motivation..." />
+                </div>
+                <div className="flex items-start gap-3 bg-[#F6FBF8] rounded-xl p-4 border border-gray-100">
+                  <input type="checkbox" id="mem-agree" required className="mt-0.5" />
+                  <label htmlFor="mem-agree" className="text-sm text-gray-600">I agree to ESN's <Link to="/terms" className="text-[#0B5D3F] hover:underline">Terms of Membership</Link> and <Link to="/privacy" className="text-[#0B5D3F] hover:underline">Privacy Policy</Link>.</label>
+                </div>
+                <button type="submit" disabled={loading} className="flex items-center justify-center gap-2 bg-[#0B5D3F] hover:bg-[#0a5237] disabled:opacity-60 text-white py-4 rounded-xl font-bold transition-all hover:scale-[1.01]">
+                  {loading ? <><RefreshCw size={16} className="animate-spin" /> Submitting…</> : <><Send size={16} /> Submit Membership Application</>}
+                </button>
+              </form>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
+// ─── Campus Chapters Page ──────────────────────────────────────────────────────
+
+function CampusPage() {
+  const chapters = [
+    { name: "University of Dhaka Chapter", country: "Bangladesh", members: 240, projects: 12, established: "2016" },
+    { name: "IIT Delhi Chapter", country: "India", members: 185, projects: 9, established: "2017" },
+    { name: "University of Nairobi Chapter", country: "Kenya", members: 160, projects: 11, established: "2018" },
+    { name: "São Paulo State University", country: "Brazil", members: 210, projects: 14, established: "2017" },
+    { name: "University of Copenhagen", country: "Denmark", members: 130, projects: 7, established: "2019" },
+    { name: "National University of Singapore", country: "Singapore", members: 145, projects: 8, established: "2019" },
+  ];
+
+  return (
+    <div className="bg-[#F6FBF8] min-h-screen">
+      <PageHero title="Campus Chapters" sub="ESN chapters bring environmental action to universities worldwide." image="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400" icon={BookOpen} />
+      <div className="max-w-6xl mx-auto px-6 py-16">
+        <Breadcrumb current="Campus Chapters" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-12">
+          {[["200+", "Campus Chapters"], ["50+", "Countries"], ["28K+", "Student Members"], ["600+", "Campus Projects"]].map(([v, l]) => <StatCard key={l} value={v} label={l} />)}
+        </div>
+        <div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider mb-2">Network</div>
+        <h2 className="text-gray-900 mb-6" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 2vw, 1.8rem)", fontWeight: 800 }}>Featured Chapters</h2>
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5 mb-12">
+          {chapters.map((c, i) => (
+            <motion.div key={c.name} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
+              className="bg-white rounded-2xl p-6 border border-gray-100 hover:border-[#4CAF50]/30 hover:shadow-md transition-all">
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 rounded-xl bg-[#0B5D3F]/10 flex items-center justify-center"><BookOpen size={18} className="text-[#0B5D3F]" /></div>
+                <span className="text-xs text-gray-400">Est. {c.established}</span>
+              </div>
+              <div className="font-bold text-gray-900 mb-1 text-sm">{c.name}</div>
+              <div className="text-xs text-gray-500 flex items-center gap-1 mb-4"><Globe2 size={10} /> {c.country}</div>
+              <div className="flex gap-4 text-xs">
+                <div><span className="font-bold text-[#0B5D3F]">{c.members}</span> <span className="text-gray-400">members</span></div>
+                <div><span className="font-bold text-[#4CAF50]">{c.projects}</span> <span className="text-gray-400">projects</span></div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+        <div className="bg-white rounded-2xl p-8 border border-gray-100 mb-8 shadow-sm">
+          <h3 className="text-gray-900 mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700 }}>Start a Chapter at Your University</h3>
+          <p className="text-gray-600 text-sm leading-relaxed mb-5">Any registered student group at an accredited university can apply to become an official ESN Campus Chapter. Chapters receive training, resources, mentorship, and access to the global ESN network.</p>
+          <div className="grid sm:grid-cols-3 gap-4">
+            {["Apply online with a founding team of 10+ students", "Receive onboarding training and chapter toolkit", "Launch your first environmental project within 90 days"].map((s, i) => (
+              <div key={s} className="flex items-start gap-3">
+                <div className="w-7 h-7 rounded-full bg-[#4CAF50] text-white text-xs font-bold flex items-center justify-center shrink-0">{i + 1}</div>
+                <span className="text-sm text-gray-600">{s}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="bg-gradient-to-r from-[#0B5D3F] to-[#173B63] rounded-3xl p-10 text-white text-center">
+          <h3 className="text-white mb-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 3vw, 2rem)", fontWeight: 800 }}>Start or Join a Chapter</h3>
+          <p className="text-white/70 mb-6 max-w-md mx-auto">Contact us to connect with the nearest ESN campus chapter or start one at your institution.</p>
+          <Link to="/contact" className="inline-flex items-center gap-2 bg-[#4CAF50] text-white px-7 py-3.5 rounded-full font-semibold hover:bg-[#43a047] transition-all hover:scale-105">Apply Now <ArrowRight size={15} /></Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Careers Page ──────────────────────────────────────────────────────────────
+
+const deptColors: Record<string, string> = {
+  Programs: "#0B5D3F", Research: "#173B63", Communications: "#4CAF50",
+  Marketing: "#D6A95A", Finance: "#E65100", Youth: "#5B8DB8"
+};
+
+function CareersPage() {
+  const defaultJobs = [
+    { id: 1, title: "Program Manager — Forest Restoration", dept: "Programs", location: "Dhaka, Bangladesh", type: "Full-time", deadline: "Aug 30, 2026", salary: "$45K–$60K", desc: "Lead our flagship forest restoration programs across South Asia, managing a team of 12 field staff and 200+ community volunteers.", requirements: "5+ years program management, NGO/environmental sector experience, Fluent in Bangla + English, PMP or equivalent preferred" },
+    { id: 2, title: "Research Associate — Climate Policy", dept: "Research", location: "Remote", type: "Full-time", deadline: "Sep 5, 2026", salary: "$38K–$50K", desc: "Support ESN's policy research agenda, producing evidence briefs, policy papers, and stakeholder reports.", requirements: "Master's in environmental science/policy, Strong research & writing skills, Experience with IPCC frameworks, Quantitative analysis skills" },
+  ];
+  const [jobListings, setJobListings, loadingJobs] = useFirestoreData<any[]>("esn_career_jobs", defaultJobs);
+  const [selectedJob, setSelectedJob] = useState<any | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", phone: "", country: "", linkedIn: "", coverLetter: "", noticePeriod: "", expectedSalary: "" });
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [filter, setFilter] = useState("All");
+
+  const depts = ["All", ...Array.from(new Set(jobListings.map((j) => j.dept)))];
+  const filtered = filter === "All" ? jobListings : jobListings.filter((j) => j.dept === filter);
+
+  const handleApply = (job: any) => {
+    setSelectedJob(job);
+    setShowForm(true);
+    setTimeout(() => document.getElementById("career-form")?.scrollIntoView({ behavior: "smooth" }), 50);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setTimeout(() => {
+      saveApplication("career", { ...form, jobTitle: selectedJob?.title, dept: selectedJob?.dept, location: selectedJob?.location });
+      setLoading(false);
+      setSubmitted(true);
+    }, 1800);
+  };
+
+  if (submitted) return (
+    <div className="bg-[#F6FBF8] min-h-screen">
+      <PageHero title="Career Opportunities" sub="Join a team of passionate people working to protect our planet." image="https://images.unsplash.com/photo-1497366216548-37526070297c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400" icon={Briefcase} />
+      <div className="max-w-6xl mx-auto px-6 py-12">
+        <SuccessCard title="Application Submitted!" sub={`Your application for "${selectedJob?.title}" has been received. Our HR team will review and contact you within 5–7 business days.`} onReset={() => { setSubmitted(false); setShowForm(false); setSelectedJob(null); setForm({ name: "", email: "", phone: "", country: "", linkedIn: "", coverLetter: "", noticePeriod: "", expectedSalary: "" }); }} />
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="bg-[#F6FBF8] min-h-screen">
+      <PageHero title="Career Opportunities" sub="Join a team of passionate people working to protect our planet." image="https://images.unsplash.com/photo-1497366216548-37526070297c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400" icon={Briefcase} />
+      <div className="max-w-6xl mx-auto px-6 py-16">
+        <Breadcrumb current="Careers" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-12">
+          {[["120+", "Team Members"], ["25+", "Open Roles"], ["35", "Countries Hiring"], ["4.8/5", "Glassdoor Rating"]].map(([v, l]) => <StatCard key={l} value={v} label={l} />)}
+        </div>
+
+        {/* Culture block */}
+        <div className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm mb-10">
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider mb-2">Life at ESN</div>
+              <h3 className="text-gray-900 mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "1.4rem", fontWeight: 800 }}>Work Where Your Career Has Purpose</h3>
+              <p className="text-gray-600 text-sm leading-relaxed">ESN staff are mission-driven professionals who believe that rigorous, community-led environmental work can change the world. We offer competitive salaries, flexible remote options, and a culture of genuine inclusion.</p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              {[["Flexible Hours", Clock], ["Remote Options", Globe2], ["Health Benefits", Heart], ["Learning Budget", BookOpen]].map(([label, Icon]) => (
+                <div key={label as string} className="bg-[#F6FBF8] rounded-xl p-4 flex items-center gap-3 border border-gray-100">
+                  <div className="w-9 h-9 bg-[#0B5D3F]/10 rounded-xl flex items-center justify-center shrink-0">
+                    {/* @ts-ignore */}
+                    <Icon size={16} className="text-[#0B5D3F]" />
+                  </div>
+                  <span className="text-sm font-semibold text-gray-700">{label as string}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Filter */}
+        <div className="flex items-center gap-3 flex-wrap mb-6">
+          <span className="text-sm font-bold text-gray-500">Filter by department:</span>
+          {depts.map((d) => (
+            <button key={d} onClick={() => setFilter(d)} className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${filter === d ? "bg-[#0B5D3F] text-white" : "bg-white text-gray-500 border border-gray-200 hover:border-[#4CAF50]"}`}>{d}</button>
+          ))}
+        </div>
+
+        <div className="flex flex-col gap-4 mb-10">
+          {filtered.map((j, i) => (
+            <motion.div key={j.id} initial={{ opacity: 0, x: -16 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.07 }}
+              className={`bg-white rounded-2xl p-6 border-2 transition-all ${selectedJob?.id === j.id && showForm ? "border-[#0B5D3F] shadow-lg" : "border-gray-100 hover:border-[#4CAF50]/30 hover:shadow-md"}`}>
+              <div className="flex flex-col sm:flex-row gap-4 sm:items-start">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: (deptColors[j.dept] || "#0B5D3F") + "15", color: deptColors[j.dept] || "#0B5D3F" }}>{j.dept}</span>
+                    <span className="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full">{j.type}</span>
+                    <span className="text-xs bg-green-50 text-[#0B5D3F] px-2.5 py-1 rounded-full font-semibold">{j.salary}</span>
+                  </div>
+                  <div className="font-bold text-gray-900 mb-2">{j.title}</div>
+                  <p className="text-sm text-gray-500 mb-3 leading-relaxed">{j.desc}</p>
+                  <div className="flex items-center gap-4 text-xs text-gray-400 flex-wrap">
+                    <span className="flex items-center gap-1"><MapPin size={10} /> {j.location}</span>
+                    <span className="flex items-center gap-1"><Calendar size={10} /> Deadline: {j.deadline}</span>
+                  </div>
+                </div>
+                <button onClick={() => handleApply(j)} className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all whitespace-nowrap shrink-0 self-start">
+                  Apply <ArrowRight size={14} />
+                </button>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Application Form */}
+        <AnimatePresence>
+          {showForm && selectedJob && (
+            <motion.div id="career-form" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="bg-white rounded-3xl border border-gray-100 shadow-xl p-8 mb-8">
+              <div className="flex items-start justify-between mb-6">
+                <div>
+                  <h3 className="font-black text-gray-900" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Job Application</h3>
+                  <p className="text-sm text-[#0B5D3F] font-semibold mt-1">{selectedJob.title}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{selectedJob.dept} · {selectedJob.location}</p>
+                </div>
+                <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-700 text-sm transition-all shrink-0">Cancel</button>
+              </div>
+
+              {/* Requirements */}
+              <div className="bg-[#F6FBF8] rounded-2xl p-5 mb-6 border border-[#0B5D3F]/10">
+                <div className="text-xs font-black text-[#0B5D3F] uppercase tracking-wider mb-3">Key Requirements</div>
+                <div className="grid sm:grid-cols-2 gap-2">
+                  {typeof selectedJob.requirements === 'string' 
+                    ? selectedJob.requirements.split(",").map((r: string) => (
+                      <div key={r} className="flex items-center gap-2 text-xs text-gray-600"><Check size={12} className="text-[#4CAF50] shrink-0" />{r.trim()}</div>
+                    ))
+                    : selectedJob.requirements.map((r: string) => (
+                      <div key={r} className="flex items-center gap-2 text-xs text-gray-600"><Check size={12} className="text-[#4CAF50] shrink-0" />{r}</div>
+                    ))
+                  }
+                </div>
+              </div>
+
+              <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name *</label>
+                    <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all" placeholder="Your full name" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address *</label>
+                    <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all" placeholder="you@email.com" />
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
+                    <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all" placeholder="+1 XXX-XXX-XXXX" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Country *</label>
+                    <input required value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all" placeholder="e.g. Bangladesh" />
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">LinkedIn Profile URL</label>
+                    <input type="url" value={form.linkedIn} onChange={(e) => setForm({ ...form, linkedIn: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all" placeholder="https://linkedin.com/in/..." />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Expected Salary</label>
+                    <input value={form.expectedSalary} onChange={(e) => setForm({ ...form, expectedSalary: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all" placeholder="e.g. $45,000/year" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Notice Period</label>
+                  <select value={form.noticePeriod} onChange={(e) => setForm({ ...form, noticePeriod: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all">
+                    <option value="">Select notice period</option>
+                    <option>Immediate</option>
+                    <option>2 weeks</option>
+                    <option>1 month</option>
+                    <option>2 months</option>
+                    <option>3 months</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Cover Letter *</label>
+                  <textarea required rows={5} value={form.coverLetter} onChange={(e) => setForm({ ...form, coverLetter: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all resize-none" placeholder="Why are you the right person for this role? What experience and passion do you bring?" />
+                </div>
+                <div className="flex items-start gap-3 bg-[#F6FBF8] rounded-xl p-4 border border-gray-100">
+                  <input type="checkbox" id="career-agree" required className="mt-0.5" />
+                  <label htmlFor="career-agree" className="text-sm text-gray-600">I confirm all information is accurate and I consent to ESN storing my data for recruitment purposes.</label>
+                </div>
+                <button type="submit" disabled={loading} className="flex items-center justify-center gap-2 bg-[#0B5D3F] hover:bg-[#0a5237] disabled:opacity-60 text-white py-4 rounded-xl font-bold transition-all hover:scale-[1.01]">
+                  {loading ? <><RefreshCw size={16} className="animate-spin" /> Submitting Application…</> : <><Send size={16} /> Submit Job Application</>}
+                </button>
+              </form>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {!showForm && (
+          <div className="bg-gradient-to-r from-[#0B5D3F] to-[#173B63] rounded-3xl p-10 text-white text-center mt-4">
+            <h3 className="mb-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 3vw, 2rem)", fontWeight: 800 }}>Don't See a Fit?</h3>
+            <p className="text-white/70 mb-8 max-w-md mx-auto">Send us your CV and we'll keep it on file for opportunities that match your profile.</p>
+            <Link to="/contact" className="inline-flex items-center gap-2 bg-[#4CAF50] text-white px-7 py-3.5 rounded-full font-semibold hover:bg-[#43a047] transition-all hover:scale-105">Send Your CV <ArrowRight size={15} /></Link>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Router ────────────────────────────────────────────────────────────────────
+
+export default function GetInvolvedPage() {
+  const { pathname } = useLocation();
+  if (pathname === "/volunteer") return <VolunteerPage />;
+  if (pathname === "/membership") return <MembershipPage />;
+  if (pathname === "/campus-chapters") return <CampusPage />;
+  if (pathname === "/partner") return <PartnerPage />;
+  if (pathname === "/careers") return <CareersPage />;
+  return <VolunteerPage />;
+}
