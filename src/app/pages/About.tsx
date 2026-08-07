@@ -22,19 +22,19 @@ const milestones = [
     desc: "Received ECOSOC Special Consultative Status — one of the youngest NGOs in history to achieve this recognition. We presented at the UNFCCC COP25 in Madrid, representing 34 countries.",
   },
   {
-    year: "2023", title: "50 Countries Reached", icon: MapPin, color: "#173B63",
+    year: "2022", title: "50 Countries Reached", icon: MapPin, color: "#173B63",
     desc: "Active projects and campus chapters now span 50 countries across 5 continents. Launched our flagship Youth Climate Leadership program, training 4,000+ youth advocates in their first cohort.",
   },
   {
-    year: "2024", title: "One Million Trees", icon: TreePine, color: "#4CAF50",
+    year: "2023", title: "One Million Trees", icon: TreePine, color: "#4CAF50",
     desc: "Celebrated the planting of our 1 millionth tree — a mangrove seedling in the Sundarbans, Bangladesh. The landmark was witnessed by community leaders, diplomats, and 300 volunteers from 40 countries.",
   },
   {
-    year: "2025", title: "Climate Finance Hub", icon: Zap, color: "#0B5D3F",
+    year: "2024", title: "Climate Finance Hub", icon: Zap, color: "#0B5D3F",
     desc: "Launched the ESN Climate Finance Accelerator, channeling $12M to 180 grassroots environmental projects in the Global South. Opened regional headquarters in Nairobi, Bogotá, and Jakarta.",
   },
   {
-    year: "2026", title: "The Global Platform", icon: BookOpen, color: "#D6A95A",
+    year: "2025", title: "The Global Platform", icon: BookOpen, color: "#D6A95A",
     desc: "Launched this integrated digital platform connecting 12,000+ communities across 80+ countries. Now the largest open-source environmental data network in Asia and Africa, powering science-based action.",
   },
 ];
