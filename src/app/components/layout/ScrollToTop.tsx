@@ -23,7 +23,7 @@ export function ScrollToTop() {
           exit={{ opacity: 0, scale: 0.5, y: 20 }}
           transition={{ type: "spring", stiffness: 300, damping: 20 }}
           onClick={scrollUp}
-          className="fixed bottom-8 right-8 z-50 group"
+          className="fixed bottom-[13rem] right-8 z-50 group"
           aria-label="Scroll to top"
         >
           {/* Outer pulsing ring */}
@@ -40,7 +40,7 @@ export function ScrollToTop() {
           />
 
           {/* Main button */}
-          <div className="relative w-14 h-14 rounded-full bg-[#4CAF50] shadow-xl shadow-green-500/40 flex items-center justify-center group-hover:bg-[#3d9140] transition-colors duration-300 border-4 border-white">
+          <div className="relative w-14 h-14 rounded-full bg-[#4CAF50] shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center justify-center group-hover:bg-[#3d9140] transition-colors duration-300">
             {/* Leaf SVG */}
             <motion.div
               animate={{ y: [0, -3, 0] }}

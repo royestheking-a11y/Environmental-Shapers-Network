@@ -196,8 +196,8 @@ export default function Contact() {
                     </div>
                     <div>
                       <div className="text-xs text-white/60 mb-0.5">Email</div>
-                      <div className="text-sm font-medium mb-0.5">info@environmentalshapersnetwork.org</div>
-                      <div className="text-sm font-medium">research@environmentalshapersnetwork.org</div>
+                      <div className="text-sm font-medium mb-0.5 break-all">info@environmentalshapersnetwork.org</div>
+                      <div className="text-sm font-medium break-all">research@environmentalshapersnetwork.org</div>
                     </div>
                   </div>
                   
@@ -207,7 +207,7 @@ export default function Contact() {
                     </div>
                     <div>
                       <div className="text-xs text-white/60 mb-0.5">Youth Applications</div>
-                      <div className="text-sm font-medium">youth.applications@environmentalshapersnetwork.org</div>
+                      <div className="text-sm font-medium break-all">youth.applications@environmentalshapersnetwork.org</div>
                     </div>
                   </div>
                   
@@ -294,7 +294,7 @@ export default function Contact() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.3 }}
-                className="absolute bottom-6 left-1/2 -translate-x-1/2 md:top-6 md:left-6 md:bottom-auto md:-translate-x-0 bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-white/50 flex items-center gap-4 max-w-[300px] pointer-events-none"
+                className="absolute bottom-6 left-1/2 -translate-x-1/2 md:top-6 md:left-6 md:bottom-auto md:-translate-x-0 bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-white/50 flex items-center gap-4 w-[90%] md:w-auto max-w-[300px] pointer-events-none"
               >
                 <div className="relative w-12 h-12 shrink-0">
                   <div className="absolute inset-0 bg-[#4CAF50] rounded-xl animate-ping opacity-20" />

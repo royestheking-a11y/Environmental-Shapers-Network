@@ -68,7 +68,8 @@ const footerLinks = {
   Programs: [
     { label: "All Programs", href: "/programs" },
     { label: "Youth Engagement", href: "/programs/youth" },
-    { label: "Research & Policy", href: "/insights" },
+    { label: "Events & Calendar", href: "/events" },
+    { label: "Research & Policy", href: "/research" },
     { label: "Community Projects", href: "/projects" },
     { label: "Campaigns", href: "/campaigns" },
   ],
@@ -83,7 +84,6 @@ const footerLinks = {
     { label: "Knowledge Hub", href: "/knowledge-hub" },
     { label: "Media Center", href: "/media-center" },
     { label: "Impact Dashboard", href: "/impact" },
-    { label: "Events & Calendar", href: "/events" },
     { label: "Contact Us", href: "/contact" },
     { label: "Admin Login", href: "/admin" },
   ],
@@ -197,38 +197,40 @@ export function Footer() {
           </div>
 
           {/* Link Columns */}
-          {Object.entries(footerLinks).map(([title, links]) => (
-            <div key={title}>
-              <h4 className="text-white text-sm font-bold uppercase tracking-wider mb-5" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                {title}
-              </h4>
-              <ul className="flex flex-col gap-3">
-                {links.map((link) => (
-                  <li key={link.label}>
-                    <Link
-                      to={link.href}
-                      className="text-gray-400 hover:text-[#4CAF50] text-sm transition-colors duration-200 hover:translate-x-1 inline-block"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <div className="lg:col-span-4 grid grid-cols-2 md:grid-cols-4 gap-8">
+            {Object.entries(footerLinks).map(([title, links]) => (
+              <div key={title}>
+                <h4 className="text-white text-sm font-bold uppercase tracking-wider mb-5" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  {title}
+                </h4>
+                <ul className="flex flex-col gap-3">
+                  {links.map((link) => (
+                    <li key={link.label}>
+                      <Link
+                        to={link.href}
+                        className="text-gray-400 hover:text-[#4CAF50] text-sm transition-colors duration-200 hover:translate-x-1 inline-block"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* SDG Logos */}
         <div className="mt-16 pt-10 border-t border-white/10">
-          <div className="flex flex-wrap items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-              <span className="text-xs text-gray-500 uppercase tracking-widest">Aligned with</span>
-              <div className="flex gap-2">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <span className="text-xs text-gray-500 uppercase tracking-widest whitespace-nowrap">Aligned with</span>
+              <div className="flex flex-wrap gap-2">
                 {[13, 14, 15, 6, 7, 11, 12, 17].map((sdg) => (
                   <SDGIcon key={sdg} sdg={sdg} />
                 ))}
               </div>
-              <span className="text-xs text-gray-500">UN SDGs</span>
+              <span className="text-xs text-gray-500 whitespace-nowrap">UN SDGs</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <TreePine size={14} className="text-[#4CAF50]" />

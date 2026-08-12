@@ -231,18 +231,20 @@ export default function Donate() {
       <section className="py-12 bg-[#F6FBF8]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           {/* Progress bar */}
-          <div className="flex items-center justify-center gap-0 mb-10">
-            {[{ n: 1, l: "Amount" }, { n: 2, l: "Details" }, { n: 3, l: "Payment" }, { n: 4, l: "Confirm" }].map((s, i, arr) => (
-              <div key={s.n} className="flex items-center">
-                <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all ${step === s.n ? "bg-[#0B5D3F] text-white" : step > s.n ? "bg-[#4CAF50]/20 text-[#0B5D3F]" : "bg-white text-gray-400 border border-gray-100"}`}>
-                  <span className={`w-5 h-5 rounded-full text-xs font-black flex items-center justify-center ${step === s.n ? "bg-white text-[#0B5D3F]" : step > s.n ? "bg-[#4CAF50] text-white" : "bg-gray-100 text-gray-500"}`}>
-                    {step > s.n ? <Check size={11} /> : s.n}
-                  </span>
-                  {s.l}
+          <div className="flex items-center justify-start sm:justify-center overflow-x-auto pb-6 mb-4 snap-x no-scrollbar w-full">
+            <div className="flex items-center gap-0 min-w-max px-2">
+              {[{ n: 1, l: "Amount" }, { n: 2, l: "Details" }, { n: 3, l: "Payment" }, { n: 4, l: "Confirm" }].map((s, i, arr) => (
+                <div key={s.n} className="flex items-center snap-center">
+                  <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all ${step === s.n ? "bg-[#0B5D3F] text-white" : step > s.n ? "bg-[#4CAF50]/20 text-[#0B5D3F]" : "bg-white text-gray-400 border border-gray-100"}`}>
+                    <span className={`w-5 h-5 rounded-full text-xs font-black flex items-center justify-center ${step === s.n ? "bg-white text-[#0B5D3F]" : step > s.n ? "bg-[#4CAF50] text-white" : "bg-gray-100 text-gray-500"}`}>
+                      {step > s.n ? <Check size={11} /> : s.n}
+                    </span>
+                    <span className="whitespace-nowrap">{s.l}</span>
+                  </div>
+                  {i < arr.length - 1 && <div className={`h-0.5 w-4 sm:w-8 mx-1 transition-all ${step > s.n ? "bg-[#4CAF50]" : "bg-gray-200"}`} />}
                 </div>
-                {i < arr.length - 1 && <div className={`h-0.5 w-8 mx-1 transition-all ${step > s.n ? "bg-[#4CAF50]" : "bg-gray-200"}`} />}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
@@ -274,7 +276,7 @@ export default function Donate() {
                     </div>
 
                     {/* Amount tiers */}
-                    <div className="grid grid-cols-4 gap-3 mb-6">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
                       {activeTiers.map((tier) => (
                         <button key={tier.amount} onClick={() => { setSelected(tier.amount); setCustom(""); }} className={`py-3 rounded-xl text-sm font-bold border-2 transition-all flex flex-col items-center gap-0.5 ${selected === tier.amount && !custom ? "bg-[#0B5D3F] border-[#0B5D3F] text-white" : "bg-white border-gray-200 text-gray-700 hover:border-[#4CAF50]"}`}>
                           <span>{activeCurrency.symbol}{tier.amount}</span>

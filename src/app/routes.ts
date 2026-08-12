@@ -21,6 +21,8 @@ import MediaCenter from "./pages/MediaCenter";
 import LegalPage from "./pages/LegalPage";
 import TechPartnerPage from "./pages/TechPartnerPage";
 import ResearchAreaPage from "./pages/ResearchAreaPage";
+import YouthEngagement from "./pages/YouthEngagement";
+import ResearchPolicy from "./pages/ResearchPolicy";
 
 export const router = createBrowserRouter([
   {
@@ -38,6 +40,7 @@ export const router = createBrowserRouter([
       { path: "thematic-areas/:area", Component: ThematicAreaPage },
       // Programs
       { path: "programs", Component: AllPrograms },
+      { path: "programs/youth", Component: YouthEngagement },
       { path: "programs/:program", Component: ProgramPage },
       { path: "insights", Component: ProgramPage },
       { path: "events", Component: ProgramPage },
@@ -57,6 +60,7 @@ export const router = createBrowserRouter([
       // Resources
       { path: "knowledge-hub", Component: KnowledgeHub },
       { path: "media-center", Component: MediaCenter },
+      { path: "research", Component: ResearchPolicy },
       { path: "research/:area", Component: ResearchAreaPage },
       // News articles
       { path: "news/:id", Component: NewsArticle },

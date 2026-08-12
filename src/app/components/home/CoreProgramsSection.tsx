@@ -7,7 +7,9 @@ import { useFirestoreData } from "../../../lib/useFirestore";
 
 export function CoreProgramsSection() {
   const [programsRaw] = useFirestoreData<ProgramData[]>("esn_programs", getInitialPrograms());
-  const programs = programsRaw || [];
+  const programs = (programsRaw || []).filter(p => 
+    ["Climate Adaptation & Resilience", "Environmental Research", "Youth Development"].includes(p.title)
+  );
 
   return (
     <section className="py-16 bg-[#F8FCF9] relative overflow-hidden">
@@ -20,9 +22,7 @@ export function CoreProgramsSection() {
           className="text-center mb-20"
         >
           <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="w-6 h-[2px] bg-[#0A3D2A]/40" />
             <span className="text-[#0A3D2A] text-xs font-bold uppercase tracking-[0.2em]">Core Programs</span>
-            <div className="w-6 h-[2px] bg-[#0A3D2A]/40" />
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-[#0A3D2A] mb-6 leading-[1.15]">
             Pillars of Global Environmental Action

@@ -35,8 +35,27 @@ type NavItem = {
 const navItems: NavItem[] = [
   { label: "Home", href: "/", mega: false },
   { label: "About", href: "/about", mega: false },
-  { label: "Core Programs", href: "/programs", mega: false },
-  { label: "Projects", href: "/projects", mega: false },
+  { 
+    label: "Program", 
+    href: "/programs", 
+    mega: true,
+    items: [
+      { label: "All Programs", href: "/programs", icon: Mountain, desc: "Explore all our programs" },
+      { label: "Events & Calendar", href: "/events", icon: Calendar, desc: "Upcoming events and calendar" },
+      { label: "Research & Policy", href: "/research", icon: BookOpen, desc: "Our research and policy work" }
+    ]
+  },
+  {
+    label: "Engagement",
+    href: "/volunteer",
+    mega: true,
+    items: [
+      { label: "Volunteer", href: "/volunteer", icon: Users, desc: "Join us as a volunteer" },
+      { label: "Campus Chapters", href: "/campus-chapters", icon: BookOpen, desc: "Join or start a campus chapter" },
+      { label: "Partner With Us", href: "/partner", icon: HeartHandshake, desc: "Become a partner" }
+    ]
+  },
+  { label: "Youth", href: "/programs/youth", mega: false },
   { label: "Impact", href: "/impact", mega: false },
   { label: "Contact", href: "/contact", mega: false },
 ];

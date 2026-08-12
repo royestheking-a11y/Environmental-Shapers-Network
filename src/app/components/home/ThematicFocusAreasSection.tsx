@@ -13,9 +13,7 @@ export function ThematicFocusAreasSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-3 mb-6">
-            <div className="w-12 h-[2px] bg-[#0A3D2A]/30" />
             <span className="text-[#0A3D2A] text-sm font-bold uppercase tracking-[0.2em]">Our Impact</span>
-            <div className="w-12 h-[2px] bg-[#0A3D2A]/30" />
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-[#0A3D2A] mb-6">
             Themes Driving Systemic Change

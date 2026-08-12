@@ -1,5 +1,5 @@
-import { useRef } from "react";
-import { motion, useInView } from "motion/react";
+import { useRef, useState } from "react";
+import { motion, useInView, AnimatePresence } from "motion/react";
 import { Link } from "react-router";
 import {
   Leaf, Target, Globe2, Users, Award, Calendar, ChevronRight,
@@ -37,6 +37,45 @@ const milestones = [
     year: "2026", title: "The Global Platform", icon: BookOpen, color: "#D6A95A",
     desc: "Launched this integrated digital platform connecting 12,000+ communities across 80+ countries. Now the largest open-source environmental data network in Asia and Africa, powering science-based action.",
   },
+];
+
+
+const advisorTeam = [
+  {
+    name: "Dr. Saleemul Huq (Late)",
+    role: "Chief Scientific Advisor",
+    country: "Bangladesh",
+    bio: "Pioneering climate scientist and leading authority on climate change adaptation in developing countries.",
+    img: "",
+    tags: ["Climate Science", "Adaptation"],
+  },
+  {
+    name: "Prof. Johan Rockström",
+    role: "Global Strategy Advisor",
+    country: "Sweden",
+    bio: "Internationally recognized scientist on global sustainability issues, known for the Planetary Boundaries framework.",
+    img: "",
+    tags: ["Sustainability", "Earth Systems"],
+  }
+];
+
+const bdTeam = [
+  {
+    name: "Rahim Uddin",
+    role: "Country Director, BD",
+    country: "Dhaka, Bangladesh",
+    bio: "Oversees all operational initiatives and local community engagement across Bangladesh.",
+    img: "",
+    tags: ["Operations", "Local Outreach"],
+  },
+  {
+    name: "Sumaiya Binte",
+    role: "Head of Campaigns, BD",
+    country: "Chittagong, Bangladesh",
+    bio: "Leads national campaigns focusing on youth involvement and coastal resilience.",
+    img: "",
+    tags: ["Campaigns", "Youth"],
+  }
 ];
 
 const teamMembers = [
@@ -137,14 +176,98 @@ const recognitions = [
   { title: "Fast Company World Changing Ideas", year: "2024", desc: "Recognized for our open-source environmental monitoring platform." },
 ];
 
+function FallingLeaf({ delay, x }: { delay: number; x: number }) {
+  return (
+    <motion.div
+      className="absolute pointer-events-none z-10"
+      style={{ left: `${x}%`, top: "-5%" }}
+      animate={{ y: ["0vh", "105vh"], x: [0, 40, -20, 30], rotate: [0, 180, 360] }}
+      transition={{ duration: 12 + delay, delay, repeat: Infinity, ease: "linear" }}
+    >
+      <svg width="18" height="18" viewBox="0 0 24 24">
+        <path d="M12 2C6 2 2 8 2 14s4 8 10 8 10-6 10-8S18 2 12 2z" fill="#4CAF50" opacity="0.55" />
+      </svg>
+    </motion.div>
+  );
+}
+
 export default function About() {
   const heroRef = useRef(null);
+  
+  // Interactive click-to-grow plants state
+  const [plants, setPlants] = useState<{ id: number; x: number; y: number }[]>([]);
+
+  const handleHeroClick = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('button, a')) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const newPlant = { id: Date.now(), x, y };
+    setPlants(prev => [...prev, newPlant]);
+    setTimeout(() => {
+      setPlants(prev => prev.filter(p => p.id !== newPlant.id));
+    }, 4000);
+  };
 
   return (
     <div className="pt-20 overflow-x-hidden">
 
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
-      <section className="relative min-h-[90vh] flex items-center bg-gradient-to-br from-[#071a0f] via-[#0B5D3F] to-[#173B63] overflow-hidden">
+      <section 
+        onClick={handleHeroClick}
+        className="relative min-h-[90vh] flex items-center bg-gradient-to-br from-[#071a0f] via-[#0B5D3F] to-[#173B63] overflow-hidden cursor-crosshair"
+      >
+        {/* Click-spawned interactive plants */}
+        <AnimatePresence>
+          {plants.map(plant => (
+            <motion.div
+              key={plant.id}
+              initial={{ opacity: 1 }}
+              exit={{ opacity: 0, transition: { duration: 0.5 } }}
+              className="absolute z-[100] pointer-events-none"
+              style={{ left: plant.x, top: plant.y, x: "-50%", y: "-100%" }}
+            >
+              <svg width="110" height="150" viewBox="0 0 80 100" fill="none" className="drop-shadow-[0_0_30px_rgba(76,175,80,0.6)]">
+                <defs>
+                  <linearGradient id="stemGradAbout" x1="0%" y1="100%" x2="0%" y2="0%">
+                    <stop offset="0%" stopColor="#2E7D32" />
+                    <stop offset="100%" stopColor="#81C784" />
+                  </linearGradient>
+                  <linearGradient id="leafGradLeftAbout" x1="100%" y1="100%" x2="0%" y2="0%">
+                    <stop offset="0%" stopColor="#4CAF50" />
+                    <stop offset="100%" stopColor="#C8E6C9" />
+                  </linearGradient>
+                  <linearGradient id="leafGradRightAbout" x1="0%" y1="100%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#388E3C" />
+                    <stop offset="100%" stopColor="#A5D6A7" />
+                  </linearGradient>
+                </defs>
+                <motion.path d="M40 100 Q35 55 40 10" stroke="url(#stemGradAbout)" strokeWidth="5" strokeLinecap="round" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.7, ease: "easeOut" }} />
+                <motion.g style={{ transformOrigin: "38px 80px" }} initial={{ scale: 0, opacity: 0 }} animate={{ scale: 0.75, opacity: 1 }} transition={{ delay: 0.2, type: "spring", stiffness: 350, damping: 15 }}>
+                  <path d="M38 80 C55 80, 60 65, 55 55 C45 60, 38 70, 38 80 Z" fill="url(#leafGradRightAbout)"/>
+                  <path d="M38 80 Q45 70 52 58" stroke="#1B5E20" strokeWidth="2" strokeLinecap="round" opacity="0.4" />
+                </motion.g>
+                <motion.g style={{ transformOrigin: "37px 60px" }} initial={{ scale: 0, opacity: 0 }} animate={{ scale: 0.7, opacity: 1 }} transition={{ delay: 0.35, type: "spring", stiffness: 350, damping: 15 }}>
+                  <path d="M37 60 C20 60, 15 45, 20 35 C30 40, 37 50, 37 60 Z" fill="url(#leafGradLeftAbout)"/>
+                  <path d="M37 60 Q27 50 23 39" stroke="#1B5E20" strokeWidth="2" strokeLinecap="round" opacity="0.4" />
+                </motion.g>
+                <motion.g style={{ transformOrigin: "40px 40px" }} initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.5, type: "spring", stiffness: 350, damping: 15 }}>
+                  <path d="M40 40 C60 40, 70 20, 65 10 C50 15, 40 25, 40 40 Z" fill="url(#leafGradRightAbout)" />
+                  <path d="M40 40 Q55 25 62 14" stroke="#1B5E20" strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
+                </motion.g>
+                <motion.g style={{ transformOrigin: "40px 20px" }} initial={{ scale: 0, opacity: 0 }} animate={{ scale: 0.9, opacity: 1 }} transition={{ delay: 0.65, type: "spring", stiffness: 350, damping: 15 }}>
+                  <path d="M40 20 C20 20, 10 10, 15 0 C25 5, 40 10, 40 20 Z" fill="url(#leafGradLeftAbout)" />
+                  <path d="M40 20 Q25 10 17 3" stroke="#1B5E20" strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
+                </motion.g>
+                <motion.circle cx="60" cy="15" r="2.5" fill="#A5D6A7" initial={{ scale: 0, opacity: 0, y: 10 }} animate={{ scale: [0, 1, 0], opacity: [0, 1, 0], y: -8 }} transition={{ delay: 0.5, duration: 1.5, ease: "easeInOut" }} />
+                <motion.circle cx="15" cy="30" r="2" fill="#C8E6C9" initial={{ scale: 0, opacity: 0, y: 8 }} animate={{ scale: [0, 1, 0], opacity: [0, 1, 0], y: -12 }} transition={{ delay: 0.7, duration: 1.2, ease: "easeInOut" }} />
+                <motion.circle cx="35" cy="5" r="2.5" fill="#E8F5E9" initial={{ scale: 0, opacity: 0, y: 15 }} animate={{ scale: [0, 1, 0], opacity: [0, 1, 0], y: -15 }} transition={{ delay: 0.85, duration: 1.4, ease: "easeInOut" }} />
+                <motion.circle cx="65" cy="55" r="1.5" fill="#81C784" initial={{ scale: 0, opacity: 0, y: 10 }} animate={{ scale: [0, 1, 0], opacity: [0, 1, 0], y: -10 }} transition={{ delay: 0.4, duration: 1.2, ease: "easeInOut" }} />
+              </svg>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+
         {/* Background image */}
         <div className="absolute inset-0">
           <img
@@ -154,6 +277,27 @@ export default function About() {
           />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0B5D3F]/40 to-[#071a0f]/80" />
         </div>
+
+        {/* Falling Leaves */}
+        {[1.5, 3, 0, 4.5, 2, 6].map((delay, i) => (
+          <FallingLeaf key={i} delay={delay} x={10 + i * 15} />
+        ))}
+
+        {/* Floating particles */}
+        {Array.from({ length: 16 }, (_, i) => (
+          <motion.div
+            key={i}
+            className="absolute rounded-full bg-[#4CAF50]/40 z-10"
+            style={{
+              width: 3 + (i % 4),
+              height: 3 + (i % 4),
+              left: `${(i * 6.5) % 100}%`,
+              top: `${(i * 7.3) % 100}%`,
+            }}
+            animate={{ y: [0, -30, 0], opacity: [0.3, 0.8, 0.3] }}
+            transition={{ duration: 4 + i * 0.4, delay: i * 0.3, repeat: Infinity, ease: "easeInOut" }}
+          />
+        ))}
 
         {/* Decorative orbs */}
         <div className="absolute top-20 left-10 w-72 h-72 bg-[#4CAF50]/15 rounded-full blur-3xl" />
@@ -219,124 +363,332 @@ export default function About() {
         </div>
       </section>
 
-      {/* ── Origin Story ──────────────────────────────────────────────────────── */}
-      <section className="py-28 bg-white">
+      {/* ── Who We Are ─────────────────────────────────────────────────────── */}
+      <section className="py-0 bg-white overflow-hidden">
+        {/* Top editorial strip */}
+        <div className="bg-[#F6FBF8] border-b border-[#4CAF50]/15 py-4 px-6">
+          <div className="max-w-7xl mx-auto flex items-center gap-3">
+            <span className="text-[#4CAF50] text-xs font-black uppercase tracking-[0.3em]">Who We Are</span>
+            <div className="flex-1 h-px bg-[#4CAF50]/20" />
+            <span className="text-gray-400 text-xs font-medium">Est. 2019 · Dhaka, Bangladesh</span>
+          </div>
+        </div>
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid lg:grid-cols-2 gap-20 items-center">
-            <motion.div initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}>
-              <div className="inline-flex items-center gap-2 bg-[#0B5D3F]/10 text-[#0B5D3F] text-xs font-bold px-4 py-2 rounded-full mb-8 uppercase tracking-widest">
-                <Heart size={12} fill="currentColor" /> Our Origin Story
-              </div>
-              <h2 className="text-[#0B5D3F] mb-4 leading-tight">Born from Urgency,<br />Sustained by Purpose</h2>
+          {/* === MAIN SPLIT LAYOUT === */}
+          <div className="grid lg:grid-cols-[1fr_480px] gap-0 lg:gap-16 py-16 lg:py-24 items-start">
 
-              {/* Pull quote */}
-              <div className="relative bg-[#F6FBF8] border-l-4 border-[#4CAF50] rounded-r-2xl p-6 mb-8">
-                <Quote size={24} className="text-[#4CAF50]/40 mb-2" />
-                <p className="text-[#0B5D3F] italic leading-relaxed font-medium">
-                  "When the floods came and scientists confirmed climate change as the cause, we realized that hope without action was just a comfortable lie. We had to build something real."
-                </p>
-                <div className="mt-3 text-sm font-bold text-gray-600">— Imran Hossain & Abu Hanif, Co-Founders</div>
+            {/* LEFT — Story + Quote */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7 }}
+              className="order-2 lg:order-1"
+            >
+              {/* Large editorial headline */}
+              <h2 className="text-[#0B5D3F] leading-[1.1] mb-8 tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(2.2rem, 4vw, 3.5rem)", fontWeight: 900 }}>
+                Born from Urgency,<br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#4CAF50] to-[#0B5D3F]">Sustained by Purpose</span>
+              </h2>
+
+              {/* Founding Quote Card — glassmorphic */}
+              <div className="relative bg-gradient-to-br from-[#0B5D3F] to-[#0a4d33] rounded-2xl p-7 mb-8 overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#4CAF50]/20 rounded-full blur-2xl" />
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#D6A95A]/10 rounded-full blur-2xl" />
+                <div className="relative">
+                  <svg width="32" height="24" viewBox="0 0 32 24" fill="none" className="mb-4 opacity-60">
+                    <path d="M0 24V14.4C0 6.4 4.8 1.6 14.4 0l1.6 2.4C10.4 3.6 7.2 6.4 6.4 10.4H12V24H0zm20 0V14.4C20 6.4 24.8 1.6 34.4 0l1.6 2.4C30.4 3.6 27.2 6.4 26.4 10.4H32V24H20z" fill="#4CAF50"/>
+                  </svg>
+                  <p className="text-white/90 text-lg leading-relaxed font-medium italic mb-4">
+                    "When the floods came and scientists confirmed climate change as the cause, we realized that hope without action was just a comfortable lie. We had to build something real."
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-px bg-[#4CAF50]" />
+                    <span className="text-[#A5D6A7] text-sm font-bold">Imran Hossain & Abu Hanif · Co-Founders</span>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex flex-col gap-5 text-gray-600 leading-relaxed">
+              {/* Story paragraphs */}
+              <div className="space-y-5 text-gray-600 leading-relaxed">
                 <p>
                   ESN was born in the summer of 2019, weeks after Bangladesh recorded its worst monsoon flooding in a generation. Scientists from MIT and IPCC confirmed what local communities already feared — climate change was amplifying these disasters. A group of young people, led by Imran Hossain and Abu Hanif, responded not with despair but with a plan.
                 </p>
                 <p>
-                  They planted 1,000 mangrove seedlings in the Sundarbans that first weekend. Within six months, they had 400 volunteers. Within a year, they had their first international chapter in Kolkata. What followed was not a slow institutional climb but an organic explosion of communities joining a movement they felt was genuinely theirs.
+                  They planted 1,000 mangrove seedlings in the Sundarbans that first weekend. Within six months, 400 volunteers had joined. Within a year, they had their first international chapter in Kolkata. What followed was not a slow institutional climb but an organic explosion of communities joining a movement they felt was genuinely theirs.
                 </p>
                 <p>
-                  Today ESN operates in 80+ countries — but the ethos remains unchanged: local ownership, global solidarity, science-driven humility, and an absolute refusal to accept that the world's poorest communities should bear the heaviest burden of a crisis they did least to create.
+                  Today ESN operates in <strong className="text-[#0B5D3F]">80+ countries</strong> — but the ethos remains unchanged: local ownership, global solidarity, science-driven humility, and a refusal to accept that the world's poorest communities should bear the heaviest burden of a crisis they did least to create.
                 </p>
               </div>
 
-              <div className="mt-8 flex flex-col gap-3">
-                {["Science-informed, community-owned model", "70%+ of leadership from Global South", "Open-source data, fully transparent finances"].map((t) => (
-                  <div key={t} className="flex items-center gap-3 text-sm text-gray-700">
-                    <div className="w-5 h-5 bg-[#4CAF50] rounded-full flex items-center justify-center shrink-0">
-                      <Check size={12} className="text-white" />
+              {/* Proof points */}
+              <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {[
+                  { label: "Science-informed, community-owned model" },
+                  { label: "70%+ of leadership from Global South" },
+                  { label: "Open-source data & transparent finances" },
+                ].map((t, i) => (
+                  <motion.div
+                    key={t.label}
+                    initial={{ opacity: 0, y: 12 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.4 + i * 0.1 }}
+                    className="flex items-start gap-2.5 bg-[#F6FBF8] rounded-xl p-4 border border-[#4CAF50]/15"
+                  >
+                    <div className="w-5 h-5 bg-[#4CAF50] rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                      <Check size={11} className="text-white" />
                     </div>
-                    {t}
-                  </div>
+                    <span className="text-xs font-semibold text-gray-700 leading-snug">{t.label}</span>
+                  </motion.div>
                 ))}
               </div>
             </motion.div>
 
-            <motion.div initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.15 }} className="relative">
+            {/* RIGHT — Image Stack */}
+            <motion.div
+              initial={{ opacity: 0, x: 40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.15 }}
+              className="order-1 lg:order-2 relative"
+            >
               {/* Main image */}
-              <div className="rounded-3xl overflow-hidden shadow-2xl h-[480px]">
+              <div className="rounded-3xl overflow-hidden shadow-2xl shadow-[#0B5D3F]/15 h-[320px] sm:h-[400px] lg:h-[520px] relative">
                 <ImageWithFallback
                   src="/canada conference.jpeg"
-                  alt="ESN planting session"
+                  alt="ESN conference"
                   className="w-full h-full object-cover"
                 />
+                {/* Gradient overlay with stat */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#071a0f]/80 via-transparent to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <div className="flex gap-3 flex-wrap">
+                    {[
+                      { v: "80+", l: "Countries" },
+                      { v: "1.2M+", l: "Trees Planted" },
+                      { v: "7 Yrs", l: "Of Impact" },
+                    ].map((s) => (
+                      <div key={s.l} className="bg-white/15 backdrop-blur-md border border-white/20 rounded-xl px-4 py-2.5 text-center">
+                        <div className="text-white font-black text-lg leading-none" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{s.v}</div>
+                        <div className="text-white/70 text-[10px] font-semibold mt-0.5 uppercase tracking-wider">{s.l}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-              {/* Overlay small image */}
-              <div className="absolute -bottom-8 -left-8 w-44 h-44 rounded-2xl overflow-hidden border-4 border-white shadow-xl">
+
+              {/* Floating secondary image */}
+              <div className="absolute -bottom-6 -right-3 lg:-right-8 w-36 h-36 sm:w-44 sm:h-44 rounded-2xl overflow-hidden border-4 border-white shadow-2xl z-10">
                 <ImageWithFallback
                   src="/represent bangladesh.jpeg"
-                  alt="Volunteers"
+                  alt="ESN Bangladesh team"
                   className="w-full h-full object-cover"
                 />
               </div>
-              {/* Award badge */}
+
+              {/* Floating award badge */}
               <motion.div
-                animate={{ y: [0, -10, 0] }}
+                animate={{ y: [0, -8, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -top-6 -right-6 bg-white rounded-2xl p-4 shadow-xl border border-[#D6A95A]/20"
+                className="absolute -top-5 -left-3 lg:-left-6 bg-white rounded-2xl p-4 shadow-2xl border border-[#D6A95A]/20 z-10"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-[#D6A95A]/15 rounded-xl flex items-center justify-center">
-                    <Award size={22} className="text-[#D6A95A]" />
+                  <div className="w-11 h-11 bg-gradient-to-br from-[#D6A95A]/20 to-[#D6A95A]/5 rounded-xl flex items-center justify-center shrink-0">
+                    <Award size={20} className="text-[#D6A95A]" />
                   </div>
                   <div>
-                    <div className="font-bold text-gray-900 text-sm">UN Recognized</div>
-                    <div className="text-xs text-gray-500">ECOSOC Special Status</div>
+                    <div className="font-bold text-gray-900 text-sm whitespace-nowrap">UN Recognized</div>
+                    <div className="text-[11px] text-gray-500 whitespace-nowrap">ECOSOC Special Status</div>
                   </div>
                 </div>
               </motion.div>
+
+              {/* Margin bottom on mobile for floating elements */}
+              <div className="h-8 lg:h-0" />
             </motion.div>
           </div>
         </div>
-      </section>
 
-      {/* ── Co-Founder's Message ───────────────────────────────────────────── */}
-      <section className="py-24 bg-white border-t border-gray-100">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-[#D6A95A]/15 text-[#9E6B3C] text-xs font-bold px-4 py-2 rounded-full mb-5 uppercase tracking-widest">
-              <Quote size={12} fill="currentColor" /> Co-Founder's Message
-            </div>
-            <h2 className="text-[#0B5D3F] mb-4">A Message from Imran Hossain</h2>
-          </div>
-          
-          <div className="bg-[#F6FBF8] rounded-3xl p-8 sm:p-12 border border-[#4CAF50]/20 shadow-xl shadow-[#0B5D3F]/5 relative">
-            <Quote size={40} className="text-[#4CAF50]/20 absolute top-8 left-8" />
-            <div className="relative z-10 flex flex-col gap-6 text-gray-700 leading-relaxed text-lg sm:text-xl font-medium">
-              <p>
-                I am a climate leader, sustainability advocate, and entrepreneur committed to advancing climate resilience through innovation, policy engagement, and community action. As the Co-Founder of the Environmental Shapers Network (ESN), I lead initiatives focused on climate adaptation, the circular economy, plastic pollution reduction, environmental education, and youth empowerment. My mission is to transform environmental challenges into scalable, nature-positive solutions that create lasting social, environmental, and economic impact.
-              </p>
-              <p>
-                I have had the privilege of representing Bangladesh at global platforms, including the United Nations Climate Change Conferences (COP27 and COP28) and the United Nations General Assembly, where I have engaged with policymakers, scientists, and youth leaders to promote climate justice, sustainable development, and locally led adaptation.
-              </p>
-              <p>
-                My work combines climate innovation, environmental sustainability, Geographic Information Systems (GIS), and entrepreneurship to develop practical solutions for vulnerable communities. I aspire to build resilient, low-carbon societies while empowering young people to become the next generation of climate leaders and changemakers.
-              </p>
-            </div>
-            <div className="mt-8 pt-8 border-t border-gray-200 flex items-center justify-between">
-              <div>
-                <div className="font-black text-gray-900 text-lg" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Imran Hossain</div>
-                <div className="text-[#0B5D3F] font-bold text-sm">Co-Founder, ESN</div>
-              </div>
-              <div className="w-12 h-12 bg-[#0B5D3F] rounded-full flex items-center justify-center">
-                <Leaf className="text-white" size={20} />
-              </div>
+        {/* Bottom accent bar — Key pillars */}
+        <div className="border-t border-gray-100 bg-[#F6FBF8]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {[
+                { icon: Target, label: "Science-Led", desc: "Every action grounded in peer-reviewed research" },
+                { icon: HandHeart, label: "Community First", desc: "Local ownership in every project we run" },
+                { icon: Shield, label: "Radical Transparency", desc: "Full financial & impact data, always open" },
+                { icon: Globe2, label: "Global South Led", desc: "70%+ leadership from most-affected nations" },
+              ].map((p, i) => (
+                <motion.div
+                  key={p.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  className="flex gap-4 items-start group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-[#0B5D3F]/10 flex items-center justify-center shrink-0 group-hover:bg-[#0B5D3F] transition-colors">
+                    <p.icon size={18} className="text-[#0B5D3F] group-hover:text-white transition-colors" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-gray-900 text-sm mb-0.5">{p.label}</div>
+                    <div className="text-gray-500 text-xs leading-relaxed">{p.desc}</div>
+                  </div>
+                </motion.div>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── Impact Statistics ─────────────────────────────────────────────────── */}
+
+
+      {/* ── Premium Vision & Mission ──────────────────────────────────────────────────────── */}
+      <section className="relative py-32 bg-[#071a0f] overflow-hidden">
+        {/* Decorative Background Elements */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#4CAF50]/10 blur-[120px] rounded-full mix-blend-screen" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#D6A95A]/10 blur-[120px] rounded-full mix-blend-screen" />
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik02MCAwaC0xdjYwaDFWMHoiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wMykiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPgo8cGF0aCBkPSJNNjAgNTl2MWgtNjB2LTFoNjB6IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDMpIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiLz4KPC9zdmc+')] opacity-20" />
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-24">
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+              <div className="inline-flex items-center gap-2 bg-[#4CAF50]/20 text-[#4CAF50] border border-[#4CAF50]/30 text-xs font-bold px-5 py-2 rounded-full mb-6 uppercase tracking-widest shadow-[0_0_15px_rgba(76,175,80,0.2)]">
+                <Target size={14} /> Our Core Purpose
+              </div>
+              <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                From Action <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#4CAF50] to-[#D6A95A]">to Impact</span>
+              </h2>
+            </motion.div>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 relative">
+            {/* Center Divider Line for Desktop */}
+            <div className="hidden lg:block absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-px bg-gradient-to-b from-[#4CAF50]/50 via-white/20 to-[#D6A95A]/50" />
+
+            {/* LEFT: MISSION (The Work Today) */}
+            <div className="relative z-10">
+              <motion.div initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+                <div className="flex items-center gap-5 mb-12">
+                  <div className="w-16 h-16 bg-gradient-to-br from-[#4CAF50] to-[#2E7D32] rounded-2xl flex items-center justify-center shadow-lg shadow-[#4CAF50]/30">
+                    <Target size={30} className="text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-3xl font-black text-white" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Our Mission</h3>
+                    <p className="text-[#4CAF50] font-semibold tracking-widest uppercase text-xs mt-1.5">The Work Today</p>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  {/* Mission Step 1 */}
+                  <div className="bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:border-[#4CAF50]/40 transition-all duration-300 group">
+                    <div className="flex gap-5">
+                      <div className="w-12 h-12 rounded-full bg-[#4CAF50]/20 flex items-center justify-center shrink-0 border border-[#4CAF50]/30 group-hover:scale-110 transition-transform">
+                        <span className="text-[#4CAF50] font-black text-lg">01</span>
+                      </div>
+                      <div>
+                        <h4 className="text-xl font-bold text-white mb-2">Science-Backed Action</h4>
+                        <p className="text-white/60 leading-relaxed text-sm">Equipping communities with localized climate data to implement effective, long-term environmental conservation.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Mission Step 2 */}
+                  <div className="bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:border-[#4CAF50]/40 transition-all duration-300 group">
+                    <div className="flex gap-5">
+                      <div className="w-12 h-12 rounded-full bg-[#4CAF50]/20 flex items-center justify-center shrink-0 border border-[#4CAF50]/30 group-hover:scale-110 transition-transform">
+                        <span className="text-[#4CAF50] font-black text-lg">02</span>
+                      </div>
+                      <div>
+                        <h4 className="text-xl font-bold text-white mb-2">Youth Leadership</h4>
+                        <p className="text-white/60 leading-relaxed text-sm">Training the next generation of climate advocates to take policy-level action and grassroots leadership in vulnerable areas.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Mission Step 3 */}
+                  <div className="bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:border-[#4CAF50]/40 transition-all duration-300 group">
+                    <div className="flex gap-5">
+                      <div className="w-12 h-12 rounded-full bg-[#4CAF50]/20 flex items-center justify-center shrink-0 border border-[#4CAF50]/30 group-hover:scale-110 transition-transform">
+                        <span className="text-[#4CAF50] font-black text-lg">03</span>
+                      </div>
+                      <div>
+                        <h4 className="text-xl font-bold text-white mb-2">Policy Advocacy</h4>
+                        <p className="text-white/60 leading-relaxed text-sm">Working hand-in-hand with governments to ensure marginalized voices directly shape national environmental policies.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* RIGHT: VISION (The 2030 Goal) */}
+            <div className="relative z-10 lg:pt-32">
+              <motion.div initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2 }}>
+                <div className="flex items-center gap-5 mb-12">
+                  <div className="w-16 h-16 bg-gradient-to-br from-[#D6A95A] to-[#9E6B3C] rounded-2xl flex items-center justify-center shadow-lg shadow-[#D6A95A]/30">
+                    <Globe2 size={30} className="text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-3xl font-black text-white" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Vision 2030</h3>
+                    <p className="text-[#D6A95A] font-semibold tracking-widest uppercase text-xs mt-1.5">The Future We're Building</p>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  {/* Vision Point 1 */}
+                  <div className="bg-[#D6A95A]/10 backdrop-blur-md rounded-2xl p-6 border border-[#D6A95A]/20 hover:border-[#D6A95A]/50 transition-all duration-300 group">
+                    <div className="flex gap-5">
+                      <div className="mt-1 w-8 h-8 rounded-full bg-[#D6A95A]/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                        <Check size={14} className="text-[#D6A95A]" />
+                      </div>
+                      <div>
+                        <h4 className="text-xl font-bold text-white mb-2">Net-Zero Communities</h4>
+                        <p className="text-white/70 leading-relaxed text-sm">By 2030, we envision 5,000+ localized chapters successfully transitioning their economies to sustainable, zero-waste models.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Vision Point 2 */}
+                  <div className="bg-[#D6A95A]/10 backdrop-blur-md rounded-2xl p-6 border border-[#D6A95A]/20 hover:border-[#D6A95A]/50 transition-all duration-300 group">
+                    <div className="flex gap-5">
+                      <div className="mt-1 w-8 h-8 rounded-full bg-[#D6A95A]/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                        <Check size={14} className="text-[#D6A95A]" />
+                      </div>
+                      <div>
+                        <h4 className="text-xl font-bold text-white mb-2">Climate Justice Achieved</h4>
+                        <p className="text-white/70 leading-relaxed text-sm">A world where the most vulnerable populations are fully protected and independently equipped to adapt to extreme weather.</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Mega Vision Card */}
+                  <div className="bg-gradient-to-br from-[#D6A95A] to-[#9E6B3C] rounded-2xl p-8 shadow-2xl shadow-[#D6A95A]/20 relative overflow-hidden group mt-8">
+                    <Globe2 className="absolute -right-6 -bottom-6 text-white/20 w-40 h-40 group-hover:scale-110 transition-transform duration-700" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-60" />
+                    <div className="relative z-10">
+                      <h4 className="text-2xl font-black text-white mb-3 tracking-tight">A Restored Planet</h4>
+                      <p className="text-white/90 leading-relaxed text-sm font-medium">
+                        Our ultimate metric for success: thriving, interconnected ecosystems where humanity operates entirely within the Earth's natural boundaries.
+                      </p>
+                      <Link to="/projects" className="mt-6 inline-flex items-center gap-2 text-[#9E6B3C] font-bold text-sm bg-white px-5 py-2.5 rounded-full hover:bg-gray-100 transition-all shadow-lg">
+                        See 2030 Roadmap <ArrowRight size={16} />
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+{/* ── Impact Statistics ─────────────────────────────────────────────────── */}
       <section className="py-24 bg-gradient-to-br from-[#0B5D3F] to-[#173B63] relative overflow-hidden">
         <div className="absolute inset-0 opacity-5">
           <img src="https://images.unsplash.com/photo-1683221704109-acdeb0883037?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1920" alt="" className="w-full h-full object-cover" />
@@ -374,38 +726,124 @@ export default function About() {
         </div>
       </section>
 
-      {/* ── Core Values ───────────────────────────────────────────────────────── */}
-      <section className="py-28 bg-[#F6FBF8]">
+      
+
+      {/* ── Advisors ─────────────────────────────────────────────────── */}
+      <section className="py-28 bg-white border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-[#0B5D3F]/10 text-[#0B5D3F] text-xs font-bold px-4 py-2 rounded-full mb-5 uppercase tracking-widest">
-              <Shield size={12} /> Our Principles
+            <div className="inline-flex items-center gap-2 bg-[#D6A95A]/10 text-[#9E6B3C] text-xs font-bold px-4 py-2 rounded-full mb-5 uppercase tracking-widest">
+              <Star size={12} fill="currentColor" /> Advisors
             </div>
-            <h2 className="text-[#0B5D3F] mb-4">What We Stand For</h2>
-            <p className="text-gray-500 text-lg max-w-xl mx-auto">Six principles that shape every decision we make, every project we fund, and every partnership we form.</p>
+            <h2 className="text-[#0B5D3F] mb-4">Our Advisory Board</h2>
+            <p className="text-gray-500 text-lg max-w-xl mx-auto">Guided by leading experts in climate science, policy, and community organizing.</p>
           </motion.div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {values.map((v, i) => (
+
+          <div className="grid sm:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {advisorTeam.map((member, i) => (
               <motion.div
-                key={v.title}
+                key={member.name}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }}
-                className="bg-white rounded-3xl p-8 border border-gray-100 hover:shadow-xl hover:shadow-gray-100 hover:-translate-y-1 transition-all duration-300 group"
+                transition={{ delay: i * 0.1 }}
+                className="bg-[#F6FBF8] rounded-3xl p-8 border border-[#4CAF50]/10 hover:shadow-xl hover:shadow-[#0B5D3F]/5 transition-all group"
               >
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-all" style={{ backgroundColor: v.color + "15" }}>
-                  <v.icon size={26} style={{ color: v.color }} />
-                </div>
-                <h4 className="font-black text-gray-900 mb-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{v.title}</h4>
-                <p className="text-gray-500 text-sm leading-relaxed">{v.desc}</p>
+                <h4 className="font-black text-gray-900 mb-1 text-xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{member.name}</h4>
+                <p className="text-[#0B5D3F] text-sm font-semibold mb-3">{member.role}</p>
+                <p className="text-gray-500 text-sm leading-relaxed">{member.bio}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Timeline ─────────────────────────────────────────────────────────── */}
+{/* ── Leadership Team ───────────────────────────────────────────────────── */}
+      <section className="py-28 bg-[#F6FBF8]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 bg-[#0B5D3F]/10 text-[#0B5D3F] text-xs font-bold px-4 py-2 rounded-full mb-5 uppercase tracking-widest">
+              <Users size={12} /> Global Team
+            </div>
+            <h2 className="text-[#0B5D3F] mb-4">Global Leadership Team</h2>
+            <p className="text-gray-500 text-lg max-w-xl mx-auto">Scientists, strategists, community organizers, and technologists — united by an unshakeable belief in collective action.</p>
+          </motion.div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {teamMembers.map((member, i) => (
+              <motion.div
+                key={member.name}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="bg-white rounded-3xl overflow-hidden border border-gray-100 hover:shadow-2xl hover:shadow-gray-100 hover:-translate-y-1 transition-all duration-300 group"
+              >
+                {/* Image */}
+                <div className="relative h-56 overflow-hidden">
+                  <ImageWithFallback
+                    src={member.img}
+                    alt={member.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B5D3F]/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  {/* Country badge */}
+                  <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-white/90 backdrop-blur-sm text-[#0B5D3F] text-xs font-bold px-3 py-1.5 rounded-full">
+                    <MapPin size={10} />
+                    {member.country}
+                  </div>
+                </div>
+                {/* Info */}
+                <div className="p-6">
+                  <h4 className="font-black text-gray-900 mb-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{member.name}</h4>
+                  <p className="text-[#0B5D3F] text-sm font-semibold mb-3">{member.role}</p>
+                  <p className="text-gray-500 text-xs leading-relaxed mb-4">{member.bio}</p>
+                  {/* Tags */}
+                  <div className="flex gap-2 flex-wrap">
+                    {member.tags.map((tag) => (
+                      <span key={tag} className="text-xs font-bold bg-[#0B5D3F]/8 text-[#0B5D3F] px-3 py-1 rounded-full border border-[#0B5D3F]/10">{tag}</span>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      
+
+      {/* ── BD Team ─────────────────────────────────────────────────── */}
+      <section className="py-28 bg-white border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 bg-[#4CAF50]/10 text-[#0B5D3F] text-xs font-bold px-4 py-2 rounded-full mb-5 uppercase tracking-widest">
+              <MapPin size={12} /> BD Team
+            </div>
+            <h2 className="text-[#0B5D3F] mb-4">Bangladesh Leadership</h2>
+            <p className="text-gray-500 text-lg max-w-xl mx-auto">The dedicated team leading our grassroots initiatives and national campaigns in Bangladesh.</p>
+          </motion.div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {bdTeam.map((member, i) => (
+              <motion.div
+                key={member.name}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="bg-[#F6FBF8] rounded-3xl p-8 border border-[#4CAF50]/10 hover:shadow-xl hover:shadow-[#0B5D3F]/5 transition-all group"
+              >
+                <h4 className="font-black text-gray-900 mb-1 text-xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{member.name}</h4>
+                <p className="text-[#0B5D3F] text-sm font-semibold mb-3">{member.role}</p>
+                <p className="text-gray-500 text-sm leading-relaxed">{member.bio}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+{/* ── Timeline ─────────────────────────────────────────────────────────── */}
       <section className="py-28 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-20">
@@ -465,105 +903,8 @@ export default function About() {
         </div>
       </section>
 
-      {/* ── Leadership Team ───────────────────────────────────────────────────── */}
-      <section className="py-28 bg-[#F6FBF8]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-[#0B5D3F]/10 text-[#0B5D3F] text-xs font-bold px-4 py-2 rounded-full mb-5 uppercase tracking-widest">
-              <Users size={12} /> The Team
-            </div>
-            <h2 className="text-[#0B5D3F] mb-4">The People Behind the Mission</h2>
-            <p className="text-gray-500 text-lg max-w-xl mx-auto">Scientists, strategists, community organizers, and technologists — united by an unshakeable belief in collective action.</p>
-          </motion.div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {teamMembers.map((member, i) => (
-              <motion.div
-                key={member.name}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="bg-white rounded-3xl overflow-hidden border border-gray-100 hover:shadow-2xl hover:shadow-gray-100 hover:-translate-y-1 transition-all duration-300 group"
-              >
-                {/* Image */}
-                <div className="relative h-56 overflow-hidden">
-                  <ImageWithFallback
-                    src={member.img}
-                    alt={member.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B5D3F]/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  {/* Country badge */}
-                  <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-white/90 backdrop-blur-sm text-[#0B5D3F] text-xs font-bold px-3 py-1.5 rounded-full">
-                    <MapPin size={10} />
-                    {member.country}
-                  </div>
-                </div>
-                {/* Info */}
-                <div className="p-6">
-                  <h4 className="font-black text-gray-900 mb-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{member.name}</h4>
-                  <p className="text-[#0B5D3F] text-sm font-semibold mb-3">{member.role}</p>
-                  <p className="text-gray-500 text-xs leading-relaxed mb-4">{member.bio}</p>
-                  {/* Tags */}
-                  <div className="flex gap-2 flex-wrap">
-                    {member.tags.map((tag) => (
-                      <span key={tag} className="text-xs font-bold bg-[#0B5D3F]/8 text-[#0B5D3F] px-3 py-1 rounded-full border border-[#0B5D3F]/10">{tag}</span>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Recognition & Awards ──────────────────────────────────────────────── */}
-      <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-14">
-            <div className="inline-flex items-center gap-2 bg-[#D6A95A]/15 text-[#9E6B3C] text-xs font-bold px-4 py-2 rounded-full mb-5 uppercase tracking-widest">
-              <Star size={12} fill="currentColor" /> Recognition
-            </div>
-            <h2 className="text-[#0B5D3F] mb-4">Recognized Globally</h2>
-            <p className="text-gray-500 text-lg max-w-xl mx-auto">Validation from the world's most respected institutions — though our true measure remains the ecosystems we've restored.</p>
-          </motion.div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-            {recognitions.map((r, i) => (
-              <motion.div
-                key={r.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="bg-gradient-to-br from-[#F6FBF8] to-white rounded-2xl p-6 border border-[#D6A95A]/20 hover:border-[#D6A95A]/40 hover:shadow-lg hover:shadow-[#D6A95A]/10 transition-all"
-              >
-                <div className="w-12 h-12 bg-[#D6A95A]/15 rounded-xl flex items-center justify-center mb-4">
-                  <Award size={22} className="text-[#D6A95A]" />
-                </div>
-                <div className="text-xs font-black text-[#D6A95A] mb-1">{r.year}</div>
-                <h4 className="font-black text-gray-900 text-sm mb-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{r.title}</h4>
-                <p className="text-gray-500 text-xs leading-relaxed">{r.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Partners row */}
-          <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="border-t border-gray-100 pt-12">
-            <p className="text-center text-xs font-bold text-gray-400 uppercase tracking-widest mb-8">Trusted Partners & Affiliates</p>
-            <div className="flex flex-wrap gap-4 justify-center items-center">
-              {partners.map((p) => (
-                <div key={p} className="px-6 py-3 bg-[#F6FBF8] rounded-xl border border-gray-100 text-sm font-bold text-gray-500 hover:bg-[#0B5D3F]/5 hover:text-[#0B5D3F] hover:border-[#0B5D3F]/20 transition-all cursor-default">
-                  {p}
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── Global Presence ───────────────────────────────────────────────────── */}
+      
+{/* ── Global Presence ───────────────────────────────────────────────────── */}
       <section className="py-24 bg-[#F6FBF8]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid lg:grid-cols-2 gap-16 items-center">

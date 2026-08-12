@@ -45,12 +45,12 @@ const reports = [
 ];
 
 const awards = [
-  { year: "2026", title: "UNEP Champions of the Earth", org: "United Nations Environment Programme", category: "Science & Innovation", img: "https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" },
-  { year: "2025", title: "Global Green Award", org: "International Union for Conservation of Nature", category: "Best NGO", img: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" },
-  { year: "2025", title: "Earth Defenders Prize", org: "Goldman Environmental Prize Foundation", category: "Environmental Defense", img: "https://images.unsplash.com/photo-1552664730-d307ca884978?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" },
-  { year: "2024", title: "Climate Action Leadership Award", org: "World Resources Institute", category: "Leadership", img: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" },
-  { year: "2024", title: "Innovation for the Planet", org: "World Economic Forum", category: "Technology & Innovation", img: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" },
-  { year: "2023", title: "Ocean Guardian Award", org: "Ocean Conservancy", category: "Marine Conservation", img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" },
+  { year: "2026", title: "UNEP Champions of the Earth", org: "United Nations Environment Programme", category: "Science & Innovation", img: "https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?auto=format&fit=crop&q=80&w=600" },
+  { year: "2025", title: "Global Green Award", org: "International Union for Conservation of Nature", category: "Best Environmental NGO", img: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&q=80&w=600" },
+  { year: "2025", title: "Earth Defenders Prize", org: "Goldman Environmental Prize", category: "Environmental Defense", img: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=600" },
+  { year: "2024", title: "Climate Action Leadership Award", org: "World Resources Institute", category: "Policy & Leadership", img: "https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?auto=format&fit=crop&q=80&w=600" },
+  { year: "2024", title: "Innovation for the Planet", org: "World Economic Forum", category: "Technology & Innovation", img: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=600" },
+  { year: "2023", title: "Ocean Guardian Award", org: "Ocean Conservancy", category: "Marine Conservation", img: "https://images.unsplash.com/photo-1582967788606-a171c1080cb0?auto=format&fit=crop&q=80&w=600" },
 ];
 
 function Breadcrumb({ current }: { current: string }) {

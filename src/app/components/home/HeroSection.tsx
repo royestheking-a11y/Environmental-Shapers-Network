@@ -96,6 +96,26 @@ export function HeroSection() {
   const [slides, setSlides, loading] = useFirestoreData<any[]>("esn_hero", getInitialHeroSlides());
   const [slide, setSlide] = useState(0);
 
+  // Interactive click-to-grow plants state
+  const [plants, setPlants] = useState<{ id: number; x: number; y: number }[]>([]);
+
+  const handleHeroClick = (e: React.MouseEvent) => {
+    // Only capture if they didn't click on a button/link
+    if ((e.target as HTMLElement).closest('button, a')) return;
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const newPlant = { id: Date.now(), x, y };
+    setPlants(prev => [...prev, newPlant]);
+    
+    // Automatically remove the plant after 4 seconds to avoid DOM bloat
+    setTimeout(() => {
+      setPlants(prev => prev.filter(p => p.id !== newPlant.id));
+    }, 4000);
+  };
+
   useEffect(() => {
     if (slides.length === 0) return;
     const t = setInterval(() => {
@@ -107,7 +127,97 @@ export function HeroSection() {
   const currentSlide = slides[slide];
 
   return (
-    <section className="relative min-h-screen overflow-hidden flex items-center bg-[#0a1a0e]">
+    <section 
+      onClick={handleHeroClick}
+      className="relative min-h-screen overflow-hidden flex items-center bg-[#0a1a0e] cursor-crosshair"
+    >
+      {/* Click-spawned interactive plants */}
+      <AnimatePresence>
+        {plants.map(plant => (
+          <motion.div
+            key={plant.id}
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0, transition: { duration: 0.5 } }}
+            className="absolute z-[100] pointer-events-none"
+            style={{ left: plant.x, top: plant.y, x: "-50%", y: "-100%" }}
+          >
+            <svg width="110" height="150" viewBox="0 0 80 100" fill="none" className="drop-shadow-[0_0_30px_rgba(76,175,80,0.6)]">
+              <defs>
+                <linearGradient id="stemGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+                  <stop offset="0%" stopColor="#2E7D32" />
+                  <stop offset="100%" stopColor="#81C784" />
+                </linearGradient>
+                <linearGradient id="leafGradLeft" x1="100%" y1="100%" x2="0%" y2="0%">
+                  <stop offset="0%" stopColor="#4CAF50" />
+                  <stop offset="100%" stopColor="#C8E6C9" />
+                </linearGradient>
+                <linearGradient id="leafGradRight" x1="0%" y1="100%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#388E3C" />
+                  <stop offset="100%" stopColor="#A5D6A7" />
+                </linearGradient>
+              </defs>
+              
+              {/* Stem */}
+              <motion.path 
+                d="M40 100 Q35 55 40 10" 
+                stroke="url(#stemGrad)" 
+                strokeWidth="5" 
+                strokeLinecap="round" 
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ duration: 0.7, ease: "easeOut" }}
+              />
+
+              {/* Bottom Right Leaf */}
+              <motion.g style={{ transformOrigin: "38px 80px" }} initial={{ scale: 0, opacity: 0 }} animate={{ scale: 0.75, opacity: 1 }} transition={{ delay: 0.2, type: "spring", stiffness: 350, damping: 15 }}>
+                <path d="M38 80 C55 80, 60 65, 55 55 C45 60, 38 70, 38 80 Z" fill="url(#leafGradRight)"/>
+                <path d="M38 80 Q45 70 52 58" stroke="#1B5E20" strokeWidth="2" strokeLinecap="round" opacity="0.4" />
+              </motion.g>
+
+              {/* Bottom Left Leaf */}
+              <motion.g style={{ transformOrigin: "37px 60px" }} initial={{ scale: 0, opacity: 0 }} animate={{ scale: 0.7, opacity: 1 }} transition={{ delay: 0.35, type: "spring", stiffness: 350, damping: 15 }}>
+                <path d="M37 60 C20 60, 15 45, 20 35 C30 40, 37 50, 37 60 Z" fill="url(#leafGradLeft)"/>
+                <path d="M37 60 Q27 50 23 39" stroke="#1B5E20" strokeWidth="2" strokeLinecap="round" opacity="0.4" />
+              </motion.g>
+              
+              {/* Top Right leaf group */}
+              <motion.g style={{ transformOrigin: "40px 40px" }} initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.5, type: "spring", stiffness: 350, damping: 15 }}>
+                <path d="M40 40 C60 40, 70 20, 65 10 C50 15, 40 25, 40 40 Z" fill="url(#leafGradRight)" />
+                <path d="M40 40 Q55 25 62 14" stroke="#1B5E20" strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
+              </motion.g>
+
+              {/* Top Left leaf group */}
+              <motion.g style={{ transformOrigin: "40px 20px" }} initial={{ scale: 0, opacity: 0 }} animate={{ scale: 0.9, opacity: 1 }} transition={{ delay: 0.65, type: "spring", stiffness: 350, damping: 15 }}>
+                <path d="M40 20 C20 20, 10 10, 15 0 C25 5, 40 10, 40 20 Z" fill="url(#leafGradLeft)" />
+                <path d="M40 20 Q25 10 17 3" stroke="#1B5E20" strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
+              </motion.g>
+
+              {/* Magical Sparkles */}
+              <motion.circle cx="60" cy="15" r="2.5" fill="#A5D6A7" 
+                initial={{ scale: 0, opacity: 0, y: 10 }}
+                animate={{ scale: [0, 1, 0], opacity: [0, 1, 0], y: -8 }}
+                transition={{ delay: 0.5, duration: 1.5, ease: "easeInOut" }}
+              />
+              <motion.circle cx="15" cy="30" r="2" fill="#C8E6C9" 
+                initial={{ scale: 0, opacity: 0, y: 8 }}
+                animate={{ scale: [0, 1, 0], opacity: [0, 1, 0], y: -12 }}
+                transition={{ delay: 0.7, duration: 1.2, ease: "easeInOut" }}
+              />
+              <motion.circle cx="35" cy="5" r="2.5" fill="#E8F5E9" 
+                initial={{ scale: 0, opacity: 0, y: 15 }}
+                animate={{ scale: [0, 1, 0], opacity: [0, 1, 0], y: -15 }}
+                transition={{ delay: 0.85, duration: 1.4, ease: "easeInOut" }}
+              />
+              <motion.circle cx="65" cy="55" r="1.5" fill="#81C784" 
+                initial={{ scale: 0, opacity: 0, y: 10 }}
+                animate={{ scale: [0, 1, 0], opacity: [0, 1, 0], y: -10 }}
+                transition={{ delay: 0.4, duration: 1.2, ease: "easeInOut" }}
+              />
+            </svg>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+
       {/* Full BG image */}
       <div className="absolute inset-0">
         <img

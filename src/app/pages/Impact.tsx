@@ -173,14 +173,14 @@ export default function Impact() {
                   <p className="text-xs text-gray-400">Percentage breakdown of project themes</p>
                 </div>
               </div>
-              <ResponsiveContainer width="100%" height={260}>
+              <ResponsiveContainer width="100%" height={320}>
                 <PieChart>
-                  <Pie data={thematicBreakdown} cx="50%" cy="50%" outerRadius={90} dataKey="value" label={({ name, value }) => `${value}%`} labelLine={false}>
+                  <Pie data={thematicBreakdown} cx="50%" cy="45%" outerRadius={85} dataKey="value" label={({ name, value }) => `${value}%`} labelLine={false}>
                     {thematicBreakdown.map((entry) => (
                       <Cell key={`cell-${entry.name}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Legend />
+                  <Legend wrapperStyle={{ paddingTop: "20px", fontSize: "14px" }} />
                   <Tooltip formatter={(v) => [`${v}%`, "Share"]} />
                 </PieChart>
               </ResponsiveContainer>

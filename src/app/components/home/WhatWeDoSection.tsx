@@ -47,9 +47,7 @@ export function WhatWeDoSection() {
           className="text-center mb-20"
         >
           <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="w-6 h-[2px] bg-[#0A3D2A]/40" />
             <span className="text-[#0A3D2A] text-xs font-bold uppercase tracking-[0.2em]">What We Do</span>
-            <div className="w-6 h-[2px] bg-[#0A3D2A]/40" />
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-[#0A3D2A] mb-6 leading-[1.15]">
             From Field to Evidence, Evidence to Action
