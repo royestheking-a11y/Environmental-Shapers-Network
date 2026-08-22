@@ -1,57 +1,231 @@
 import { motion } from "motion/react";
 import { Link } from "react-router";
+import { 
+  Target, 
+  Thermometer, 
+  Tent, 
+  Wheat, 
+  TreePine, 
+  Zap, 
+  ShieldAlert, 
+  Building2, 
+  Waves,
+  ArrowRight,
+  Sparkles
+} from "lucide-react";
 
-import { getInitialThematicAreas } from "../../pages/admin/sections/ThematicAreasView";
-import { useFirestoreData } from "../../../lib/useFirestore";
-import { resolveIcon } from "../../pages/admin/sections/ProgramsView";
-import { useState, useEffect } from "react";
+export interface ThematicAreaItem {
+  id: number;
+  icon: any;
+  slug: string;
+  title: string;
+  desc: string;
+  tag: string;
+  gradient: string;
+}
+
+export const thematicAreasList: ThematicAreaItem[] = [
+  {
+    id: 1,
+    icon: Target,
+    slug: "sdgs",
+    title: "Sustainable Development Goals",
+    desc: "Mainstreaming all 17 SDGs across our programs — ensuring every intervention contributes measurably to the 2030 Agenda for Sustainable Development at local, national, and global levels.",
+    tag: "All SDGs",
+    gradient: "from-emerald-500/10 to-teal-500/10"
+  },
+  {
+    id: 2,
+    icon: Thermometer,
+    slug: "climate-change",
+    title: "Climate Change",
+    desc: "Addressing the root causes and impacts of climate change through mitigation, adaptation, loss and damage frameworks, and multilateral climate diplomacy aligned with the Paris Agreement goals.",
+    tag: "SDG 13",
+    gradient: "from-blue-500/10 to-indigo-500/10"
+  },
+  {
+    id: 3,
+    icon: Tent,
+    slug: "displacement-migration",
+    title: "Displacement & Migration",
+    desc: "Protecting climate-displaced populations through rights-based policy frameworks, humanitarian response, and long-term durable solutions that address the intersections of climate, conflict, and migration.",
+    tag: "SDG 10 · 16",
+    gradient: "from-amber-500/10 to-orange-500/10"
+  },
+  {
+    id: 4,
+    icon: Wheat,
+    slug: "livelihoods",
+    title: "Livelihoods",
+    desc: "Building green, climate-resilient livelihoods for smallholder farmers, coastal communities, and forest-dependent peoples through agroecology, sustainable fisheries, and diversified income strategies.",
+    tag: "SDG 1 · 8",
+    gradient: "from-lime-500/10 to-emerald-500/10"
+  },
+  {
+    id: 5,
+    icon: TreePine,
+    slug: "biodiversity",
+    title: "Biodiversity",
+    desc: "Halting and reversing biodiversity loss through ecosystem protection, species recovery, indigenous community co-management, and implementation of the Kunming-Montreal Global Biodiversity Framework.",
+    tag: "SDG 15",
+    gradient: "from-green-500/10 to-emerald-500/10"
+  },
+  {
+    id: 6,
+    icon: Zap,
+    slug: "green-energy",
+    title: "Green Energy",
+    desc: "Accelerating the just energy transition by scaling renewable energy access, phasing out fossil fuel subsidies, and ensuring clean energy benefits reach the most marginalised communities first.",
+    tag: "SDG 7",
+    gradient: "from-yellow-500/10 to-amber-500/10"
+  },
+  {
+    id: 7,
+    icon: ShieldAlert,
+    slug: "drr",
+    title: "Disaster Risk Reduction",
+    desc: "Strengthening community and national resilience through early warning systems, disaster preparedness frameworks, and nature-based DRR solutions aligned with the Sendai Framework 2015–2030.",
+    tag: "SDG 11 · 13",
+    gradient: "from-sky-500/10 to-blue-500/10"
+  },
+  {
+    id: 8,
+    icon: Building2,
+    slug: "urban-resilience",
+    title: "Urban Resilience",
+    desc: "Transforming cities into climate-resilient, liveable spaces with green infrastructure, urban forests, low-carbon mobility, and integrated water and waste management aligned with the New Urban Agenda.",
+    tag: "SDG 11",
+    gradient: "from-teal-500/10 to-emerald-500/10"
+  },
+  {
+    id: 9,
+    icon: Waves,
+    slug: "blue-economy",
+    title: "Blue Economy",
+    desc: "Developing sustainable ocean economies that protect marine biodiversity, support coastal livelihoods, advance blue carbon solutions, and ensure equitable access to ocean resources for all.",
+    tag: "SDG 14",
+    gradient: "from-cyan-500/10 to-blue-500/10"
+  }
+];
 
 export function ThematicFocusAreasSection() {
-  const [themes] = useFirestoreData<any[]>("esn_thematic_areas", getInitialThematicAreas());
   return (
-    <section className="py-16 bg-[#F8FCF9] relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-3 mb-6">
-            <span className="text-[#0A3D2A] text-sm font-bold uppercase tracking-[0.2em]">Our Impact</span>
-          </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-[#0A3D2A] mb-6">
-            Themes Driving Systemic Change
-          </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto text-lg leading-relaxed font-light">
-            Our strategic interventions are clustered around nine core thematic areas, designed to address the world's most pressing environmental challenges through integrated, science-based solutions.
-          </p>
+    <section id="thematic-areas" className="py-24 md:py-32 bg-[#F8FCF9] relative overflow-hidden">
+      {/* Background Subtle Elements */}
+      <div 
+        className="absolute inset-0 opacity-[0.03] pointer-events-none"
+        style={{
+          backgroundImage: `radial-gradient(#0A3D2A 1.5px, transparent 1.5px)`,
+          backgroundSize: "32px 32px"
+        }}
+      />
+      <div className="absolute top-1/4 right-0 w-[500px] h-[500px] bg-emerald-100/40 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-10 left-0 w-[450px] h-[450px] bg-teal-100/30 rounded-full blur-[90px] pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        {/* Header */}
+        <div className="text-center max-w-3xl mx-auto mb-16 md:mb-20">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-[#0A3D2A]/10 shadow-sm mb-4"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-[#0A3D2A]" />
+            <span className="text-[#0A3D2A] text-xs font-bold uppercase tracking-[0.2em]">
+              Strategic Impact Domains
+            </span>
+          </motion.div>
+          
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="text-3xl sm:text-4xl md:text-5xl font-serif font-black text-[#0A3D2A] mb-6 leading-tight"
+          >
+            Themes Driving Systemic Environmental Change
+          </motion.h2>
+          
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="text-gray-600 text-base sm:text-lg leading-relaxed font-normal"
+          >
+            Nine thematic focus areas cut across all our core programs — ensuring environmental action is holistic, just, and aligned with the 2030 Sustainable Development Agenda and the Paris Agreement.
+          </motion.p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {themes.map((theme, idx) => {
-            const Icon = resolveIcon(theme.icon);
+        {/* 9 Thematic Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-16">
+          {thematicAreasList.map((theme, idx) => {
+            const Icon = theme.icon;
             return (
-              <Link key={theme.title} to={`/thematic-areas/${theme.slug}`} className="block h-full group">
+              <Link 
+                key={theme.slug} 
+                to={`/thematic-areas/${theme.slug}`} 
+                className="block h-full group"
+              >
                 <motion.div
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.8, delay: idx * 0.1, ease: [0.16, 1, 0.3, 1] }}
-                  className="bg-white border border-gray-100 rounded-[32px] p-8 group-hover:bg-[#F8FCF9] shadow-xl shadow-gray-200/40 group-hover:shadow-2xl group-hover:shadow-[#0A3D2A]/10 group-hover:border-[#0A3D2A]/5 transition-all flex flex-col h-full"
+                  viewport={{ once: true, margin: "-40px" }}
+                  transition={{ duration: 0.7, delay: idx * 0.07, ease: [0.16, 1, 0.3, 1] }}
+                  className="relative bg-white border border-gray-200/90 rounded-[28px] p-7 sm:p-8 shadow-lg shadow-gray-200/50 group-hover:shadow-2xl group-hover:shadow-[#0A3D2A]/15 group-hover:border-[#0A3D2A]/40 transition-all duration-500 flex flex-col justify-between h-full group-hover:-translate-y-1.5 overflow-hidden"
                 >
-                  <div className="flex items-center justify-between mb-8">
-                    <div className="w-16 h-16 rounded-2xl bg-[#F8FCF9] border border-[#0A3D2A]/5 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
-                      <Icon className="w-8 h-8 text-[#0A3D2A]" strokeWidth={1.5} />
+                  {/* Subtle top corner gradient glow */}
+                  <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${theme.gradient} rounded-bl-full pointer-events-none group-hover:scale-125 transition-transform duration-500`} />
+
+                  <div>
+                    {/* Top Row: Icon & Tag */}
+                    <div className="flex items-center justify-between gap-4 mb-6">
+                      <div className="w-14 h-14 rounded-2xl bg-[#F4F9F5] border border-[#0A3D2A]/10 flex items-center justify-center group-hover:bg-[#0A3D2A] group-hover:border-[#0A3D2A] group-hover:scale-105 transition-all duration-300 shadow-sm">
+                        <Icon className="w-7 h-7 text-[#0A3D2A] group-hover:text-white transition-colors duration-300" strokeWidth={1.75} />
+                      </div>
+                      
+                      <span className="text-xs font-bold tracking-wider bg-emerald-50 text-[#0A3D2A] px-3.5 py-1.5 rounded-full border border-emerald-200/80 shadow-sm">
+                        {theme.tag}
+                      </span>
                     </div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider bg-[#F8FCF9] text-[#46986F] px-3 py-1.5 rounded-full border border-[#46986F]/20">
-                      {theme.tag}
-                    </span>
+
+                    {/* Title */}
+                    <h3 className="text-xl sm:text-2xl font-bold font-serif text-[#0A3D2A] mb-3 group-hover:text-[#0B5D3F] transition-colors leading-snug">
+                      {theme.title}
+                    </h3>
+
+                    {/* Description */}
+                    <p className="text-gray-600 text-sm sm:text-[15px] leading-relaxed mb-6 font-normal">
+                      {theme.desc}
+                    </p>
                   </div>
-                  <h3 className="text-xl font-serif text-[#0A3D2A] mb-4">{theme.title}</h3>
-                  <p className="text-gray-500 text-sm leading-relaxed font-light flex-grow">
-                    {theme.desc}
-                  </p>
+
+                  {/* Bottom Footer Link */}
+                  <div className="pt-4 border-t border-gray-100 flex items-center justify-between text-xs font-bold text-[#0A3D2A] group-hover:text-[#0B5D3F]">
+                    <span className="tracking-wider uppercase">Explore Details</span>
+                    <div className="w-7 h-7 rounded-full bg-[#F4F9F5] group-hover:bg-[#0A3D2A] group-hover:text-white flex items-center justify-center transition-colors">
+                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                    </div>
+                  </div>
                 </motion.div>
               </Link>
             );
           })}
         </div>
+
+        {/* Bottom Explorer Action */}
+        <div className="text-center">
+          <Link
+            to="/thematic-areas"
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-[#0A3D2A] text-white font-bold text-sm shadow-xl shadow-[#0A3D2A]/20 hover:bg-[#082E20] hover:scale-105 transition-all duration-300"
+          >
+            <span>View All Thematic Strategy Frameworks</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+
       </div>
     </section>
   );

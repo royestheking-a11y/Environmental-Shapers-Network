@@ -36,8 +36,11 @@ export const router = createBrowserRouter([
       { path: "impact", Component: Impact },
       { path: "contact", Component: Contact },
       { path: "donate", Component: Donate },
-      // Thematic Areas
+      // Thematic Areas Directory & Detail Pages
+      { path: "thematic-areas", Component: ThematicAreaPage },
       { path: "thematic-areas/:area", Component: ThematicAreaPage },
+      // Methodology / What We Do
+      { path: "what-we-do", Component: Home },
       // Programs
       { path: "programs", Component: AllPrograms },
       { path: "programs/youth", Component: YouthEngagement },
