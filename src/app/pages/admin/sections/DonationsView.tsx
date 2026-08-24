@@ -33,21 +33,31 @@ import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestor
 
 function getInitialDonations() {
   return [
-    { id: 1, donor: "Anonymous", email: "—", amount: 500, project: "Plant A Million Trees", method: "Card", date: "Jul 27, 2026", status: "approved", recurring: false, receipt: "RCP-001" },
-    { id: 2, donor: "Sarah Chen", email: "s.chen@email.com", amount: 250, project: "Ocean Initiative", method: "PayPal", date: "Jul 27, 2026", status: "approved", recurring: true, receipt: "RCP-002" },
-    { id: 3, donor: "Ahmad Raza", email: "ahmad@email.com", amount: 100, project: "Youth Program", method: "Card", date: "Jul 26, 2026", status: "approved", recurring: false, receipt: "RCP-003" },
-    { id: 4, donor: "Maria Santos", email: "maria@email.com", amount: 1000, project: "Forest Hub Brazil", method: "Transfer", date: "Jul 26, 2026", status: "approved", recurring: true, receipt: "RCP-004" },
-    { id: 5, donor: "TechCorp Ltd", email: "csr@techcorp.com", amount: 5000, project: "General Fund", method: "Transfer", date: "Jul 25, 2026", status: "approved", recurring: false, receipt: "RCP-005" },
+    { id: 1, donor: "Anonymous", email: "—", amount: 500, project: "Plant A Million Trees", method: "Card", date: "Jul 27, 2026", status: "completed", recurring: false, receipt: "RCP-001" },
+    { id: 2, donor: "Sarah Chen", email: "s.chen@email.com", amount: 250, project: "Ocean Initiative", method: "PayPal", date: "Jul 27, 2026", status: "completed", recurring: true, receipt: "RCP-002" },
+    { id: 3, donor: "Ahmad Raza", email: "ahmad@email.com", amount: 100, project: "Youth Program", method: "Card", date: "Jul 26, 2026", status: "completed", recurring: false, receipt: "RCP-003" },
+    { id: 4, donor: "Maria Santos", email: "maria@email.com", amount: 1000, project: "Forest Hub Brazil", method: "Transfer", date: "Jul 26, 2026", status: "completed", recurring: true, receipt: "RCP-004" },
+    { id: 5, donor: "TechCorp Ltd", email: "csr@techcorp.com", amount: 5000, project: "General Fund", method: "Transfer", date: "Jul 25, 2026", status: "completed", recurring: false, receipt: "RCP-005" },
     { id: 6, donor: "John Doe", email: "jd@email.com", amount: 50, project: "General Fund", method: "Mobile", date: "Jul 25, 2026", status: "pending", recurring: false, receipt: "RCP-006" },
-    { id: 7, donor: "GreenVest VC", email: "give@greenvest.io", amount: 10000, project: "All Projects", method: "Transfer", date: "Jul 24, 2026", status: "approved", recurring: true, receipt: "RCP-007" },
-    { id: 8, donor: "Amara Osei", email: "amara@email.com", amount: 75, project: "Africa Programs", method: "Mobile", date: "Jul 24, 2026", status: "rejected", recurring: false, receipt: "RCP-008" },
+    { id: 7, donor: "GreenVest VC", email: "give@greenvest.io", amount: 10000, project: "All Projects", method: "Transfer", date: "Jul 24, 2026", status: "completed", recurring: true, receipt: "RCP-007" },
+    { id: 8, donor: "Amara Osei", email: "amara@email.com", amount: 75, project: "Africa Programs", method: "Mobile", date: "Jul 24, 2026", status: "failed", recurring: false, receipt: "RCP-008" },
   ];
 }
 
 function exportToCSV(donations: any[]) {
   const headers = ["Receipt", "Donor", "Email", "Amount", "Project", "Method", "Date", "Status", "Recurring"];
-  const rows = donations.map((d) =>
-    [d.receipt, d.donor, d.email, `$${d.amount}`, d.project, d.method, d.date, d.status, d.recurring ? "Yes" : "No"]
+  const rows = (donations || []).map((d: any) =>
+    [
+      d?.receipt || "—",
+      d?.donor || d?.name || "Anonymous",
+      d?.email || "—",
+      `$${d?.amount || 0}`,
+      d?.project || "General Donation",
+      d?.method || "—",
+      d?.date || "—",
+      d?.status || "Completed",
+      d?.recurring ? "Yes" : "No"
+    ]
       .map((v) => `"${String(v).replace(/"/g, '""')}"`)
       .join(",")
   );
@@ -64,29 +74,30 @@ function exportToCSV(donations: any[]) {
 }
 
 function downloadReceipt(donation: any) {
+  if (!donation) return;
   const lines = [
     "====================================",
     "  ENVIRONMENTAL SHAPERS NETWORK",
     "       DONATION RECEIPT",
     "====================================",
     "",
-    `Receipt No:    ${donation.receipt}`,
-    `Date:          ${donation.date}`,
+    `Receipt No:    ${donation.receipt || "—"}`,
+    `Date:          ${donation.date || "—"}`,
     "",
     "------------------------------------",
     "DONOR INFORMATION",
     "------------------------------------",
-    `Name:          ${donation.donor}`,
-    `Email:         ${donation.email}`,
+    `Name:          ${donation.donor || donation.name || "Anonymous"}`,
+    `Email:         ${donation.email || "—"}`,
     "",
     "------------------------------------",
     "DONATION DETAILS",
     "------------------------------------",
-    `Amount:        $${donation.amount}`,
-    `Project:       ${donation.project}`,
-    `Payment:       ${donation.method}`,
+    `Amount:        $${donation.amount || 0}`,
+    `Project:       ${donation.project || "General Donation"}`,
+    `Payment:       ${donation.method || "—"}`,
     `Type:          ${donation.recurring ? "Monthly Recurring" : "One-Time"}`,
-    `Status:        ${donation.status.charAt(0).toUpperCase() + donation.status.slice(1)}`,
+    `Status:        ${String(donation.status || "Completed").toUpperCase()}`,
     "",
     "------------------------------------",
     "Thank you for your generous support!",
@@ -100,7 +111,7 @@ function downloadReceipt(donation: any) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `${donation.receipt}.txt`;
+  a.download = `${donation.receipt || "receipt"}.txt`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -108,10 +119,17 @@ function downloadReceipt(donation: any) {
 }
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; icon: React.ComponentType<any> }> = {
-  approved: { label: "Approved", color: "#4CAF50", bg: "#4CAF50/10", icon: CheckCircle2 },
+  approved: { label: "Completed", color: "#4CAF50", bg: "#4CAF50/10", icon: CheckCircle2 },
+  completed: { label: "Completed", color: "#4CAF50", bg: "#4CAF50/10", icon: CheckCircle2 },
   pending: { label: "Pending", color: "#D6A95A", bg: "#D6A95A/15", icon: Clock },
-  rejected: { label: "Rejected", color: "#ef4444", bg: "#ef4444/10", icon: XCircle },
+  rejected: { label: "Failed", color: "#ef4444", bg: "#ef4444/10", icon: XCircle },
+  failed: { label: "Failed", color: "#ef4444", bg: "#ef4444/10", icon: XCircle },
 };
+
+function getStatusConfig(status?: string) {
+  const normalized = String(status || "completed").toLowerCase();
+  return statusConfig[normalized] || statusConfig.completed;
+}
 
 export function DonationsView() {
   const [donations, setDonations, loading] = useFirestoreData<any[]>("esn_donations", getInitialDonations());
@@ -122,23 +140,47 @@ export function DonationsView() {
   const refresh = () => setDonations(getInitialDonations());
 
   const updateStatus = async (id: number, newStatus: string) => {
-    const updated = donations.map((d: any) => d.id === id ? { ...d, status: newStatus } : d);
+    const updated = (donations || []).map((d: any) => (d && d.id === id ? { ...d, status: newStatus } : d));
     setDonations(updated);
     await saveFirestoreData("esn_donations", updated);
   };
 
-  const filtered = donations.filter((d: any) => {
-    const matchSearch = d.donor.toLowerCase().includes(search.toLowerCase()) ||
-      d.project.toLowerCase().includes(search.toLowerCase()) ||
-      d.receipt.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = filterStatus === "All" || d.status === filterStatus.toLowerCase();
+  const safeDonations = Array.isArray(donations) ? donations : [];
+
+  const filtered = safeDonations.filter((d: any) => {
+    if (!d) return false;
+    const donor = String(d.donor || d.name || "Anonymous").toLowerCase();
+    const project = String(d.project || "General Donation").toLowerCase();
+    const receipt = String(d.receipt || "").toLowerCase();
+    const s = String(search || "").toLowerCase().trim();
+
+    const matchSearch = !s || donor.includes(s) || project.includes(s) || receipt.includes(s);
+    const dStatus = String(d.status || "completed").toLowerCase();
+    const normalizedFilter = filterStatus.toLowerCase();
+    
+    const matchStatus =
+      filterStatus === "All" ||
+      dStatus === normalizedFilter ||
+      (normalizedFilter === "completed" && (dStatus === "approved" || dStatus === "completed")) ||
+      (normalizedFilter === "failed" && (dStatus === "rejected" || dStatus === "failed"));
+
     return matchSearch && matchStatus;
   });
 
-  const totalRaised = donations.filter((d: any) => d.status === "approved").reduce((s: any, d: any) => s + d.amount, 0);
-  const pendingCount = donations.filter((d: any) => d.status === "pending").length;
-  const avgDonation = Math.round(totalRaised / (donations.filter((d: any) => d.status === "approved").length || 1));
-  const recurringCount = donations.filter((d: any) => d.recurring).length;
+  const totalRaised = safeDonations
+    .filter((d: any) => {
+      const st = String(d?.status || "").toLowerCase();
+      return st === "approved" || st === "completed";
+    })
+    .reduce((s: number, d: any) => s + (Number(d?.amount) || 0), 0);
+
+  const pendingCount = safeDonations.filter((d: any) => String(d?.status || "").toLowerCase() === "pending").length;
+  const approvedCount = safeDonations.filter((d: any) => {
+    const st = String(d?.status || "").toLowerCase();
+    return st === "approved" || st === "completed";
+  }).length;
+  const avgDonation = Math.round(totalRaised / (approvedCount || 1));
+  const recurringCount = safeDonations.filter((d: any) => Boolean(d?.recurring)).length;
 
   return (
     <div className="flex flex-col gap-7">
@@ -156,7 +198,7 @@ export function DonationsView() {
             <RefreshCw size={14} /> Refresh
           </button>
           <button
-            onClick={() => exportToCSV(donations)}
+            onClick={() => exportToCSV(safeDonations)}
             className="flex items-center gap-2 text-sm text-white bg-[#0B5D3F] px-5 py-2.5 rounded-xl hover:bg-[#0a5237] transition-all font-semibold"
           >
             <Download size={14} /> Export CSV
@@ -293,10 +335,18 @@ export function DonationsView() {
             </thead>
             <tbody>
               {filtered.map((d: any) => {
-                const sc = statusConfig[d.status];
+                const sc = getStatusConfig(d?.status);
+                const donorName = d?.donor || d?.name || "Anonymous";
+                const donorEmail = d?.email || "—";
+                const projectTitle = d?.project || "General Donation";
+                const amountVal = Number(d?.amount) || 0;
+                const methodVal = d?.method || "—";
+                const dateVal = d?.date || "—";
+                const receiptVal = d?.receipt || "—";
+
                 return (
                   <motion.tr
-                    key={d.id}
+                    key={d?.id || Math.random()}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     className="border-t border-gray-50 hover:bg-[#F6FBF8]/60 transition-colors cursor-pointer"
@@ -305,27 +355,27 @@ export function DonationsView() {
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#4CAF50]/20 to-[#0B5D3F]/20 flex items-center justify-center text-xs font-black text-[#0B5D3F]">
-                          {d.donor.charAt(0)}
+                          {donorName.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <div className="text-sm font-semibold text-gray-800">{d.donor}</div>
-                          <div className="text-xs text-gray-400">{d.email}</div>
+                          <div className="text-sm font-semibold text-gray-800">{donorName}</div>
+                          <div className="text-xs text-gray-400">{donorEmail}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-4 text-xs text-gray-600 max-w-[140px]">
-                      <div className="truncate">{d.project}</div>
+                      <div className="truncate">{projectTitle}</div>
                     </td>
                     <td className="px-4 py-4">
-                      <span className="text-sm font-black text-[#0B5D3F]">${d.amount.toLocaleString()}</span>
+                      <span className="text-sm font-black text-[#0B5D3F]">${amountVal.toLocaleString()}</span>
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-1.5 text-xs text-gray-500">
                         <CreditCard size={12} className="text-gray-400" />
-                        {d.method}
+                        {methodVal}
                       </div>
                     </td>
-                    <td className="px-4 py-4 text-xs text-gray-500">{d.date}</td>
+                    <td className="px-4 py-4 text-xs text-gray-500">{dateVal}</td>
                     <td className="px-4 py-4">
                       <span
                         className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full"
@@ -336,7 +386,7 @@ export function DonationsView() {
                       </span>
                     </td>
                     <td className="px-4 py-4">
-                      {d.recurring ? (
+                      {d?.recurring ? (
                         <span className="text-xs bg-[#4CAF50]/10 text-[#4CAF50] font-semibold px-2.5 py-1 rounded-full">Monthly</span>
                       ) : (
                         <span className="text-xs text-gray-400">One-time</span>
@@ -344,18 +394,18 @@ export function DonationsView() {
                     </td>
                     <td className="px-5 py-4 text-right">
                       <div className="flex items-center justify-end gap-1.5">
-                        <span className="text-xs font-mono text-gray-400 mr-1">{d.receipt}</span>
-                        {d.status === "pending" && (
+                        <span className="text-xs font-mono text-gray-400 mr-1">{receiptVal}</span>
+                        {String(d?.status || "").toLowerCase() === "pending" && (
                           <>
                             <button
-                              onClick={(e) => { e.stopPropagation(); updateStatus(d.id, "approved"); }}
+                              onClick={(e) => { e.stopPropagation(); updateStatus(d.id, "completed"); }}
                               className="p-1.5 rounded-lg hover:bg-green-50 text-gray-400 hover:text-green-500 transition-all"
                               title="Approve"
                             >
                               <CheckCircle2 size={15} />
                             </button>
                             <button
-                              onClick={(e) => { e.stopPropagation(); updateStatus(d.id, "rejected"); }}
+                              onClick={(e) => { e.stopPropagation(); updateStatus(d.id, "failed"); }}
                               className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all"
                               title="Reject"
                             >
@@ -380,7 +430,7 @@ export function DonationsView() {
         </div>
 
         <div className="px-5 py-4 border-t border-gray-50 flex items-center justify-between">
-          <p className="text-xs text-gray-400">{filtered.length} of {donations.length} transactions shown</p>
+          <p className="text-xs text-gray-400">{filtered.length} of {safeDonations.length} transactions shown</p>
           <div className="flex gap-1">
             {[1, 2, 3].map((p) => (
               <button key={p} className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all ${p === 1 ? "bg-[#0B5D3F] text-white" : "text-gray-400 hover:bg-gray-100"}`}>{p}</button>
@@ -415,20 +465,20 @@ export function DonationsView() {
               <div className="bg-[#F6FBF8] rounded-2xl p-6 mb-6">
                 <div className="flex items-center gap-3 mb-5">
                   <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#4CAF50] to-[#0B5D3F] flex items-center justify-center text-white text-xl font-black">
-                    {selectedDonation.donor.charAt(0)}
+                    {String(selectedDonation.donor || selectedDonation.name || "A").charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <div className="font-bold text-gray-900">{selectedDonation.donor}</div>
-                    <div className="text-sm text-gray-400">{selectedDonation.email}</div>
+                    <div className="font-bold text-gray-900">{selectedDonation.donor || selectedDonation.name || "Anonymous"}</div>
+                    <div className="text-sm text-gray-400">{selectedDonation.email || "—"}</div>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   {[
-                    ["Receipt No.", selectedDonation.receipt],
-                    ["Amount", `$${selectedDonation.amount}`],
-                    ["Project", selectedDonation.project],
-                    ["Payment", selectedDonation.method],
-                    ["Date", selectedDonation.date],
+                    ["Receipt No.", selectedDonation.receipt || "—"],
+                    ["Amount", `$${selectedDonation.amount || 0}`],
+                    ["Project", selectedDonation.project || "General Donation"],
+                    ["Payment", selectedDonation.method || "—"],
+                    ["Date", selectedDonation.date || "—"],
                     ["Type", selectedDonation.recurring ? "Monthly Recurring" : "One-Time"],
                   ].map(([l, v]) => (
                     <div key={l}>
@@ -438,7 +488,7 @@ export function DonationsView() {
                   ))}
                 </div>
               </div>
-              {selectedDonation.status === "pending" ? (
+              {String(selectedDonation.status || "").toLowerCase() === "pending" ? (
                 <div className="flex gap-3">
                   <button
                     onClick={() => { updateStatus(selectedDonation.id, "completed"); setSelectedDonation(null); }}

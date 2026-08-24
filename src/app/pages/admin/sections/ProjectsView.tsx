@@ -119,10 +119,14 @@ export function ProjectsView() {
     setDeleteConfirmId(null);
   };
 
-  const filtered = projects.filter((p) => {
-    const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.country.toLowerCase().includes(search.toLowerCase()) ||
-      p.category.toLowerCase().includes(search.toLowerCase());
+  const filtered = (projects || []).filter((p) => {
+    if (!p) return false;
+    const name = String(p.name || "").toLowerCase();
+    const country = String(p.country || "").toLowerCase();
+    const category = String(p.category || "").toLowerCase();
+    const s = String(search || "").toLowerCase().trim();
+
+    const matchSearch = !s || name.includes(s) || country.includes(s) || category.includes(s);
     const matchStatus = filterStatus === "All" || p.status === filterStatus;
     return matchSearch && matchStatus;
   });

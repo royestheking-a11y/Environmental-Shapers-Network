@@ -125,8 +125,13 @@ export function CampaignsView() {
     setTimeout(() => setShareSuccess(false), 2500);
   };
 
-  const filtered = campaigns.filter((c) => {
-    const matchSearch = c.title.toLowerCase().includes(search.toLowerCase()) || c.category.toLowerCase().includes(search.toLowerCase());
+  const filtered = (campaigns || []).filter((c) => {
+    if (!c) return false;
+    const title = String(c.title || "").toLowerCase();
+    const category = String(c.category || "").toLowerCase();
+    const s = String(search || "").toLowerCase().trim();
+
+    const matchSearch = !s || title.includes(s) || category.includes(s);
     const matchStatus = filterStatus === "All" || c.status === filterStatus;
     return matchSearch && matchStatus;
   });
