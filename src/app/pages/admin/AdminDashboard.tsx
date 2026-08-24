@@ -28,12 +28,13 @@ import ResearchAdminView from "./sections/ResearchAdminView";
 import YouthAdminView from "./sections/YouthAdminView";
 import { ImageUploadField } from "../../components/ui/ImageUploadField";
 import { ActivityLogItem, getInitialActivityLogs } from "../../../lib/activityLogger";
+import { AdminNotification, getInitialNotifications } from "../../../lib/notificationService";
 import {
   LayoutDashboard, TreePine, Globe2, Users, Heart, Megaphone, Calendar, BarChart3, FileText, Settings,
   Bell, Search, LogOut, ChevronDown, Menu, X, TrendingUp, TrendingDown, Eye, Edit3, Trash2,
   Plus, Filter, Download, RefreshCw, Shield, Mail, Image, Database, Leaf, Target, Award,
   AlertCircle, CheckCircle2, Clock, MapPin, Star, Briefcase, MessageSquare, MonitorPlay, Focus,
-  Activity,
+  Activity, Check, Sparkles,
 } from "lucide-react";
 import { AreaChart, Area, LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
@@ -201,6 +202,34 @@ export default function AdminDashboard() {
   const [cmsDeleteConfirmId, setCmsDeleteConfirmId] = useState<number | null>(null);
   const [pendingAppsCount, setPendingAppsCount] = useState(0);
   const [activityLogs] = useFirestoreData<ActivityLogItem[]>("esn_activity_logs", getInitialActivityLogs());
+  const [notifications, setNotifications] = useFirestoreData<AdminNotification[]>("esn_notifications", getInitialNotifications());
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifFilter, setNotifFilter] = useState<"all" | "unread">("all");
+
+  const unreadCount = (notifications || []).filter(n => !n.read).length;
+
+  const markNotificationRead = async (id: string | number) => {
+    const updated = (notifications || []).map(n => n.id === id ? { ...n, read: true } : n);
+    setNotifications(updated);
+    await saveFirestoreData("esn_notifications", updated);
+  };
+
+  const markAllNotificationsRead = async () => {
+    const updated = (notifications || []).map(n => ({ ...n, read: true }));
+    setNotifications(updated);
+    await saveFirestoreData("esn_notifications", updated);
+  };
+
+  const deleteNotificationItem = async (id: string | number) => {
+    const updated = (notifications || []).filter(n => n.id !== id);
+    setNotifications(updated);
+    await saveFirestoreData("esn_notifications", updated);
+  };
+
+  const clearAllNotificationsList = async () => {
+    setNotifications([]);
+    await saveFirestoreData("esn_notifications", []);
+  };
 
   useEffect(() => {
     const u = localStorage.getItem("esn_admin_user");
@@ -444,10 +473,173 @@ export default function AdminDashboard() {
               <input type="text" placeholder="Quick search..." className="bg-transparent text-sm outline-none text-gray-600 w-full" />
             </div>
 
-            <button className="relative p-2.5 rounded-xl hover:bg-gray-100 transition-colors">
-              <Bell size={18} className="text-gray-600" />
-              <div className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" />
-            </button>
+            {/* Notifications Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className={`relative p-2.5 rounded-xl transition-all ${
+                  showNotifications ? "bg-[#0B5D3F]/10 text-[#0B5D3F]" : "hover:bg-gray-100 text-gray-600"
+                }`}
+                title="Notifications"
+              >
+                <Bell size={18} />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center px-1 shadow-sm animate-pulse">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              <AnimatePresence>
+                {showNotifications && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setShowNotifications(false)}
+                    />
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute right-0 mt-3 w-80 sm:w-96 bg-white rounded-3xl shadow-2xl border border-gray-100 z-50 overflow-hidden"
+                    >
+                      {/* Header */}
+                      <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-[#F6FBF8]">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-bold text-gray-900 text-sm">Notifications</h4>
+                          {unreadCount > 0 && (
+                            <span className="text-[11px] font-bold px-2 py-0.5 bg-red-100 text-red-700 rounded-full">
+                              {unreadCount} new
+                            </span>
+                          )}
+                        </div>
+                        {unreadCount > 0 && (
+                          <button
+                            onClick={markAllNotificationsRead}
+                            className="text-[11px] font-semibold text-[#0B5D3F] hover:underline flex items-center gap-1"
+                          >
+                            <Check size={13} /> Mark all read
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Filter Tabs */}
+                      <div className="flex px-4 pt-2.5 border-b border-gray-100 gap-4 text-xs font-semibold">
+                        <button
+                          onClick={() => setNotifFilter("all")}
+                          className={`pb-2 border-b-2 transition-colors ${
+                            notifFilter === "all"
+                              ? "border-[#0B5D3F] text-[#0B5D3F]"
+                              : "border-transparent text-gray-400 hover:text-gray-600"
+                          }`}
+                        >
+                          All ({notifications.length})
+                        </button>
+                        <button
+                          onClick={() => setNotifFilter("unread")}
+                          className={`pb-2 border-b-2 transition-colors ${
+                            notifFilter === "unread"
+                              ? "border-[#0B5D3F] text-[#0B5D3F]"
+                              : "border-transparent text-gray-400 hover:text-gray-600"
+                          }`}
+                        >
+                          Unread ({unreadCount})
+                        </button>
+                      </div>
+
+                      {/* Notification List */}
+                      <div className="max-h-80 overflow-y-auto divide-y divide-gray-50">
+                        {notifications
+                          .filter((n) => (notifFilter === "unread" ? !n.read : true))
+                          .map((n) => {
+                            const iconMap: Record<string, { icon: any; color: string }> = {
+                              heart: { icon: Heart, color: "bg-red-50 text-red-600" },
+                              user: { icon: Users, color: "bg-blue-50 text-blue-600" },
+                              mail: { icon: Mail, color: "bg-emerald-50 text-emerald-600" },
+                              shield: { icon: Shield, color: "bg-purple-50 text-purple-600" },
+                              sparkles: { icon: Sparkles, color: "bg-amber-50 text-amber-600" },
+                              alert: { icon: AlertCircle, color: "bg-orange-50 text-orange-600" },
+                              bell: { icon: Bell, color: "bg-gray-50 text-gray-600" },
+                            };
+                            const { icon: NotifIcon, color: iconBg } =
+                              iconMap[n.iconType || "bell"] || iconMap.bell;
+
+                            return (
+                              <div
+                                key={n.id}
+                                onClick={() => {
+                                  markNotificationRead(n.id);
+                                  if (n.link) {
+                                    setShowNotifications(false);
+                                    navigate(n.link);
+                                  }
+                                }}
+                                className={`p-4 transition-colors flex items-start justify-between gap-3 cursor-pointer group ${
+                                  !n.read ? "bg-emerald-50/30 hover:bg-emerald-50/60" : "hover:bg-gray-50/80"
+                                }`}
+                              >
+                                <div className="flex items-start gap-3 min-w-0">
+                                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${iconBg}`}>
+                                    <NotifIcon size={16} />
+                                  </div>
+                                  <div className="min-w-0">
+                                    <div className="flex items-center gap-2 mb-0.5">
+                                      <p className="font-bold text-xs text-gray-900 truncate">{n.title}</p>
+                                      {!n.read && (
+                                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+                                      )}
+                                    </div>
+                                    <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed mb-1">{n.message}</p>
+                                    <span className="text-[10px] text-gray-400 font-medium flex items-center gap-1">
+                                      <Clock size={10} /> {n.timestamp}
+                                    </span>
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteNotificationItem(n.id);
+                                  }}
+                                  className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500 rounded transition-all shrink-0"
+                                  title="Dismiss notification"
+                                >
+                                  <X size={13} />
+                                </button>
+                              </div>
+                            );
+                          })}
+
+                        {notifications.filter((n) => (notifFilter === "unread" ? !n.read : true)).length === 0 && (
+                          <div className="py-12 text-center text-gray-400">
+                            <Bell size={28} className="mx-auto mb-2 opacity-30" />
+                            <p className="text-xs font-semibold">No notifications to show</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Footer */}
+                      <div className="p-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between text-xs">
+                        <button
+                          onClick={clearAllNotificationsList}
+                          className="text-gray-400 hover:text-red-500 font-semibold transition-colors"
+                        >
+                          Clear all
+                        </button>
+                        <Link
+                          to="/admin/dashboard/roles"
+                          onClick={() => setShowNotifications(false)}
+                          className="text-[#0B5D3F] font-bold hover:underline"
+                        >
+                          View Activity Trail →
+                        </Link>
+                      </div>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
 
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#4CAF50] to-[#0B5D3F] flex items-center justify-center text-white font-bold text-sm cursor-pointer">
               {user.name.charAt(0)}
