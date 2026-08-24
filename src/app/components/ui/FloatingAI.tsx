@@ -40,7 +40,7 @@ export function FloatingAI() {
       return "I'm doing wonderfully, thank you for asking! I'm always ready to help protect the environment. What can I do for you?";
     }
     if (/\b(contact|reach|email|phone|call|address)\b/.test(text)) {
-      return "You can reach our global headquarters directly at contact@environmentalnetwork.org or call us at +1 (555) 019-2838. We also have regional offices and a dedicated BD Team operating in Bangladesh!";
+      return "You can reach our global headquarters directly at info@esnglobal.org or call us at +880 (123) 456-7890. We also have regional offices and a dedicated team operating worldwide!";
     }
     if (/\b(mission|purpose|goal|aim)\b/.test(text)) {
       return "Our mission is focused on Science-Backed Action, Youth Leadership, and Policy Advocacy. We empower local communities, especially youth, to lead climate adaptation efforts through direct action.";

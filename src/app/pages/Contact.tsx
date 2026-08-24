@@ -196,8 +196,8 @@ export default function Contact() {
                     </div>
                     <div>
                       <div className="text-xs text-white/60 mb-0.5">Email</div>
-                      <div className="text-sm font-medium mb-0.5 break-all">info@environmentalshapersnetwork.org</div>
-                      <div className="text-sm font-medium break-all">research@environmentalshapersnetwork.org</div>
+                      <div className="text-sm font-medium mb-0.5 break-all">info@esnglobal.org</div>
+                      <div className="text-sm font-medium break-all">research@esnglobal.org</div>
                     </div>
                   </div>
                   
@@ -207,7 +207,7 @@ export default function Contact() {
                     </div>
                     <div>
                       <div className="text-xs text-white/60 mb-0.5">Youth Applications</div>
-                      <div className="text-sm font-medium break-all">youth.applications@environmentalshapersnetwork.org</div>
+                      <div className="text-sm font-medium break-all">youth.applications@esnglobal.org</div>
                     </div>
                   </div>
                   

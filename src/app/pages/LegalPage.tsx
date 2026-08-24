@@ -129,7 +129,7 @@ function PrivacyPolicy() {
                   <li><strong>Objection:</strong> Object to certain processing activities.</li>
                   <li><strong>Withdrawal of consent:</strong> Unsubscribe from communications at any time.</li>
                 </ul>
-                <p>To exercise these rights, contact us at <strong>privacy@esn.org</strong>.</p>
+                <p>To exercise these rights, contact us at <strong>privacy@esnglobal.org</strong>.</p>
               </Section>
 
               <Section title="7. International Data Transfers">
@@ -149,7 +149,7 @@ function PrivacyPolicy() {
                 <div className="bg-[#F6FBF8] rounded-xl p-4 mt-3">
                   <p className="text-sm"><strong>Environmental Shapers Network</strong><br />
                   Data Protection Officer<br />
-                  Email: privacy@esn.org<br />
+                  Email: privacy@esnglobal.org<br />
                   Address: House 12, Road 7, Dhanmondi, Dhaka 1205, Bangladesh</p>
                 </div>
               </Section>
@@ -203,7 +203,7 @@ function TermsPage() {
               </div>
 
               <Section title="1. Acceptance of Terms">
-                <p>By accessing and using the Environmental Shapers Network website (esn.org) or any of our digital services, you accept and agree to be bound by these Terms & Conditions and our Privacy Policy. If you do not agree, please do not use our website.</p>
+                <p>By accessing and using the Environmental Shapers Network website (esnglobal.org) or any of our digital services, you accept and agree to be bound by these Terms & Conditions and our Privacy Policy. If you do not agree, please do not use our website.</p>
               </Section>
 
               <Section title="2. Use of the Website">
@@ -269,7 +269,7 @@ function TermsPage() {
                 <div className="bg-[#F6FBF8] rounded-xl p-4 mt-3">
                   <p className="text-sm"><strong>Environmental Shapers Network</strong><br />
                   Legal Department<br />
-                  Email: legal@esn.org<br />
+                  Email: legal@esnglobal.org<br />
                   Address: House 12, Road 7, Dhanmondi, Dhaka 1205, Bangladesh</p>
                 </div>
               </Section>
@@ -360,7 +360,7 @@ function CookiePolicyPage() {
             <p>For questions about our use of cookies:</p>
             <div className="bg-[#F6FBF8] rounded-xl p-4 mt-3">
               <p className="text-sm"><strong>Environmental Shapers Network</strong><br />
-              Email: privacy@esn.org<br />
+              Email: privacy@esnglobal.org<br />
               Address: House 12, Road 7, Dhanmondi, Dhaka 1205, Bangladesh</p>
             </div>
           </Section>
@@ -443,7 +443,7 @@ function AccessibilityPage() {
             <p>We welcome feedback on the accessibility of our website. If you encounter barriers or have suggestions for improvement, please contact us:</p>
             <div className="bg-[#F6FBF8] rounded-xl p-4 mt-3">
               <p className="text-sm"><strong>Environmental Shapers Network — Accessibility Team</strong><br />
-              Email: accessibility@esn.org<br />
+              Email: accessibility@esnglobal.org<br />
               Phone: +880 1700-000000<br />
               We aim to respond to accessibility feedback within 2 business days.</p>
             </div>
