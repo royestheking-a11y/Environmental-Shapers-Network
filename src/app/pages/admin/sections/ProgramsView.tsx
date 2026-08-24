@@ -5,6 +5,7 @@ import {
   Plus, Search, Edit3, Trash2, X, AlertTriangle, Download, CheckCircle2, Leaf
 } from "lucide-react";
 import * as Icons from "lucide-react";
+import { ImageUploadField } from "../../../components/ui/ImageUploadField";
 
 export interface ProgramData {
   id: number;
@@ -194,8 +195,13 @@ export function ProgramsView() {
                   <input type="text" value={form.reach} onChange={(e) => setForm({ ...form, reach: e.target.value })} placeholder="E.g., 80+ Countries Active" className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="text-xs font-bold text-gray-600 mb-1.5 block">Image URL</label>
-                  <input type="text" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} placeholder="https://..." className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
+                  <ImageUploadField
+                    label="Program Banner / Feature Image"
+                    value={form.image}
+                    onChange={(url) => setForm({ ...form, image: url })}
+                    folder="programs"
+                    helpText="Upload a featured image for this core program"
+                  />
                 </div>
                 
                 <div>
