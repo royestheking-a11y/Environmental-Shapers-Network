@@ -39,7 +39,7 @@ export function ImageUploadField({
     }
 
     setIsUploading(true);
-    setUploadPercent(10);
+    setUploadPercent(30);
 
     try {
       const result = await uploadMediaFile(file, folder, (pct) => {
@@ -50,7 +50,6 @@ export function ImageUploadField({
       }
     } catch (err) {
       console.error("Image upload failed:", err);
-      alert("Upload failed. Please check your connection or file size.");
     } finally {
       setIsUploading(false);
       setUploadPercent(0);
