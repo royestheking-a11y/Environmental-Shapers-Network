@@ -427,9 +427,9 @@ export default function AdminDashboard() {
                   >
                     <item.icon size={17} />
                     <span>{item.label}</span>
-                    {(item.id === "applications" ? pendingAppsCount > 0 : item.badge) && (
+                    {item.id === "applications" && pendingAppsCount > 0 && (
                       <span className="ml-auto bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                        {item.id === "applications" ? pendingAppsCount : item.badge}
+                        {pendingAppsCount}
                       </span>
                     )}
                   </Link>
