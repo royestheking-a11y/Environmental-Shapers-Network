@@ -176,7 +176,7 @@ export function Footer() {
               </div>
               <div className="flex items-center gap-3 text-sm text-gray-400">
                 <Globe size={15} className="text-[#4CAF50] shrink-0" />
-                <span>www.esnglobal.org</span>
+                <span>www.esnbd.org</span>
               </div>
             </div>
 
