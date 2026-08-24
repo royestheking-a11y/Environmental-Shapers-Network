@@ -45,7 +45,7 @@ interface AdminUser {
 
 const sidebarItems = [
   { icon: LayoutDashboard, label: "Dashboard", id: "dashboard" },
-  { icon: FileText, label: "Content (CMS)", id: "cms", badge: 3 },
+  { icon: FileText, label: "Content", id: "cms", badge: 3 },
   { icon: MonitorPlay, label: "Hero Section", id: "hero" },
   { icon: Focus, label: "Who We Are", id: "whoweare" },
   { icon: BarChart3, label: "Impact Stats", id: "stats" },
@@ -790,7 +790,7 @@ function CMSView({ content, onDelete, onToggle, onShowAdd, showAdd, newContent, 
                 <AlertCircle size={28} className="text-red-500" />
               </div>
               <h4 className="font-black text-gray-900 mb-2">Delete Content?</h4>
-              <p className="text-sm text-gray-500 mb-5">This article will be permanently removed from the CMS.</p>
+              <p className="text-sm text-gray-500 mb-5">This article will be permanently removed from the website.</p>
               <div className="flex gap-3">
                 <button onClick={onConfirmDelete} className="flex-1 bg-red-500 text-white py-3 rounded-xl font-semibold hover:bg-red-600 transition-all">Yes, Delete</button>
                 <button onClick={onCancelDelete} className="flex-1 border border-gray-200 text-gray-600 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-all">Cancel</button>
