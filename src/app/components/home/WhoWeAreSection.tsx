@@ -30,7 +30,7 @@ const proofPoints = [
 ];
 
 export function WhoWeAreSection() {
-  const [featuresRaw] = useFirestoreData<any[]>("esn_who_we_are", getInitialWhoWeAreFeatures());
+  const [featuresRaw] = useFirestoreData<any[]>("esn_whoweare_admin", getInitialWhoWeAreFeatures());
 
   const features = (featuresRaw || defaultFeatures).map((f) => ({
     iconName: f.iconName,

@@ -7,7 +7,7 @@ import { useFirestoreData } from "../../../lib/useFirestore";
 export function FAQSection() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-100px" });
-  const [faqsRaw] = useFirestoreData<FAQ[]>("esn_faqs", getInitialFAQs());
+  const [faqsRaw] = useFirestoreData<FAQ[]>("esn_faq_admin", getInitialFAQs());
   const faqs = faqsRaw || [];
   const [openId, setOpenId] = useState<number | null>(1);
 

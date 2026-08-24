@@ -21,7 +21,7 @@ const defaultStats = [
 ];
 
 export function YouthDevelopmentSection() {
-  const [initsRaw] = useFirestoreData<any[]>("esn_youth_initiatives", getInitialYouthInitiatives());
+  const [initsRaw] = useFirestoreData<any[]>("esn_youth_initiatives_admin", getInitialYouthInitiatives());
   const [statsRaw] = useFirestoreData<any[]>("esn_youth_stats", getInitialYouthStats());
 
   const initiatives = initsRaw && initsRaw.length > 0 ? initsRaw : defaultInitiatives;

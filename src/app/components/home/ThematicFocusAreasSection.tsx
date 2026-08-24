@@ -1,114 +1,26 @@
 import { motion } from "motion/react";
 import { Link } from "react-router";
-import { 
-  Target, 
-  Thermometer, 
-  Tent, 
-  Wheat, 
-  TreePine, 
-  Zap, 
-  ShieldAlert, 
-  Building2, 
-  Waves,
-  ArrowRight,
-  Sparkles
-} from "lucide-react";
-
-export interface ThematicAreaItem {
-  id: number;
-  icon: any;
-  slug: string;
-  title: string;
-  desc: string;
-  tag: string;
-  gradient: string;
-}
-
-export const thematicAreasList: ThematicAreaItem[] = [
-  {
-    id: 1,
-    icon: Target,
-    slug: "sdgs",
-    title: "Sustainable Development Goals",
-    desc: "Mainstreaming all 17 SDGs across our programs — ensuring every intervention contributes measurably to the 2030 Agenda for Sustainable Development at local, national, and global levels.",
-    tag: "All SDGs",
-    gradient: "from-emerald-500/10 to-teal-500/10"
-  },
-  {
-    id: 2,
-    icon: Thermometer,
-    slug: "climate-change",
-    title: "Climate Change",
-    desc: "Addressing the root causes and impacts of climate change through mitigation, adaptation, loss and damage frameworks, and multilateral climate diplomacy aligned with the Paris Agreement goals.",
-    tag: "SDG 13",
-    gradient: "from-blue-500/10 to-indigo-500/10"
-  },
-  {
-    id: 3,
-    icon: Tent,
-    slug: "displacement-migration",
-    title: "Displacement & Migration",
-    desc: "Protecting climate-displaced populations through rights-based policy frameworks, humanitarian response, and long-term durable solutions that address the intersections of climate, conflict, and migration.",
-    tag: "SDG 10 · 16",
-    gradient: "from-amber-500/10 to-orange-500/10"
-  },
-  {
-    id: 4,
-    icon: Wheat,
-    slug: "livelihoods",
-    title: "Livelihoods",
-    desc: "Building green, climate-resilient livelihoods for smallholder farmers, coastal communities, and forest-dependent peoples through agroecology, sustainable fisheries, and diversified income strategies.",
-    tag: "SDG 1 · 8",
-    gradient: "from-lime-500/10 to-emerald-500/10"
-  },
-  {
-    id: 5,
-    icon: TreePine,
-    slug: "biodiversity",
-    title: "Biodiversity",
-    desc: "Halting and reversing biodiversity loss through ecosystem protection, species recovery, indigenous community co-management, and implementation of the Kunming-Montreal Global Biodiversity Framework.",
-    tag: "SDG 15",
-    gradient: "from-green-500/10 to-emerald-500/10"
-  },
-  {
-    id: 6,
-    icon: Zap,
-    slug: "green-energy",
-    title: "Green Energy",
-    desc: "Accelerating the just energy transition by scaling renewable energy access, phasing out fossil fuel subsidies, and ensuring clean energy benefits reach the most marginalised communities first.",
-    tag: "SDG 7",
-    gradient: "from-yellow-500/10 to-amber-500/10"
-  },
-  {
-    id: 7,
-    icon: ShieldAlert,
-    slug: "drr",
-    title: "Disaster Risk Reduction",
-    desc: "Strengthening community and national resilience through early warning systems, disaster preparedness frameworks, and nature-based DRR solutions aligned with the Sendai Framework 2015–2030.",
-    tag: "SDG 11 · 13",
-    gradient: "from-sky-500/10 to-blue-500/10"
-  },
-  {
-    id: 8,
-    icon: Building2,
-    slug: "urban-resilience",
-    title: "Urban Resilience",
-    desc: "Transforming cities into climate-resilient, liveable spaces with green infrastructure, urban forests, low-carbon mobility, and integrated water and waste management aligned with the New Urban Agenda.",
-    tag: "SDG 11",
-    gradient: "from-teal-500/10 to-emerald-500/10"
-  },
-  {
-    id: 9,
-    icon: Waves,
-    slug: "blue-economy",
-    title: "Blue Economy",
-    desc: "Developing sustainable ocean economies that protect marine biodiversity, support coastal livelihoods, advance blue carbon solutions, and ensure equitable access to ocean resources for all.",
-    tag: "SDG 14",
-    gradient: "from-cyan-500/10 to-blue-500/10"
-  }
-];
+import { ArrowRight, Sparkles } from "lucide-react";
+import { getInitialThematicAreas, ThematicArea } from "../../pages/admin/sections/ThematicAreasView";
+import { useFirestoreData } from "../../../lib/useFirestore";
+import { resolveIcon } from "../../pages/admin/sections/ProgramsView";
 
 export function ThematicFocusAreasSection() {
+  const [areasRaw] = useFirestoreData<ThematicArea[]>("esn_thematic_areas_admin", getInitialThematicAreas());
+  const areas = areasRaw && areasRaw.length > 0 ? areasRaw : getInitialThematicAreas();
+
+  const gradients = [
+    "from-emerald-500/10 to-teal-500/10",
+    "from-blue-500/10 to-indigo-500/10",
+    "from-amber-500/10 to-orange-500/10",
+    "from-lime-500/10 to-emerald-500/10",
+    "from-teal-500/10 to-cyan-500/10",
+    "from-yellow-500/10 to-amber-500/10",
+    "from-rose-500/10 to-red-500/10",
+    "from-teal-500/10 to-emerald-500/10",
+    "from-cyan-500/10 to-blue-500/10",
+  ];
+
   return (
     <section id="thematic-areas" className="py-24 md:py-32 bg-[#F8FCF9] relative overflow-hidden">
       {/* Background Subtle Elements */}
@@ -143,9 +55,9 @@ export function ThematicFocusAreasSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-3xl sm:text-4xl md:text-5xl font-serif font-black text-[#0A3D2A] mb-6 leading-tight"
+            className="text-3xl sm:text-4xl md:text-5xl font-bold font-serif text-[#0A3D2A] mb-6 leading-tight"
           >
-            Themes Driving Systemic Environmental Change
+            Our Thematic Focus Areas
           </motion.h2>
           
           <motion.p 
@@ -159,10 +71,11 @@ export function ThematicFocusAreasSection() {
           </motion.p>
         </div>
 
-        {/* 9 Thematic Cards Grid */}
+        {/* Thematic Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-16">
-          {thematicAreasList.map((theme, idx) => {
-            const Icon = theme.icon;
+          {areas.map((theme, idx) => {
+            const IconComp = resolveIcon(theme.icon);
+            const gradient = gradients[idx % gradients.length];
             return (
               <Link 
                 key={theme.slug} 
@@ -177,13 +90,13 @@ export function ThematicFocusAreasSection() {
                   className="relative bg-white border border-gray-200/90 rounded-[28px] p-7 sm:p-8 shadow-lg shadow-gray-200/50 group-hover:shadow-2xl group-hover:shadow-[#0A3D2A]/15 group-hover:border-[#0A3D2A]/40 transition-all duration-500 flex flex-col justify-between h-full group-hover:-translate-y-1.5 overflow-hidden"
                 >
                   {/* Subtle top corner gradient glow */}
-                  <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${theme.gradient} rounded-bl-full pointer-events-none group-hover:scale-125 transition-transform duration-500`} />
+                  <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${gradient} rounded-bl-full pointer-events-none group-hover:scale-125 transition-transform duration-500`} />
 
                   <div>
                     {/* Top Row: Icon & Tag */}
                     <div className="flex items-center justify-between gap-4 mb-6">
                       <div className="w-14 h-14 rounded-2xl bg-[#F4F9F5] border border-[#0A3D2A]/10 flex items-center justify-center group-hover:bg-[#0A3D2A] group-hover:border-[#0A3D2A] group-hover:scale-105 transition-all duration-300 shadow-sm">
-                        <Icon className="w-7 h-7 text-[#0A3D2A] group-hover:text-white transition-colors duration-300" strokeWidth={1.75} />
+                        <IconComp className="w-7 h-7 text-[#0A3D2A] group-hover:text-white transition-colors duration-300" strokeWidth={1.75} />
                       </div>
                       
                       <span className="text-xs font-bold tracking-wider bg-emerald-50 text-[#0A3D2A] px-3.5 py-1.5 rounded-full border border-emerald-200/80 shadow-sm">
@@ -202,12 +115,10 @@ export function ThematicFocusAreasSection() {
                     </p>
                   </div>
 
-                  {/* Bottom Footer Link */}
-                  <div className="pt-4 border-t border-gray-100 flex items-center justify-between text-xs font-bold text-[#0A3D2A] group-hover:text-[#0B5D3F]">
-                    <span className="tracking-wider uppercase">Explore Details</span>
-                    <div className="w-7 h-7 rounded-full bg-[#F4F9F5] group-hover:bg-[#0A3D2A] group-hover:text-white flex items-center justify-center transition-colors">
-                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                    </div>
+                  {/* Read More Link Arrow */}
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#0A3D2A] group-hover:text-[#0B5D3F] transition-colors pt-4 border-t border-gray-100">
+                    <span>Explore Focus Area</span>
+                    <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1.5" />
                   </div>
                 </motion.div>
               </Link>

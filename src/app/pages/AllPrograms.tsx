@@ -3,13 +3,10 @@ import { motion } from "motion/react";
 import { ArrowRight, Leaf } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
 import { getInitialPrograms, resolveIcon, ProgramData } from "./admin/sections/ProgramsView";
+import { useFirestoreData } from "../../lib/useFirestore";
 
 export default function AllPrograms() {
-  const [programs, setPrograms] = useState<ProgramData[]>([]);
-
-  useEffect(() => {
-    setPrograms(getInitialPrograms());
-  }, []);
+  const [programs] = useFirestoreData<ProgramData[]>("esn_programs", getInitialPrograms());
 
   const categories = useMemo(() => {
     const cats = new Set(programs.map((p) => p.category));

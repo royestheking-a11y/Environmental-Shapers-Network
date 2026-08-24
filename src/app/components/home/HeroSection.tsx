@@ -93,7 +93,7 @@ function FallingLeaf({ delay, x }: { delay: number; x: number }) {
 }
 
 export function HeroSection() {
-  const [slides, setSlides, loading] = useFirestoreData<any[]>("esn_hero", getInitialHeroSlides());
+  const [slides, setSlides, loading] = useFirestoreData<any[]>("esn_hero_admin", getInitialHeroSlides());
   const [slide, setSlide] = useState(0);
 
   // Interactive click-to-grow plants state

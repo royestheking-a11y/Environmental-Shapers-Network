@@ -17,7 +17,7 @@ const defaultAreas = [
 ];
 
 export function ResearchKnowledgeSection() {
-  const [areas] = useFirestoreData<any[]>("esn_research_areas", getInitialResearchAreas());
+  const [areas] = useFirestoreData<any[]>("esn_research_admin", getInitialResearchAreas());
   return (
     <section className="py-16 bg-white relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">

@@ -62,7 +62,7 @@ function AnimatedCounter({ target, suffix }: { target: number; suffix: string })
 export function StatsSection() {
   const sectionRef = useRef(null);
   const inView = useInView(sectionRef, { once: true, margin: "-100px" });
-  const [statsRaw] = useFirestoreData<StatItem[]>("esn_impact_stats", getInitialStats());
+  const [statsRaw] = useFirestoreData<StatItem[]>("esn_stats_admin", getInitialStats());
   const stats = statsRaw && statsRaw.length > 0 ? statsRaw : defaultStats;
 
   return (

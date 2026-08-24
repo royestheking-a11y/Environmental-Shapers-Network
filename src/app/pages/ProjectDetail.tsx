@@ -6,6 +6,8 @@ import {
   CheckCircle2, TrendingUp, Heart, BookOpen, ArrowRight, ExternalLink
 } from "lucide-react";
 import { ImageWithFallback } from "../components/ui/ImageWithFallback";
+import { useFirestoreData } from "../../lib/useFirestore";
+import { getInitialProjects, Project } from "./admin/sections/ProjectsView";
 
 const projectsData = [
   {
@@ -401,7 +403,52 @@ const projectsData = [
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
-  const project = projectsData.find((p) => String(p.id) === id);
+  const [adminProjects] = useFirestoreData<Project[]>("esn_projects_admin", getInitialProjects());
+  
+  const adminProj = adminProjects.find((p) => String(p.id) === id);
+  const staticProj = projectsData.find((p) => String(p.id) === id);
+
+  const project = adminProj ? {
+    id: adminProj.id,
+    title: adminProj.name || staticProj?.title || "Environmental Project",
+    tagline: staticProj?.tagline || `${adminProj.category} Initiative in ${adminProj.country}`,
+    location: adminProj.country || staticProj?.location || "Global",
+    category: adminProj.category || staticProj?.category || "Forest",
+    status: adminProj.status === "active" ? "Active" : adminProj.status === "planning" ? "Planning" : adminProj.status === "completed" ? "Completed" : "Active",
+    year: staticProj?.year || 2024,
+    theme: staticProj?.theme || "SDG 13",
+    impact: adminProj.impact || staticProj?.impact || "Community Impact",
+    volunteers: adminProj.volunteers || staticProj?.volunteers || 500,
+    icon: staticProj?.icon || TreePine,
+    color: staticProj?.color || "#0B5D3F",
+    budget: staticProj?.budget || "$1.5M",
+    partners: staticProj?.partners || ["Global Environmental Fund", "Local Community Network", "ESN International"],
+    img: adminProj.image || staticProj?.img || "https://images.unsplash.com/photo-1448375240586-882707db888b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400",
+    galleryImgs: staticProj?.galleryImgs || [
+      adminProj.image || "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800",
+      "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800",
+      "https://images.unsplash.com/photo-1426604966848-d7adac402bff?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800",
+    ],
+    description: staticProj?.description || `This project is actively managed by the Environmental Shapers Network in ${adminProj.country}, driving community-based impact in ${adminProj.category}.`,
+    challenge: staticProj?.challenge || "Addressing urgent regional environmental degradation and climate vulnerability through direct community engagement.",
+    approach: staticProj?.approach || [
+      { title: "Community Stewardship", desc: "Equipping local leaders with skills and tools to protect native ecosystems." },
+      { title: "Science-Based Monitoring", desc: "Tracking biodiversity, tree canopy, and carbon sequestration with verifiable metrics." },
+      { title: "Sustainable Livelihoods", desc: "Empowering families through green job creation and eco-friendly economic alternatives." }
+    ],
+    stats: staticProj?.stats || [
+      { value: adminProj.impact || "50K+", label: "Direct Impact", icon: TreePine },
+      { value: String(adminProj.volunteers || "500+"), label: "Volunteers", icon: Users },
+      { value: adminProj.country || "Active", label: "Region", icon: MapPin },
+      { value: "100%", label: "Community Owned", icon: Heart },
+    ],
+    sdgs: staticProj?.sdgs || ["SDG 13", "SDG 15", "SDG 17"],
+    timeline: staticProj?.timeline || [
+      { year: "2024", event: "Project initiation and local community baseline assessments" },
+      { year: "2025", event: "Full scale rollout, stakeholder partnerships, and field implementation" },
+      { year: "2026", event: "Continuous monitoring, impact verification, and global reporting" },
+    ]
+  } : staticProj;
 
   if (!project) {
     return (

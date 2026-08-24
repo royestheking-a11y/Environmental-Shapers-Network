@@ -1,8 +1,9 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import { motion, useInView } from "motion/react";
 import { Link } from "react-router";
 import { ExternalLink, ArrowRight, BookOpen, Handshake, Search, Calendar, Clock, Tag, Newspaper } from "lucide-react";
-import { fetchFirestoreData } from "../../../lib/useFirestore";
+import { useFirestoreData } from "../../../lib/useFirestore";
+import { getInitialPartners } from "../../pages/admin/sections/PartnersView";
 import { ImageWithFallback } from "../ui/ImageWithFallback";
 
 const fallbackPartners = [
@@ -54,28 +55,16 @@ export function PartnersNewsSection() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-100px" });
   
-  const [news, setNews] = useState<any[]>(fallbackNews);
-  const [partners, setPartners] = useState<string[]>(fallbackPartners);
+  const [partnersRaw] = useFirestoreData<any[]>("esn_partners_admin", getInitialPartners());
+  const [cmsContent] = useFirestoreData<any[]>("esn_cms_content", fallbackNews);
 
-  useEffect(() => {
-    fetchFirestoreData<any[]>("esn_partners_admin", fallbackPartners).then(parsed => {
-      if (parsed && parsed.length > 0 && typeof parsed[0] === 'object') {
-        setPartners(parsed.map((p: any) => p.name));
-      } else {
-        setPartners(fallbackPartners);
-      }
-    }).catch(() => setPartners(fallbackPartners));
+  const partners: string[] = (partnersRaw && partnersRaw.length > 0)
+    ? partnersRaw.map((p: any) => (typeof p === 'string' ? p : p.name))
+    : fallbackPartners;
 
-    fetchFirestoreData<any[]>("esn_cms_content", []).then(parsed => {
-      if (parsed) {
-        const newsOnly = parsed.filter((item: any) => item.type === "News" || item.type === "Report" || item.type === "Event");
-        if (newsOnly.length > 0) {
-          setNews(newsOnly);
-          return;
-        }
-      }
-    });
-  }, []);
+  const news = (cmsContent && cmsContent.length > 0)
+    ? cmsContent.filter((item: any) => item.status === "Published" || !item.status)
+    : fallbackNews;
 
   const featuredNews = news.find(n => n.featured) || news[0];
   const regularNews = news.filter(n => n.id !== featuredNews?.id).slice(0, 2);

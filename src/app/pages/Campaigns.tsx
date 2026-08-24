@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { getInitialCampaigns, Campaign } from "./admin/sections/CampaignsView";
 import { resolveIcon } from "./admin/sections/ProgramsView";
 import { ImageWithFallback } from "../components/ui/ImageWithFallback";
+import { useFirestoreData } from "../../lib/useFirestore";
 
 function ProgressBar({ goal, raised, color }: { goal: number; raised: number; color: string }) {
   const pct = Math.min(100, Math.round((raised / goal) * 100));
@@ -23,11 +24,7 @@ function ProgressBar({ goal, raised, color }: { goal: number; raised: number; co
 }
 
 export default function Campaigns() {
-  const [allCampaigns, setAllCampaigns] = useState<Campaign[]>([]);
-
-  useEffect(() => {
-    setAllCampaigns(getInitialCampaigns());
-  }, []);
+  const [allCampaigns] = useFirestoreData<Campaign[]>("esn_campaigns_admin", getInitialCampaigns());
 
   const active = allCampaigns.filter(c => c.status === "active");
   const completed = allCampaigns.filter(c => c.status === "completed");

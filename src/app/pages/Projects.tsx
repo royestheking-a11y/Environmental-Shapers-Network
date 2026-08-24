@@ -6,14 +6,10 @@ import { ImageWithFallback } from "../components/ui/ImageWithFallback";
 
 import { getInitialProjects, Project } from "./admin/sections/ProjectsView";
 import { resolveIcon } from "./admin/sections/ProgramsView";
+import { useFirestoreData } from "../../lib/useFirestore";
 
 export default function Projects() {
-  const [allProjects, setAllProjects] = useState<Project[]>([]);
-
-  // Load from admin data
-  useEffect(() => {
-    setAllProjects(getInitialProjects());
-  }, []);
+  const [allProjects] = useFirestoreData<Project[]>("esn_projects_admin", getInitialProjects());
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [status, setStatus] = useState("All");

@@ -9,7 +9,7 @@ import { useFirestoreData } from "../../../lib/useFirestore";
 export function TestimonialsSection() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-100px" });
-  const [testimonials] = useFirestoreData<any[]>("esn_testimonials", getInitialTestimonials());
+  const [testimonials] = useFirestoreData<any[]>("esn_testimonials_admin", getInitialTestimonials());
   const [current, setCurrent] = useState(0);
 
   const prev = () => setCurrent((c) => (c - 1 + testimonials.length) % testimonials.length);
