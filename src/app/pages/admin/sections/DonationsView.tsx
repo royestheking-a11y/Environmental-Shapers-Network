@@ -31,7 +31,7 @@ const channelData = [
 
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 
-function getInitialDonations() {
+export function getInitialDonations() {
   return [
     { id: 1, donor: "Anonymous", email: "—", amount: 500, project: "Plant A Million Trees", method: "Card", date: "Jul 27, 2026", status: "completed", recurring: false, receipt: "RCP-001" },
     { id: 2, donor: "Sarah Chen", email: "s.chen@email.com", amount: 250, project: "Ocean Initiative", method: "PayPal", date: "Jul 27, 2026", status: "completed", recurring: true, receipt: "RCP-002" },

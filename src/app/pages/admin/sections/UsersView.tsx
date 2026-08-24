@@ -17,7 +17,7 @@ interface AdminUserEntry {
 
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 
-function getInitialUsers(): AdminUserEntry[] {
+export function getInitialUsers(): AdminUserEntry[] {
   return [
     { id: 1, name: "Rizwan Ahmed", email: "rizwan@esnglobal.org", role: "Super Admin", country: "Bangladesh", status: "Active", joinDate: "Jan 2023" },
     { id: 2, name: "Priya Sharma", email: "priya@esnglobal.org", role: "Researcher", country: "India", status: "Active", joinDate: "Mar 2023" },
