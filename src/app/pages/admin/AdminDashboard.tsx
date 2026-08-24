@@ -27,11 +27,13 @@ import MissionAdminView from "./sections/MissionAdminView";
 import ResearchAdminView from "./sections/ResearchAdminView";
 import YouthAdminView from "./sections/YouthAdminView";
 import { ImageUploadField } from "../../components/ui/ImageUploadField";
+import { ActivityLogItem, getInitialActivityLogs } from "../../../lib/activityLogger";
 import {
   LayoutDashboard, TreePine, Globe2, Users, Heart, Megaphone, Calendar, BarChart3, FileText, Settings,
   Bell, Search, LogOut, ChevronDown, Menu, X, TrendingUp, TrendingDown, Eye, Edit3, Trash2,
   Plus, Filter, Download, RefreshCw, Shield, Mail, Image, Database, Leaf, Target, Award,
   AlertCircle, CheckCircle2, Clock, MapPin, Star, Briefcase, MessageSquare, MonitorPlay, Focus,
+  Activity,
 } from "lucide-react";
 import { AreaChart, Area, LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
@@ -198,6 +200,7 @@ export default function AdminDashboard() {
   const [editingContent, setEditingContent] = useState<any>(null);
   const [cmsDeleteConfirmId, setCmsDeleteConfirmId] = useState<number | null>(null);
   const [pendingAppsCount, setPendingAppsCount] = useState(0);
+  const [activityLogs] = useFirestoreData<ActivityLogItem[]>("esn_activity_logs", getInitialActivityLogs());
 
   useEffect(() => {
     const u = localStorage.getItem("esn_admin_user");
@@ -275,7 +278,7 @@ export default function AdminDashboard() {
   const renderContent = () => {
     switch (activeSection) {
       case "dashboard":
-        return <DashboardView kpiCards={kpiCards} weeklyData={weeklyData} monthlyDonations={monthlyDonations} recentDonations={recentDonations} recentActivity={recentActivity} />;
+        return <DashboardView kpiCards={kpiCards} weeklyData={weeklyData} monthlyDonations={monthlyDonations} recentDonations={recentDonations} recentActivity={activityLogs} />;
       case "cms":
         return <CMSView content={cmsContent} onDelete={deleteContent} onToggle={toggleStatus} onShowAdd={() => setShowAddContent(true)} showAdd={showAddContent} newContent={newContent} setNewContent={setNewContent} onAdd={addContent} onCancelAdd={() => setShowAddContent(false)} onEdit={startEditContent} editingContent={editingContent} setEditingContent={setEditingContent} onSaveEdit={saveEditContent} deleteConfirmId={cmsDeleteConfirmId} onConfirmDelete={confirmDeleteContent} onCancelDelete={() => setCmsDeleteConfirmId(null)} />;
       case "hero":
@@ -613,24 +616,34 @@ function DashboardView({ kpiCards, weeklyData, monthlyDonations, recentDonations
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-100">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
           <div className="flex items-center justify-between p-6 border-b border-gray-50">
-            <h4 className="font-bold text-gray-900">Activity Feed</h4>
-            <Link to="/admin/dashboard/cms" className="text-xs text-[#0B5D3F] font-semibold hover:underline">See All</Link>
+            <div className="flex items-center gap-2">
+              <h4 className="font-bold text-gray-900">Live System Activity</h4>
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            </div>
+            <Link to="/admin/dashboard/roles" className="text-xs text-[#0B5D3F] font-semibold hover:underline">Full Audit Trail →</Link>
           </div>
-          <div className="p-4">
-            {recentActivity.map((a: any, i: number) => (
-              <div key={i} className="flex items-start gap-3 py-3 border-b border-gray-50 last:border-0">
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: a.color + "15" }}>
-                  <a.icon size={15} style={{ color: a.color }} />
+          <div className="p-4 divide-y divide-gray-50">
+            {(recentActivity || []).slice(0, 5).map((a: any, i: number) => (
+              <div key={a.id || i} className="flex items-start gap-3 py-3">
+                <div className="w-9 h-9 rounded-xl bg-[#0B5D3F]/10 text-[#0B5D3F] flex items-center justify-center shrink-0 mt-0.5">
+                  <Activity size={15} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs text-gray-500">{a.action}</div>
-                  <div className="text-sm font-semibold text-gray-800 truncate">{a.subject}</div>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-xs font-bold text-gray-800">{a.action}</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 font-semibold">{a.category}</span>
+                  </div>
+                  <div className="text-xs text-gray-500 truncate mt-0.5">{a.details}</div>
+                  <div className="text-[10px] text-gray-400 mt-0.5 font-medium">By: <strong className="text-gray-700">{a.userName}</strong> ({a.userRole})</div>
                 </div>
-                <div className="text-xs text-gray-400 shrink-0">{a.time}</div>
+                <div className="text-[11px] text-gray-400 shrink-0 font-medium">{a.timestamp}</div>
               </div>
             ))}
+            {(!recentActivity || recentActivity.length === 0) && (
+              <div className="py-8 text-center text-xs text-gray-400">No activity recorded yet</div>
+            )}
           </div>
         </div>
       </div>

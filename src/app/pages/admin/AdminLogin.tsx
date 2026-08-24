@@ -2,13 +2,10 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router";
 import { motion } from "motion/react";
 import { Eye, EyeOff, Shield, Lock, Mail, AlertCircle, Leaf, TreePine, Globe2, CheckCircle2, ArrowLeft, Home } from "lucide-react";
+import { authenticateStaff } from "../../../lib/staffAuthService";
+import { logAdminActivity } from "../../../lib/activityLogger";
 const esnLogo = "/logo.png";
 const esnLogoWhite = "/logo-white.png";
-
-const ADMIN_CREDENTIALS = {
-  "admin@esnglobal.org": { password: "ESN@Admin2026", role: "Super Admin", name: "Admin User" },
-  "editor@esnglobal.org": { password: "ESN@Editor2026", role: "Content Editor", name: "Editor User" },
-};
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
@@ -23,16 +20,29 @@ export default function AdminLogin() {
     setError("");
     setLoading(true);
 
-    await new Promise((r) => setTimeout(r, 1200));
-
-    const cred = ADMIN_CREDENTIALS[email as keyof typeof ADMIN_CREDENTIALS];
-    if (cred && cred.password === password) {
-      localStorage.setItem("esn_admin_user", JSON.stringify({ email, role: cred.role, name: cred.name }));
-      navigate("/admin/dashboard");
-    } else {
-      setError("Invalid email or password. Please try again.");
+    try {
+      const user = await authenticateStaff(email, password);
+      if (user) {
+        localStorage.setItem(
+          "esn_admin_user",
+          JSON.stringify({ email: user.email, role: user.role, name: user.name, avatar: user.avatar })
+        );
+        await logAdminActivity(
+          "Staff Logged In",
+          "Auth",
+          `User ${user.name} (${user.role}) logged in to the admin portal.`,
+          "success",
+          { name: user.name, role: user.role, email: user.email }
+        );
+        navigate("/admin/dashboard");
+      } else {
+        setError("Invalid email or password. Please check your credentials.");
+      }
+    } catch (err) {
+      setError("An error occurred while authenticating. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
