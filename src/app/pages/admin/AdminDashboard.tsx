@@ -452,17 +452,7 @@ export default function AdminDashboard() {
         </header>
 
         <main className="flex-1 overflow-y-auto p-6">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeSection}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.25 }}
-            >
-              {renderContent()}
-            </motion.div>
-          </AnimatePresence>
+          {renderContent()}
         </main>
       </div>
     </div>

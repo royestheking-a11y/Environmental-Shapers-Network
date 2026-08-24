@@ -59,11 +59,15 @@ export function Root() {
         {!isAdmin && <ScrollProgress />}
         {!isAdmin && <Navbar />}
         <div className="flex-1 bg-[#F6FBF8]">
-          <AnimatePresence mode="wait" initial={false}>
-            <PageTransition key={location.pathname}>
-              <Outlet />
-            </PageTransition>
-          </AnimatePresence>
+          {isAdmin ? (
+            <Outlet />
+          ) : (
+            <AnimatePresence mode="wait" initial={false}>
+              <PageTransition key={location.pathname}>
+                <Outlet />
+              </PageTransition>
+            </AnimatePresence>
+          )}
         </div>
         {!isAdmin && <Footer />}
         <ScrollToTop />
