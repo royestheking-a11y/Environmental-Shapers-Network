@@ -64,8 +64,19 @@ export function OpportunitiesView() {
     }
   };
 
+  const refresh = () => {
+    setJobs(defaultJobs);
+    setRoles(defaultRoles);
+  };
+
   const currentList = activeTab === "careers" ? jobs : roles;
-  const filteredList = currentList.filter(item => item.title.toLowerCase().includes(search.toLowerCase()) || (item.location && item.location.toLowerCase().includes(search.toLowerCase())));
+  const filteredList = (currentList || []).filter(item => {
+    if (!item) return false;
+    const title = String(item.title || "").toLowerCase();
+    const loc = String(item.location || "").toLowerCase();
+    const s = String(search || "").toLowerCase().trim();
+    return !s || title.includes(s) || loc.includes(s);
+  });
 
   return (
     <div className="flex flex-col gap-6">
@@ -75,7 +86,7 @@ export function OpportunitiesView() {
           <p className="text-sm text-gray-400 mt-0.5">Manage job postings and volunteer roles</p>
         </div>
         <div className="flex gap-3">
-          <button onClick={loadData} className="flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-500 rounded-xl hover:bg-gray-50">
+          <button onClick={refresh} className="flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-500 rounded-xl hover:bg-gray-50">
             <RefreshCw size={14} /> Refresh
           </button>
           <button onClick={() => { setEditingItem(null); setShowModal(true); }} className="flex items-center gap-2 px-4 py-2 bg-[#0B5D3F] text-white rounded-xl font-semibold hover:bg-[#0a5237]">
