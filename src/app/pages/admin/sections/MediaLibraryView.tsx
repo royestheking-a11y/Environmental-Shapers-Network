@@ -91,21 +91,69 @@ export function MediaLibraryView() {
     setTimeout(() => setCopied(null), 1800);
   };
 
+  const handleFilesUpload = async (files: File[]) => {
+    const promises = files.map((f, i) => {
+      return new Promise<MediaItem>((resolve) => {
+        const isImage = f.type.startsWith("image");
+        if (isImage) {
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            resolve({
+              id: Date.now() + i,
+              name: f.name,
+              type: "image",
+              url: (ev.target?.result as string) || "",
+              size: `${(f.size / (1024 * 1024)).toFixed(2)} MB`,
+              uploadedBy: "Admin",
+              date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+              tags: ["upload"],
+            });
+          };
+          reader.onerror = () => {
+            resolve({
+              id: Date.now() + i,
+              name: f.name,
+              type: "image",
+              url: "",
+              size: `${(f.size / (1024 * 1024)).toFixed(2)} MB`,
+              uploadedBy: "Admin",
+              date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+              tags: ["upload"],
+            });
+          };
+          reader.readAsDataURL(f);
+        } else {
+          resolve({
+            id: Date.now() + i,
+            name: f.name,
+            type: f.type.startsWith("video") ? "video" : "document",
+            url: "",
+            size: `${(f.size / (1024 * 1024)).toFixed(2)} MB`,
+            uploadedBy: "Admin",
+            date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+            tags: ["upload"],
+          });
+        }
+      });
+    });
+
+    const newItems = await Promise.all(promises);
+    saveItems([...newItems, ...(items || [])]);
+  };
+
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    const files = Array.from(e.dataTransfer.files);
-    const newItems: MediaItem[] = files.map((f, i) => ({
-      id: Date.now() + i,
-      name: f.name,
-      type: f.type.startsWith("image") ? "image" : f.type.startsWith("video") ? "video" : "document",
-      url: f.type.startsWith("image") ? URL.createObjectURL(f) : "",
-      size: `${(f.size / (1024 * 1024)).toFixed(1)} MB`,
-      uploadedBy: "Admin",
-      date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-      tags: [],
-    }));
-    saveItems([...newItems, ...items]);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFilesUpload(Array.from(e.dataTransfer.files));
+    }
+  };
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleFilesUpload(Array.from(e.target.files));
+      e.target.value = "";
+    }
   };
 
   const startEdit = (item: MediaItem, e: React.MouseEvent) => {
@@ -163,7 +211,7 @@ export function MediaLibraryView() {
           <button onClick={() => fileRef.current?.click()} className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all">
             <Upload size={14} /> Upload Files
           </button>
-          <input ref={fileRef} type="file" multiple className="hidden" />
+          <input ref={fileRef} type="file" multiple accept="image/*,video/*,application/pdf" onChange={handleFileInput} className="hidden" />
         </div>
       </div>
 
