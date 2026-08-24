@@ -3,17 +3,20 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   Image, Upload, Search, Grid3x3, List, Trash2, Download,
   Eye, Filter, FolderOpen, Film, FileText, Music, X,
-  Copy, Check, Plus, LayoutGrid, Edit3, Save
+  Copy, Check, Plus, LayoutGrid, Edit3, Save, Loader2, CloudUpload
 } from "lucide-react";
 import { ImageWithFallback } from "../../../components/ui/ImageWithFallback";
+import { uploadMediaFile, deleteMediaFile } from "../../../../lib/storageService";
+import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 
 type MediaType = "All" | "Images" | "Videos" | "Documents";
 
-interface MediaItem {
+export interface MediaItem {
   id: number;
   name: string;
   type: "image" | "video" | "document";
   url: string;
+  storagePath?: string;
   size: string;
   dimensions?: string;
   uploadedBy: string;
@@ -32,8 +35,6 @@ const seedMedia: MediaItem[] = [
   { id: 8, name: "impact-presentation.pdf", type: "document", url: "", size: "3.2 MB", uploadedBy: "Admin", date: "Jul 18, 2026", tags: ["presentation", "impact"] },
   { id: 9, name: "esn-intro-video.mp4", type: "video", url: "", size: "48 MB", dimensions: "1920×1080", uploadedBy: "Admin", date: "Jul 15, 2026", tags: ["video", "intro", "promo"] },
 ];
-
-import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 
 function getInitialMedia(): MediaItem[] {
   return seedMedia;
@@ -56,6 +57,21 @@ export function MediaLibraryView() {
   const [editTags, setEditTags] = useState("");
   const [editUploadedBy, setEditUploadedBy] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Upload Progress State
+  const [uploadStatus, setUploadStatus] = useState<{
+    active: boolean;
+    current: number;
+    total: number;
+    percent: number;
+    fileName: string;
+  }>({
+    active: false,
+    current: 0,
+    total: 0,
+    percent: 0,
+    fileName: "",
+  });
 
   const saveItems = async (list: MediaItem[]) => {
     setItems(list);
@@ -80,9 +96,29 @@ export function MediaLibraryView() {
     setSelected((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
   };
 
-  const deleteSelected = () => {
-    saveItems(items.filter((i) => !selected.includes(i.id)));
-    setSelected([]);
+  const deleteSelected = async () => {
+    if (!selected.length) return;
+    if (window.confirm(`Are you sure you want to delete ${selected.length} selected item(s)?`)) {
+      const toDelete = (items || []).filter(i => selected.includes(i.id));
+      for (const it of toDelete) {
+        if (it.storagePath || it.url) {
+          await deleteMediaFile(it.storagePath || it.url);
+        }
+      }
+      saveItems((items || []).filter((i) => !selected.includes(i.id)));
+      setSelected([]);
+    }
+  };
+
+  const deleteSingleItem = async (item: MediaItem, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (window.confirm(`Are you sure you want to delete "${item.name}"?`)) {
+      if (item.storagePath || item.url) {
+        await deleteMediaFile(item.storagePath || item.url);
+      }
+      saveItems((items || []).filter(i => i.id !== item.id));
+      if (preview?.id === item.id) setPreview(null);
+    }
   };
 
   const copyUrl = (id: number, url: string) => {
@@ -92,53 +128,46 @@ export function MediaLibraryView() {
   };
 
   const handleFilesUpload = async (files: File[]) => {
-    const promises = files.map((f, i) => {
-      return new Promise<MediaItem>((resolve) => {
-        const isImage = f.type.startsWith("image");
-        if (isImage) {
-          const reader = new FileReader();
-          reader.onload = (ev) => {
-            resolve({
-              id: Date.now() + i,
-              name: f.name,
-              type: "image",
-              url: (ev.target?.result as string) || "",
-              size: `${(f.size / (1024 * 1024)).toFixed(2)} MB`,
-              uploadedBy: "Admin",
-              date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-              tags: ["upload"],
-            });
-          };
-          reader.onerror = () => {
-            resolve({
-              id: Date.now() + i,
-              name: f.name,
-              type: "image",
-              url: "",
-              size: `${(f.size / (1024 * 1024)).toFixed(2)} MB`,
-              uploadedBy: "Admin",
-              date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-              tags: ["upload"],
-            });
-          };
-          reader.readAsDataURL(f);
-        } else {
-          resolve({
-            id: Date.now() + i,
-            name: f.name,
-            type: f.type.startsWith("video") ? "video" : "document",
-            url: "",
-            size: `${(f.size / (1024 * 1024)).toFixed(2)} MB`,
-            uploadedBy: "Admin",
-            date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-            tags: ["upload"],
-          });
-        }
-      });
-    });
+    if (!files || files.length === 0) return;
+    setUploadStatus({ active: true, current: 1, total: files.length, percent: 5, fileName: files[0].name });
 
-    const newItems = await Promise.all(promises);
-    saveItems([...newItems, ...(items || [])]);
+    const newMediaItems: MediaItem[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i];
+      setUploadStatus({
+        active: true,
+        current: i + 1,
+        total: files.length,
+        percent: 15,
+        fileName: f.name,
+      });
+
+      try {
+        const res = await uploadMediaFile(f, "esn_media", (pct) => {
+          setUploadStatus(prev => ({ ...prev, percent: pct }));
+        });
+
+        newMediaItems.push({
+          id: Date.now() + i,
+          name: res.name,
+          type: res.type,
+          url: res.url,
+          storagePath: res.storagePath,
+          size: res.size,
+          uploadedBy: "Admin",
+          date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+          tags: ["upload"],
+        });
+      } catch (err) {
+        console.error("Failed to upload file:", f.name, err);
+      }
+    }
+
+    setUploadStatus({ active: false, current: 0, total: 0, percent: 0, fileName: "" });
+    if (newMediaItems.length > 0) {
+      saveItems([...newMediaItems, ...(items || [])]);
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -160,14 +189,19 @@ export function MediaLibraryView() {
     e.stopPropagation();
     setEditingItem(item);
     setEditName(item.name);
-    setEditTags(item.tags.join(", "));
-    setEditUploadedBy(item.uploadedBy);
+    setEditTags(item.tags ? item.tags.join(", ") : "");
+    setEditUploadedBy(item.uploadedBy || "Admin");
   };
 
   const saveEdit = () => {
     if (!editingItem) return;
-    saveItems(items.map((i) => i.id === editingItem.id
-      ? { ...i, name: editName.trim() || i.name, tags: editTags.split(",").map((t) => t.trim()).filter(Boolean), uploadedBy: editUploadedBy.trim() || i.uploadedBy }
+    saveItems((items || []).map((i) => i.id === editingItem.id
+      ? {
+          ...i,
+          name: editName.trim() || i.name,
+          tags: editTags.split(",").map((t) => t.trim()).filter(Boolean),
+          uploadedBy: editUploadedBy.trim() || i.uploadedBy
+        }
       : i
     ));
     setEditingItem(null);
@@ -175,50 +209,74 @@ export function MediaLibraryView() {
 
   const downloadItem = (item: MediaItem) => {
     if (item.url) {
-      window.open(item.url, "_blank");
-    } else {
-      const blob = new Blob([`[Simulated download for: ${item.name}]`], { type: "text/plain" });
-      const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = url;
+      a.href = item.url;
       a.download = item.name;
+      a.target = "_blank";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
     }
   };
 
-  const totalSize = items.reduce((s, i) => s + parseFloat(i.size), 0).toFixed(1);
-  const imgCount = items.filter(i => i.type === "image").length;
-  const vidCount = items.filter(i => i.type === "video").length;
-  const docCount = items.filter(i => i.type === "document").length;
+  const totalSize = (items || []).reduce((s, i) => s + (parseFloat(i.size) || 0), 0).toFixed(1);
+  const imgCount = (items || []).filter(i => i.type === "image").length;
+  const vidCount = (items || []).filter(i => i.type === "video").length;
+  const docCount = (items || []).filter(i => i.type === "document").length;
 
   return (
     <div className="flex flex-col gap-7">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-black text-gray-900" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Media Library</h3>
-          <p className="text-sm text-gray-400 mt-0.5">{items.length} files · {totalSize} MB used</p>
+          <h3 className="font-black text-gray-900" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Media Library & Cloud Storage</h3>
+          <p className="text-sm text-gray-400 mt-0.5">{(items || []).length} files · {totalSize} MB total</p>
         </div>
         <div className="flex items-center gap-3">
           {selected.length > 0 && (
             <button onClick={deleteSelected} className="flex items-center gap-2 text-sm text-red-500 border border-red-200 bg-red-50 px-4 py-2.5 rounded-xl hover:bg-red-100 transition-all font-semibold">
-              <Trash2 size={14} /> Delete ({selected.length})
+              <Trash2 size={14} /> Delete Selected ({selected.length})
             </button>
           )}
-          <button onClick={() => fileRef.current?.click()} className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all">
-            <Upload size={14} /> Upload Files
+          <button
+            onClick={() => fileRef.current?.click()}
+            disabled={uploadStatus.active}
+            className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all disabled:opacity-50"
+          >
+            {uploadStatus.active ? <Loader2 size={14} className="animate-spin" /> : <CloudUpload size={14} />}
+            {uploadStatus.active ? "Uploading..." : "Upload to Cloud"}
           </button>
           <input ref={fileRef} type="file" multiple accept="image/*,video/*,application/pdf" onChange={handleFileInput} className="hidden" />
         </div>
       </div>
 
+      {/* Upload Progress Banner */}
+      <AnimatePresence>
+        {uploadStatus.active && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="bg-white border border-[#4CAF50]/30 rounded-2xl p-4 shadow-md shadow-green-900/5"
+          >
+            <div className="flex items-center justify-between text-sm mb-2">
+              <div className="flex items-center gap-2 text-[#0B5D3F] font-semibold">
+                <Loader2 size={16} className="animate-spin text-[#4CAF50]" />
+                Uploading ({uploadStatus.current}/{uploadStatus.total}): <span className="font-mono text-xs text-gray-600 truncate max-w-xs">{uploadStatus.fileName}</span>
+              </div>
+              <span className="font-bold text-[#4CAF50]">{uploadStatus.percent}%</span>
+            </div>
+            <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-[#4CAF50] to-[#0B5D3F] transition-all duration-300 rounded-full" style={{ width: `${uploadStatus.percent}%` }} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "Total Files", value: items.length, icon: FolderOpen, color: "#0B5D3F" },
+          { label: "Total Files", value: (items || []).length, icon: FolderOpen, color: "#0B5D3F" },
           { label: "Images", value: imgCount, icon: Image, color: "#4CAF50" },
           { label: "Videos", value: vidCount, icon: Film, color: "#173B63" },
           { label: "Documents", value: docCount, icon: FileText, color: "#D6A95A" },
@@ -243,9 +301,9 @@ export function MediaLibraryView() {
         onClick={() => fileRef.current?.click()}
         className={`border-2 border-dashed rounded-2xl py-8 text-center cursor-pointer transition-all ${dragOver ? "border-[#4CAF50] bg-[#4CAF50]/5" : "border-gray-200 hover:border-[#0B5D3F]/40 hover:bg-[#F6FBF8]"}`}
       >
-        <Upload size={28} className={`mx-auto mb-2 ${dragOver ? "text-[#4CAF50]" : "text-gray-300"}`} />
-        <p className="text-sm font-semibold text-gray-500">Drag & drop files here, or <span className="text-[#0B5D3F] underline">browse</span></p>
-        <p className="text-xs text-gray-400 mt-1">Supports JPG, PNG, PDF, MP4, SVG · Max 50MB per file</p>
+        <CloudUpload size={32} className={`mx-auto mb-2 ${dragOver ? "text-[#4CAF50]" : "text-gray-400"}`} />
+        <p className="text-sm font-semibold text-gray-700">Drag & drop files here, or <span className="text-[#0B5D3F] underline">browse</span></p>
+        <p className="text-xs text-gray-400 mt-1">Direct upload to Firebase Cloud Storage · Supports PNG, JPG, WEBP, MP4, PDF</p>
       </div>
 
       {/* Toolbar */}
@@ -286,18 +344,21 @@ export function MediaLibraryView() {
                       <Icon size={32} style={{ color: typeColor[item.type] }} className="opacity-40" />
                     )}
                   </div>
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
-                    <button onClick={(e) => { e.stopPropagation(); setPreview(item); }} className="w-8 h-8 bg-white rounded-lg flex items-center justify-center hover:bg-[#0B5D3F] hover:text-white transition-all">
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                    <button onClick={(e) => { e.stopPropagation(); setPreview(item); }} className="w-8 h-8 bg-white rounded-lg flex items-center justify-center hover:bg-[#0B5D3F] hover:text-white transition-all shadow" title="Preview">
                       <Eye size={13} />
                     </button>
-                    <button onClick={(e) => startEdit(item, e)} className="w-8 h-8 bg-white rounded-lg flex items-center justify-center hover:bg-[#173B63] hover:text-white transition-all">
+                    <button onClick={(e) => startEdit(item, e)} className="w-8 h-8 bg-white rounded-lg flex items-center justify-center hover:bg-[#173B63] hover:text-white transition-all shadow" title="Edit">
                       <Edit3 size={13} />
                     </button>
                     {item.url && (
-                      <button onClick={(e) => { e.stopPropagation(); copyUrl(item.id, item.url); }} className="w-8 h-8 bg-white rounded-lg flex items-center justify-center hover:bg-[#4CAF50] hover:text-white transition-all">
+                      <button onClick={(e) => { e.stopPropagation(); copyUrl(item.id, item.url); }} className="w-8 h-8 bg-white rounded-lg flex items-center justify-center hover:bg-[#4CAF50] hover:text-white transition-all shadow" title="Copy URL">
                         {copied === item.id ? <Check size={13} /> : <Copy size={13} />}
                       </button>
                     )}
+                    <button onClick={(e) => deleteSingleItem(item, e)} className="w-8 h-8 bg-white rounded-lg flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow text-red-500" title="Delete">
+                      <Trash2 size={13} />
+                    </button>
                   </div>
                   <button
                     onClick={(e) => toggleSelect(item.id, e)}
@@ -338,15 +399,15 @@ export function MediaLibraryView() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap max-w-[120px] justify-end">
-                    {item.tags.slice(0, 2).map((t) => (
+                    {(item.tags || []).slice(0, 2).map((t) => (
                       <span key={t} className="text-xs bg-[#F6FBF8] text-gray-400 px-2 py-0.5 rounded-full border border-gray-100">{t}</span>
                     ))}
                   </div>
                   <div className="flex gap-1.5 shrink-0">
-                    <button onClick={() => setPreview(item)} className="p-2 rounded-xl hover:bg-[#0B5D3F]/10 text-gray-300 hover:text-[#0B5D3F] transition-all"><Eye size={14} /></button>
-                    <button onClick={(e) => startEdit(item, e)} className="p-2 rounded-xl hover:bg-[#173B63]/10 text-gray-300 hover:text-[#173B63] transition-all"><Edit3 size={14} /></button>
-                    <button onClick={() => downloadItem(item)} className="p-2 rounded-xl hover:bg-gray-100 text-gray-300 hover:text-gray-500 transition-all"><Download size={14} /></button>
-                    <button onClick={() => saveItems(items.filter((i) => i.id !== item.id))} className="p-2 rounded-xl hover:bg-red-50 text-gray-300 hover:text-red-500 transition-all"><Trash2 size={14} /></button>
+                    <button onClick={() => setPreview(item)} className="p-2 rounded-xl hover:bg-[#0B5D3F]/10 text-gray-400 hover:text-[#0B5D3F] transition-all" title="Preview"><Eye size={14} /></button>
+                    <button onClick={(e) => startEdit(item, e)} className="p-2 rounded-xl hover:bg-[#173B63]/10 text-gray-400 hover:text-[#173B63] transition-all" title="Edit"><Edit3 size={14} /></button>
+                    <button onClick={() => downloadItem(item)} className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-all" title="Download"><Download size={14} /></button>
+                    <button onClick={(e) => deleteSingleItem(item, e)} className="p-2 rounded-xl hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all" title="Delete"><Trash2 size={14} /></button>
                   </div>
                 </div>
               );
@@ -407,7 +468,7 @@ export function MediaLibraryView() {
                   <p className="text-xs text-gray-400">{preview.size} · {preview.date}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button onClick={(e) => { setPreview(null); startEdit(preview, e as any); }} className="w-8 h-8 bg-[#F6FBF8] rounded-xl flex items-center justify-center hover:bg-[#0B5D3F]/10 text-gray-400 hover:text-[#0B5D3F] transition-all">
+                  <button onClick={(e) => { setPreview(null); startEdit(preview, e as any); }} className="w-8 h-8 bg-[#F6FBF8] rounded-xl flex items-center justify-center hover:bg-[#0B5D3F]/10 text-gray-400 hover:text-[#0B5D3F] transition-all" title="Edit">
                     <Edit3 size={15} />
                   </button>
                   <button onClick={() => setPreview(null)} className="w-8 h-8 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-gray-200"><X size={15} /></button>
@@ -434,6 +495,9 @@ export function MediaLibraryView() {
                 )}
                 <button onClick={() => downloadItem(preview)} className="flex-1 flex items-center justify-center gap-2 border border-gray-200 text-gray-600 py-3 rounded-xl font-semibold text-sm hover:bg-gray-50 transition-all">
                   <Download size={15} /> Download
+                </button>
+                <button onClick={(e) => deleteSingleItem(preview, e)} className="px-5 flex items-center justify-center gap-2 bg-red-50 text-red-500 hover:bg-red-100 py-3 rounded-xl font-semibold text-sm transition-all">
+                  <Trash2 size={15} /> Delete
                 </button>
               </div>
             </motion.div>
