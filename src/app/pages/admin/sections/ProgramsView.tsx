@@ -146,7 +146,13 @@ export function ProgramsView() {
     setForm({ ...form, highlights: newHighlights });
   };
 
-  const filtered = programs.filter((p) => p.title.toLowerCase().includes(search.toLowerCase()) || p.category.toLowerCase().includes(search.toLowerCase()));
+  const filtered = (programs || []).filter((p) => {
+    if (!p) return false;
+    const title = String(p.title || "").toLowerCase();
+    const category = String(p.category || "").toLowerCase();
+    const q = String(search || "").toLowerCase().trim();
+    return !q || title.includes(q) || category.includes(q);
+  });
   const programToDelete = programs.find(p => p.id === deleteConfirmId);
 
   return (

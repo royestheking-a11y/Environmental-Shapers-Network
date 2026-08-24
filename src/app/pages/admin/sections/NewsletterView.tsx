@@ -78,8 +78,11 @@ export function NewsletterView() {
     setShowForm(true);
   };
 
-  const filtered = campaigns.filter((c) => {
-    const matchSearch = c.subject.toLowerCase().includes(search.toLowerCase());
+  const filtered = (campaigns || []).filter((c) => {
+    if (!c) return false;
+    const subject = String(c.subject || "").toLowerCase();
+    const q = String(search || "").toLowerCase().trim();
+    const matchSearch = !q || subject.includes(q);
     const matchStatus = filterStatus === "All" || c.status === filterStatus;
     return matchSearch && matchStatus;
   });

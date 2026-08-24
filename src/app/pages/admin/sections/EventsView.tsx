@@ -133,8 +133,12 @@ export function EventsView() {
     setDetail(null);
   };
 
-  const filtered = events.filter((e) => {
-    const matchSearch = e.title.toLowerCase().includes(search.toLowerCase()) || e.location.toLowerCase().includes(search.toLowerCase());
+  const filtered = (events || []).filter((e) => {
+    if (!e) return false;
+    const title = String(e.title || "").toLowerCase();
+    const loc = String(e.location || "").toLowerCase();
+    const q = String(search || "").toLowerCase().trim();
+    const matchSearch = !q || title.includes(q) || loc.includes(q);
     const matchStatus = filterStatus === "All" || e.status === filterStatus;
     return matchSearch && matchStatus;
   });

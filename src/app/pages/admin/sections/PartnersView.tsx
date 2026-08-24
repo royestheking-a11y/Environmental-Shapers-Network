@@ -71,7 +71,12 @@ export default function PartnersView() {
     }
   };
 
-  const filtered = partners.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
+  const filtered = (partners || []).filter(p => {
+    if (!p) return false;
+    const name = String(p.name || "").toLowerCase();
+    const q = String(search || "").toLowerCase().trim();
+    return !q || name.includes(q);
+  });
 
   return (
     <div className="flex flex-col gap-6">

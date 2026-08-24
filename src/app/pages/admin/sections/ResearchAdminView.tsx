@@ -80,7 +80,12 @@ export default function ResearchAdminView() {
     setFormData(prev => ({ ...prev, tags: prev.tags?.filter((_, i) => i !== indexToRemove) }));
   };
 
-  const filtered = areas.filter(a => a.title.toLowerCase().includes(search.toLowerCase()));
+  const filtered = (areas || []).filter(a => {
+    if (!a) return false;
+    const title = String(a.title || "").toLowerCase();
+    const q = String(search || "").toLowerCase().trim();
+    return !q || title.includes(q);
+  });
 
   return (
     <div className="flex flex-col gap-6">

@@ -74,7 +74,12 @@ export default function WhoWeAreAdminView() {
     }
   };
 
-  const filtered = features.filter(f => f.title.toLowerCase().includes(search.toLowerCase()));
+  const filtered = (features || []).filter(f => {
+    if (!f) return false;
+    const title = String(f.title || "").toLowerCase();
+    const q = String(search || "").toLowerCase().trim();
+    return !q || title.includes(q);
+  });
 
   return (
     <div className="flex flex-col gap-6">

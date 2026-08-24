@@ -71,7 +71,13 @@ export default function ThematicAreasView() {
     }
   };
 
-  const filtered = areas.filter(a => a.title.toLowerCase().includes(search.toLowerCase()) || a.slug.toLowerCase().includes(search.toLowerCase()));
+  const filtered = (areas || []).filter(a => {
+    if (!a) return false;
+    const title = String(a.title || "").toLowerCase();
+    const slug = String(a.slug || "").toLowerCase();
+    const q = String(search || "").toLowerCase().trim();
+    return !q || title.includes(q) || slug.includes(q);
+  });
 
   return (
     <div className="flex flex-col gap-6">

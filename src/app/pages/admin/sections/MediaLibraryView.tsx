@@ -62,9 +62,12 @@ export function MediaLibraryView() {
     await saveFirestoreData("esn_media", list);
   };
 
-  const filtered = items.filter((item) => {
-    const matchSearch = item.name.toLowerCase().includes(search.toLowerCase()) ||
-      item.tags.some((t) => t.includes(search.toLowerCase()));
+  const filtered = (items || []).filter((item) => {
+    if (!item) return false;
+    const name = String(item.name || "").toLowerCase();
+    const q = String(search || "").toLowerCase().trim();
+    const matchSearch = !q || name.includes(q) ||
+      (Array.isArray(item.tags) && item.tags.some((t) => String(t || "").toLowerCase().includes(q)));
     const matchType = filterType === "All" ||
       (filterType === "Images" && item.type === "image") ||
       (filterType === "Videos" && item.type === "video") ||

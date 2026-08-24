@@ -73,7 +73,13 @@ export default function HeroAdminView() {
     }
   };
 
-  const filtered = slides.filter(s => s.heading.toLowerCase().includes(search.toLowerCase()) || s.tag.toLowerCase().includes(search.toLowerCase()));
+  const filtered = (slides || []).filter(s => {
+    if (!s) return false;
+    const heading = String(s.heading || "").toLowerCase();
+    const tag = String(s.tag || "").toLowerCase();
+    const q = String(search || "").toLowerCase().trim();
+    return !q || heading.includes(q) || tag.includes(q);
+  });
 
   return (
     <div className="flex flex-col gap-6">

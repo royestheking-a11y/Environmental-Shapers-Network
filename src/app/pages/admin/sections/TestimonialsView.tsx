@@ -103,7 +103,13 @@ export default function TestimonialsView() {
     }
   };
 
-  const filtered = testimonials.filter(t => t.name.toLowerCase().includes(search.toLowerCase()) || t.org.toLowerCase().includes(search.toLowerCase()));
+  const filtered = (testimonials || []).filter(t => {
+    if (!t) return false;
+    const name = String(t.name || "").toLowerCase();
+    const org = String(t.org || "").toLowerCase();
+    const q = String(search || "").toLowerCase().trim();
+    return !q || name.includes(q) || org.includes(q);
+  });
 
   return (
     <div className="flex flex-col gap-6">

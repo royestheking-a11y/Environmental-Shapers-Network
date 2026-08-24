@@ -24,11 +24,14 @@ export function MessagesView() {
     }
   };
 
-  const filtered = messages.filter((m: any) =>
-    (m.firstName + " " + m.lastName).toLowerCase().includes(search.toLowerCase()) ||
-    m.subject.toLowerCase().includes(search.toLowerCase()) ||
-    m.email.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = (messages || []).filter((m: any) => {
+    if (!m) return false;
+    const name = String((m.firstName || "") + " " + (m.lastName || "")).toLowerCase();
+    const subject = String(m.subject || "").toLowerCase();
+    const email = String(m.email || "").toLowerCase();
+    const q = String(search || "").toLowerCase().trim();
+    return !q || name.includes(q) || subject.includes(q) || email.includes(q);
+  });
 
   return (
     <div className="flex flex-col gap-7">

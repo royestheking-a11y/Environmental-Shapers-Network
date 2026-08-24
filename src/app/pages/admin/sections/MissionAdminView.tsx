@@ -59,7 +59,12 @@ export default function MissionAdminView() {
     }
   };
 
-  const filtered = values.filter(v => v.title.toLowerCase().includes(search.toLowerCase()));
+  const filtered = (values || []).filter(v => {
+    if (!v) return false;
+    const title = String(v.title || "").toLowerCase();
+    const q = String(search || "").toLowerCase().trim();
+    return !q || title.includes(q);
+  });
 
   return (
     <div className="flex flex-col gap-6">

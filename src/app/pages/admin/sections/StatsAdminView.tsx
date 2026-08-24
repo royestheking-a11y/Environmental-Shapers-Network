@@ -67,7 +67,12 @@ export default function StatsAdminView() {
     }
   };
 
-  const filtered = stats.filter(s => s.label.toLowerCase().includes(search.toLowerCase()));
+  const filtered = (stats || []).filter(s => {
+    if (!s) return false;
+    const label = String(s.label || "").toLowerCase();
+    const q = String(search || "").toLowerCase().trim();
+    return !q || label.includes(q);
+  });
 
   return (
     <div className="flex flex-col gap-6">

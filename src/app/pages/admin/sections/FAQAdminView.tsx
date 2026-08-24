@@ -49,10 +49,13 @@ export default function FAQAdminView() {
     setDeleteConfirmId(null);
   };
 
-  const filtered = faqs.filter(f => 
-    f.question.toLowerCase().includes(search.toLowerCase()) || 
-    f.answer.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = (faqs || []).filter(f => {
+    if (!f) return false;
+    const question = String(f.question || "").toLowerCase();
+    const answer = String(f.answer || "").toLowerCase();
+    const q = String(search || "").toLowerCase().trim();
+    return !q || question.includes(q) || answer.includes(q);
+  });
 
   return (
     <div className="space-y-6">

@@ -108,9 +108,14 @@ export function UsersView() {
     }
   };
 
-  const filtered = users.filter((u) => {
-    const q = search.toLowerCase();
-    const matchSearch = u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.role.toLowerCase().includes(q) || u.country.toLowerCase().includes(q);
+  const filtered = (users || []).filter((u) => {
+    if (!u) return false;
+    const q = String(search || "").toLowerCase().trim();
+    const name = String(u.name || "").toLowerCase();
+    const email = String(u.email || "").toLowerCase();
+    const role = String(u.role || "").toLowerCase();
+    const country = String(u.country || "").toLowerCase();
+    const matchSearch = !q || name.includes(q) || email.includes(q) || role.includes(q) || country.includes(q);
     const matchStatus = filterStatus === "All" || u.status === filterStatus;
     return matchSearch && matchStatus;
   });
