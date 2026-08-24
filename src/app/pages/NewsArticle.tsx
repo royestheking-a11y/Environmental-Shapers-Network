@@ -1,7 +1,7 @@
 import { useParams, Link } from "react-router";
 import { motion } from "motion/react";
 import { Calendar, Clock, ChevronRight, ArrowLeft, ArrowRight, Share2, BookOpen, Tag, User } from "lucide-react";
-import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import { ImageWithFallback } from "../components/ui/ImageWithFallback";
 
 const articles = [
   {

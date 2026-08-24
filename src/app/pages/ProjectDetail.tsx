@@ -5,7 +5,7 @@ import {
   TreePine, Droplets, Wind, Sun, Mountain, Globe2, Leaf,
   CheckCircle2, TrendingUp, Heart, BookOpen, ArrowRight, ExternalLink
 } from "lucide-react";
-import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import { ImageWithFallback } from "../components/ui/ImageWithFallback";
 
 const projectsData = [
   {

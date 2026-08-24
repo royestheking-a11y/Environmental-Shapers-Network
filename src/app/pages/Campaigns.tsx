@@ -4,7 +4,7 @@ import { ArrowRight, Target, Users, Calendar, Megaphone } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getInitialCampaigns, Campaign } from "./admin/sections/CampaignsView";
 import { resolveIcon } from "./admin/sections/ProgramsView";
-import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import { ImageWithFallback } from "../components/ui/ImageWithFallback";
 
 function ProgressBar({ goal, raised, color }: { goal: number; raised: number; color: string }) {
   const pct = Math.min(100, Math.round((raised / goal) * 100));

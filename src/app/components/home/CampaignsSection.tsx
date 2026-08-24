@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { getInitialCampaigns, Campaign } from "../../pages/admin/sections/CampaignsView";
 import { useFirestoreData } from "../../../lib/useFirestore";
 import { resolveIcon } from "../../pages/admin/sections/ProgramsView";
-import { ImageWithFallback } from "../figma/ImageWithFallback";
+import { ImageWithFallback } from "../ui/ImageWithFallback";
 
 function ProgressBar({ value, max, color }: { value: number; max: number; color: string }) {
   const percent = Math.min((value / max) * 100, 100);

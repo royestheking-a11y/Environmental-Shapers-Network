@@ -5,7 +5,7 @@ import {
   Eye, Filter, FolderOpen, Film, FileText, Music, X,
   Copy, Check, Plus, LayoutGrid, Edit3, Save
 } from "lucide-react";
-import { ImageWithFallback } from "../../../components/figma/ImageWithFallback";
+import { ImageWithFallback } from "../../../components/ui/ImageWithFallback";
 
 type MediaType = "All" | "Images" | "Videos" | "Documents";
 

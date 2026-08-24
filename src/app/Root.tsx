@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router";
-import { AnimatePresence } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { Navbar } from "./components/layout/Navbar";
 import { Footer } from "./components/layout/Footer";
 import { ScrollToTop } from "./components/layout/ScrollToTop";
@@ -11,30 +10,39 @@ import { PageTransition } from "./components/ui/PageTransition";
 import { MaintenancePage } from "./pages/MaintenancePage";
 import { FloatingSocials } from "./components/ui/FloatingSocials";
 import { FloatingAI } from "./components/ui/FloatingAI";
+import { useFirestoreData } from "../lib/useFirestore";
 
-import { fetchFirestoreData } from "../lib/useFirestore";
-
-async function getSavedSettings() {
-  try {
-    const s = await fetchFirestoreData<any>("esn_settings", { maintenanceMode: false });
-    return s;
-  } catch {}
-  return { maintenanceMode: false };
-}
+const initialSettings = {
+  maintenanceMode: false,
+};
 
 export function Root() {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith("/admin");
-  const [isMaintenance, setIsMaintenance] = useState(false);
+  const [settings, , loading] = useFirestoreData<any>("esn_settings", initialSettings);
 
-  useEffect(() => {
-    const checkMaintenance = async () => {
-      const settings = await getSavedSettings();
-      setIsMaintenance(settings.maintenanceMode);
-    };
-    checkMaintenance();
-  }, [location.pathname]);
+  const isMaintenance = Boolean(settings?.maintenanceMode);
 
+  // Check if we have determined maintenance status (either via local cache or completed fetch)
+  const isCacheAvailable = typeof window !== "undefined" && localStorage.getItem("esn_cache_esn_settings") !== null;
+  const isResolving = loading && !isCacheAvailable && !isAdmin;
+
+  // If resolving on brand new session, prevent flashing homepage
+  if (isResolving) {
+    return (
+      <div className="min-h-screen bg-[#0a1a0e] flex flex-col items-center justify-center text-white">
+        <motion.div
+          animate={{ scale: [0.95, 1.05, 0.95], opacity: [0.6, 1, 0.6] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+          className="flex flex-col items-center gap-4"
+        >
+          <div className="w-12 h-12 rounded-full border-3 border-[#4CAF50] border-t-transparent animate-spin" />
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Render maintenance page immediately if maintenance mode is enabled
   if (isMaintenance && !isAdmin) {
     return (
       <>

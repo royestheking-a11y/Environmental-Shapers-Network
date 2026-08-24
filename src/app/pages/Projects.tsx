@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Link } from "react-router";
 import { MapPin, Filter, Search, ExternalLink, Calendar, Users, Target, Leaf, TreePine, Droplets, Wind, Sun, Mountain, Globe2 } from "lucide-react";
-import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import { ImageWithFallback } from "../components/ui/ImageWithFallback";
 
 import { getInitialProjects, Project } from "./admin/sections/ProjectsView";
 import { resolveIcon } from "./admin/sections/ProgramsView";

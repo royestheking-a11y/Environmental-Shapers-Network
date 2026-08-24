@@ -3,7 +3,7 @@ import { motion, useInView } from "motion/react";
 import { Link } from "react-router";
 import { ExternalLink, ArrowRight, BookOpen, Handshake, Search, Calendar, Clock, Tag, Newspaper } from "lucide-react";
 import { fetchFirestoreData } from "../../../lib/useFirestore";
-import { ImageWithFallback } from "../figma/ImageWithFallback";
+import { ImageWithFallback } from "../ui/ImageWithFallback";
 
 const fallbackPartners = [
   "UNEP", "WWF", "IUCN", "GEF", "World Bank", "UNDP", "FAO", "UNESCO",

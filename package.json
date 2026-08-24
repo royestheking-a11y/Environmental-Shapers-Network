@@ -1,11 +1,15 @@
 {
-  "name": "@figma/my-make-file",
+  "name": "environmental-shapers-network",
   "private": true,
-  "version": "0.0.1",
+  "version": "1.0.0",
+  "description": "Official Web Platform & Dynamic Content Management System for Environmental Shapers Network (ESN) — Engineered and designed by Rizqara Tech.",
+  "author": "Rizqara Tech <rizqaratech@gmail.com> (https://www.rizqara.tech)",
+  "homepage": "https://www.rizqara.tech",
   "type": "module",
   "scripts": {
+    "dev": "vite",
     "build": "vite build",
-    "dev": "vite"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",

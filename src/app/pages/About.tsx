@@ -6,7 +6,7 @@ import {
   TreePine, Heart, Star, Sprout, Shield, Lightbulb, HandHeart,
   ArrowRight, Quote, MapPin, ExternalLink, Check, Zap, BookOpen, Sun
 } from "lucide-react";
-import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import { ImageWithFallback } from "../components/ui/ImageWithFallback";
 
 const milestones = [
   {

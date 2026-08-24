@@ -2,7 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { motion, useInView, AnimatePresence } from "motion/react";
 import { Link } from "react-router";
 import { MapPin, ArrowRight, ExternalLink, Filter, Target } from "lucide-react";
-import { ImageWithFallback } from "../figma/ImageWithFallback";
+import { ImageWithFallback } from "../ui/ImageWithFallback";
 import { getInitialProjects, Project } from "../../pages/admin/sections/ProjectsView";
 import { useFirestoreData } from "../../../lib/useFirestore";
 import { resolveIcon } from "../../pages/admin/sections/ProgramsView";

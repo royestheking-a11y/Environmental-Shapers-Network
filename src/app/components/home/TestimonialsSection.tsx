@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 import { motion, useInView, AnimatePresence } from "motion/react";
 import { Star, Quote, ChevronLeft, ChevronRight } from "lucide-react";
-import { ImageWithFallback } from "../figma/ImageWithFallback";
+import { ImageWithFallback } from "../ui/ImageWithFallback";
 
 import { getInitialTestimonials } from "../../pages/admin/sections/TestimonialsView";
 import { useFirestoreData } from "../../../lib/useFirestore";
