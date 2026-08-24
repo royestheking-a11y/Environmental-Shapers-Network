@@ -58,7 +58,7 @@ export function ContactSection() {
                 </div>
                 <div>
                   <h4 className="font-bold text-white mb-1">Email Us</h4>
-                  <p className="text-white/70">{settings.contactEmail || "info@esnbd.org"}</p>
+                  <p className="text-white/70">{settings.contactEmail || "info@esnglobal.org"}</p>
                 </div>
               </div>
               <div className="flex items-start gap-4 text-white/90">

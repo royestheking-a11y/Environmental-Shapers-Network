@@ -6,8 +6,8 @@ const esnLogo = "/logo.png";
 const esnLogoWhite = "/logo-white.png";
 
 const ADMIN_CREDENTIALS = {
-  "admin@esnbd.org": { password: "ESN@Admin2026", role: "Super Admin", name: "Admin User" },
-  "editor@esnbd.org": { password: "ESN@Editor2026", role: "Content Editor", name: "Editor User" },
+  "admin@esnglobal.org": { password: "ESN@Admin2026", role: "Super Admin", name: "Admin User" },
+  "editor@esnglobal.org": { password: "ESN@Editor2026", role: "Content Editor", name: "Editor User" },
 };
 
 export default function AdminLogin() {
@@ -159,7 +159,7 @@ export default function AdminLogin() {
                 <CheckCircle2 size={15} className="text-[#4CAF50] mt-0.5 shrink-0" />
                 <div>
                   <p className="text-xs font-bold text-[#0B5D3F] mb-1">Demo Credentials</p>
-                  <p className="text-xs text-gray-500">Email: <span className="font-mono font-bold">admin@esnbd.org</span></p>
+                  <p className="text-xs text-gray-500">Email: <span className="font-mono font-bold">admin@esnglobal.org</span></p>
                   <p className="text-xs text-gray-500">Password: <span className="font-mono font-bold">ESN@Admin2026</span></p>
                 </div>
               </div>
@@ -189,7 +189,7 @@ export default function AdminLogin() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] focus:ring-2 focus:ring-[#4CAF50]/20 transition-all"
-                    placeholder="admin@esnbd.org"
+                    placeholder="admin@esnglobal.org"
                   />
                 </div>
               </div>

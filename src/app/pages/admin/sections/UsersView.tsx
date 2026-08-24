@@ -19,13 +19,13 @@ import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestor
 
 function getInitialUsers(): AdminUserEntry[] {
   return [
-    { id: 1, name: "Rizwan Ahmed", email: "rizwan@esnbd.org", role: "Super Admin", country: "Bangladesh", status: "Active", joinDate: "Jan 2023" },
-    { id: 2, name: "Priya Sharma", email: "priya@esnbd.org", role: "Researcher", country: "India", status: "Active", joinDate: "Mar 2023" },
-    { id: 3, name: "Carlos Rodriguez", email: "carlos@esnbd.org", role: "Regional Manager", country: "Colombia", status: "Active", joinDate: "Jun 2023" },
-    { id: 4, name: "Amara Osei", email: "amara@esnbd.org", role: "Volunteer Manager", country: "Ghana", status: "Active", joinDate: "Sep 2023" },
+    { id: 1, name: "Rizwan Ahmed", email: "rizwan@esnglobal.org", role: "Super Admin", country: "Bangladesh", status: "Active", joinDate: "Jan 2023" },
+    { id: 2, name: "Priya Sharma", email: "priya@esnglobal.org", role: "Researcher", country: "India", status: "Active", joinDate: "Mar 2023" },
+    { id: 3, name: "Carlos Rodriguez", email: "carlos@esnglobal.org", role: "Regional Manager", country: "Colombia", status: "Active", joinDate: "Jun 2023" },
+    { id: 4, name: "Amara Osei", email: "amara@esnglobal.org", role: "Volunteer Manager", country: "Ghana", status: "Active", joinDate: "Sep 2023" },
     { id: 5, name: "Sarah Chen", email: "sarah@example.com", role: "Donor", country: "Singapore", status: "Active", joinDate: "Nov 2023" },
-    { id: 6, name: "Kenji Tanaka", email: "kenji@esnbd.org", role: "Content Editor", country: "Japan", status: "Inactive", joinDate: "Feb 2024" },
-    { id: 7, name: "Fatima Al-Hassan", email: "fatima@esnbd.org", role: "Program Officer", country: "Nigeria", status: "Active", joinDate: "Apr 2024" },
+    { id: 6, name: "Kenji Tanaka", email: "kenji@esnglobal.org", role: "Content Editor", country: "Japan", status: "Inactive", joinDate: "Feb 2024" },
+    { id: 7, name: "Fatima Al-Hassan", email: "fatima@esnglobal.org", role: "Program Officer", country: "Nigeria", status: "Active", joinDate: "Apr 2024" },
   ];
 }
 

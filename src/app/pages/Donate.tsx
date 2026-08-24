@@ -591,8 +591,8 @@ export default function Donate() {
                           <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 mb-6">
                             <div className="text-sm font-bold text-[#003087] mb-1">Send PayPal payment to</div>
                             <div className="flex items-center justify-between">
-                              <div className="font-black text-lg text-gray-900">donate@esnbd.org</div>
-                              <button type="button" onClick={() => copyRef("donate@esnbd.org")} className="flex items-center gap-1 text-xs bg-[#003087] text-white px-3 py-1.5 rounded-lg hover:bg-blue-900 transition-all">
+                              <div className="font-black text-lg text-gray-900">donate@esnglobal.org</div>
+                              <button type="button" onClick={() => copyRef("donate@esnglobal.org")} className="flex items-center gap-1 text-xs bg-[#003087] text-white px-3 py-1.5 rounded-lg hover:bg-blue-900 transition-all">
                                 {copied ? <Check size={12} /> : <Copy size={12} />} Copy
                               </button>
                             </div>

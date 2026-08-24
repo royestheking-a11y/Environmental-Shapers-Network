@@ -119,7 +119,7 @@ export function CampaignsView() {
   };
 
   const shareCampaign = (c: Campaign) => {
-    const url = `https://esnbd.org/campaigns/${c.id}`;
+    const url = `https://esnglobal.org/campaigns/${c.id}`;
     navigator.clipboard.writeText(url).catch(() => {});
     setShareSuccess(true);
     setTimeout(() => setShareSuccess(false), 2500);
@@ -251,7 +251,7 @@ export function CampaignsView() {
               <p className="text-sm font-semibold text-gray-700 mb-1">{showQR.title}</p>
               <p className="text-xs text-gray-400 mb-5">{showQR.category}</p>
               <p className="text-xs text-gray-400 bg-[#F6FBF8] rounded-xl px-4 py-2 font-mono">
-                https://esnbd.org/campaigns/{showQR.id}
+                https://esnglobal.org/campaigns/{showQR.id}
               </p>
             </motion.div>
           </motion.div>

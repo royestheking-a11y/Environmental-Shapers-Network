@@ -93,7 +93,7 @@ function downloadReceipt(donation: any) {
     "Your contribution makes a difference.",
     "",
     "Environmental Shapers Network",
-    "info@esnbd.org | esnbd.org",
+    "info@esnglobal.org | esnglobal.org",
     "====================================",
   ];
   const blob = new Blob([lines.join("\n")], { type: "text/plain" });

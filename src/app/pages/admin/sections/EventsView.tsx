@@ -283,7 +283,7 @@ export function EventsView() {
               <p className="text-sm font-semibold text-gray-700 mb-1">{showQR.title}</p>
               <p className="text-xs text-gray-400 mb-5">{showQR.date} · {showQR.location}</p>
               <p className="text-xs text-gray-400 bg-[#F6FBF8] rounded-xl px-4 py-2 font-mono">
-                https://esnbd.org/attend/{showQR.id}
+                https://esnglobal.org/attend/{showQR.id}
               </p>
             </motion.div>
           </motion.div>

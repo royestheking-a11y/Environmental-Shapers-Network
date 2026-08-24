@@ -890,10 +890,10 @@ function DonationsAdminView({ donations }: { donations: any[] }) {
 // ─── Users Admin View ─────────────────────────────────────────────────────────
 function UsersAdminView() {
   const users = [
-    { name: "Rizwan Ahmed", email: "rizwan@esnbd.org", role: "Super Admin", country: "Bangladesh", status: "Active" },
-    { name: "Priya Sharma", email: "priya@esnbd.org", role: "Researcher", country: "India", status: "Active" },
-    { name: "Carlos Rodriguez", email: "carlos@esnbd.org", role: "Regional Manager", country: "Colombia", status: "Active" },
-    { name: "Amara Osei", email: "amara@esnbd.org", role: "Volunteer Manager", country: "Ghana", status: "Active" },
+    { name: "Rizwan Ahmed", email: "rizwan@esnglobal.org", role: "Super Admin", country: "Bangladesh", status: "Active" },
+    { name: "Priya Sharma", email: "priya@esnglobal.org", role: "Researcher", country: "India", status: "Active" },
+    { name: "Carlos Rodriguez", email: "carlos@esnglobal.org", role: "Regional Manager", country: "Colombia", status: "Active" },
+    { name: "Amara Osei", email: "amara@esnglobal.org", role: "Volunteer Manager", country: "Ghana", status: "Active" },
     { name: "Sarah Chen", email: "sarah@example.com", role: "Donor", country: "Singapore", status: "Active" },
   ];
 

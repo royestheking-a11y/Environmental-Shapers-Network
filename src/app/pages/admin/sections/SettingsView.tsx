@@ -9,7 +9,7 @@ function getSavedSettings() {
   return {
     siteName: "Environmental Shapers Network",
     tagline: "Shaping Minds, Protecting Earth",
-    contactEmail: "info@esnbd.org",
+    contactEmail: "info@esnglobal.org",
     timezone: "Asia/Dhaka",
     language: "English",
     currency: "USD",
@@ -26,7 +26,7 @@ function getSavedSettings() {
     facebookPixel: "",
     recaptchaKey: "",
     stripeKey: "sk_test_...",
-    paypalEmail: "payments@esnbd.org",
+    paypalEmail: "payments@esnglobal.org",
     smtpHost: "smtp.sendgrid.net",
     smtpPort: "587",
     smtpUser: "apikey",
@@ -339,7 +339,7 @@ export function SettingsView() {
                     className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none resize-none" />
                   <div className="text-xs text-gray-400 mt-1">{settings.seoDesc.length}/160 characters</div>
                 </div>
-                <Field label="OG Image URL" k="ogImage" placeholder="https://esnbd.org/og-image.jpg" />
+                <Field label="OG Image URL" k="ogImage" placeholder="https://esnglobal.org/og-image.jpg" />
               </div>
             </div>
           )}

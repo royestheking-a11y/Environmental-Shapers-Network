@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 const defaultSettings = {
   siteName: "Environmental Shapers Network",
   tagline: "Shaping Minds, Protecting Earth",
-  contactEmail: "info@esnbd.org",
+  contactEmail: "info@esnglobal.org",
   timezone: "Asia/Dhaka",
   language: "English",
   currency: "USD",
