@@ -76,6 +76,8 @@ export const router = createBrowserRouter([
       // Admin
       { path: "admin", Component: AdminLogin },
       { path: "admin/dashboard", Component: AdminDashboard },
+      { path: "admin/dashboard/:section", Component: AdminDashboard },
+      { path: "admin/:section", Component: AdminDashboard },
       // Catch-all
       { path: "*", Component: Home },
     ],

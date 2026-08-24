@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useState, useEffect, useMemo } from "react";
+import { useNavigate, useParams, useLocation, Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { useFirestoreData, fetchFirestoreData, saveFirestoreData } from "../../../lib/useFirestore";
 import { DonationsView } from "./sections/DonationsView";
@@ -155,8 +155,40 @@ function getInitialContent() {
   ];
 }
 
+const sectionAliases: Record<string, string> = {
+  "thematic-areas": "thematic",
+  "thematic_areas": "thematic",
+  "faqs": "faq",
+  "faq-qa": "faq",
+  "members": "users",
+  "users-members": "users",
+  "roles-permissions": "roles",
+  "data-backup": "data",
+  "backup": "data",
+  "careers": "opportunities",
+  "volunteers": "opportunities",
+  "content": "cms",
+  "hero-section": "hero",
+  "who-we-are": "whoweare",
+  "impact-stats": "stats",
+  "mission-values": "mission",
+  "youth-development": "youth",
+  "media-library": "media",
+};
+
 export default function AdminDashboard() {
-  const [activeSection, setActiveSection] = useState("dashboard");
+  const { section } = useParams<{ section?: string }>();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const activeSection = useMemo(() => {
+    // If route is /admin/dashboard/:section or /admin/:section
+    const secParam = section || (location.pathname.startsWith("/admin/") && !location.pathname.endsWith("/dashboard") && !location.pathname.endsWith("/admin") ? location.pathname.split("/").pop() : "dashboard");
+    if (!secParam || secParam === "dashboard") return "dashboard";
+    const lower = secParam.toLowerCase();
+    return sectionAliases[lower] || lower;
+  }, [section, location.pathname]);
+
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [cmsContent, setCmsContent, loadingCms] = useFirestoreData<any[]>("esn_cms_content", getInitialContent());
   const [user, setUser] = useState<AdminUser | null>(null);
@@ -165,7 +197,6 @@ export default function AdminDashboard() {
   const [editingContent, setEditingContent] = useState<any>(null);
   const [cmsDeleteConfirmId, setCmsDeleteConfirmId] = useState<number | null>(null);
   const [pendingAppsCount, setPendingAppsCount] = useState(0);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const u = localStorage.getItem("esn_admin_user");
@@ -300,8 +331,11 @@ export default function AdminDashboard() {
         return (
           <div className="flex flex-col items-center justify-center h-80 text-gray-400">
             <Settings size={48} className="mb-4 opacity-30" />
-            <p className="font-semibold">Module coming soon</p>
-            <p className="text-sm mt-1">This section is under development</p>
+            <p className="font-semibold">Module not found</p>
+            <p className="text-sm mt-1 mb-4">The requested section was not recognized</p>
+            <Link to="/admin/dashboard" className="px-4 py-2 bg-[#0B5D3F] text-white text-sm font-semibold rounded-xl hover:bg-[#0a5237] transition-all">
+              Return to Dashboard
+            </Link>
           </div>
         );
     }
@@ -345,25 +379,29 @@ export default function AdminDashboard() {
             </div>
 
             <nav className="flex-1 px-3 pb-4">
-              {sidebarItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveSection(item.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 mb-1 group ${
-                    activeSection === item.id
-                      ? "bg-[#4CAF50] text-white"
-                      : "text-white/60 hover:bg-white/8 hover:text-white"
-                  }`}
-                >
-                  <item.icon size={17} />
-                  <span>{item.label}</span>
-                  {(item.id === "applications" ? pendingAppsCount > 0 : item.badge) && (
-                    <span className="ml-auto bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {item.id === "applications" ? pendingAppsCount : item.badge}
-                    </span>
-                  )}
-                </button>
-              ))}
+              {sidebarItems.map((item) => {
+                const isActive = activeSection === item.id;
+                const targetUrl = item.id === "dashboard" ? "/admin/dashboard" : `/admin/dashboard/${item.id}`;
+                return (
+                  <Link
+                    key={item.id}
+                    to={targetUrl}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 mb-1 group ${
+                      isActive
+                        ? "bg-[#4CAF50] text-white shadow-md shadow-green-900/30"
+                        : "text-white/60 hover:bg-white/8 hover:text-white"
+                    }`}
+                  >
+                    <item.icon size={17} />
+                    <span>{item.label}</span>
+                    {(item.id === "applications" ? pendingAppsCount > 0 : item.badge) && (
+                      <span className="ml-auto bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                        {item.id === "applications" ? pendingAppsCount : item.badge}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
             </nav>
 
             <div className="p-4 border-t border-white/8">
@@ -432,6 +470,13 @@ export default function AdminDashboard() {
 }
 
 function DashboardView({ kpiCards, weeklyData, monthlyDonations, recentDonations, recentActivity }: any) {
+  const kpiLinks: Record<string, string> = {
+    "Total Donations": "/admin/dashboard/donations",
+    "Active Members": "/admin/dashboard/users",
+    "Active Projects": "/admin/dashboard/projects",
+    "Monthly Visitors": "/admin/dashboard/analytics",
+  };
+
   return (
     <div className="flex flex-col gap-8">
       <div className="bg-gradient-to-r from-[#0B5D3F] to-[#173B63] rounded-2xl p-7 text-white relative overflow-hidden">
@@ -452,38 +497,46 @@ function DashboardView({ kpiCards, weeklyData, monthlyDonations, recentDonations
             </div>
           </div>
           <div className="mt-6 grid grid-cols-3 gap-5">
-            {[["23", "Pending Reviews"], ["7", "New Members Today"], ["$42,800", "Today's Donations"]].map(([v, l]) => (
-              <div key={l}>
-                <div className="text-xl font-black text-[#4CAF50]">{v}</div>
-                <div className="text-xs text-white/50">{l}</div>
-              </div>
+            {[
+              ["23", "Pending Reviews", "/admin/dashboard/applications"],
+              ["7", "New Members Today", "/admin/dashboard/users"],
+              ["$42,800", "Today's Donations", "/admin/dashboard/donations"]
+            ].map(([v, l, path]) => (
+              <Link key={l} to={path} className="group hover:opacity-90 transition-opacity">
+                <div className="text-xl font-black text-[#4CAF50] group-hover:scale-105 transition-transform origin-left">{v}</div>
+                <div className="text-xs text-white/50 group-hover:text-white/80">{l}</div>
+              </Link>
             ))}
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-        {kpiCards.map((kpi: any, i: number) => (
-          <motion.div
-            key={kpi.label}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.08 }}
-            className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg hover:shadow-gray-100 transition-all"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ backgroundColor: kpi.color + "15" }}>
-                <kpi.icon size={20} style={{ color: kpi.color }} />
-              </div>
-              <div className={`flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ${kpi.up ? "bg-[#4CAF50]/10 text-[#4CAF50]" : "bg-red-50 text-red-500"}`}>
-                {kpi.up ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
-                {kpi.change}
-              </div>
-            </div>
-            <div className="text-2xl font-black text-gray-900 mb-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{kpi.value}</div>
-            <div className="text-xs text-gray-400">{kpi.label}</div>
-          </motion.div>
-        ))}
+        {kpiCards.map((kpi: any, i: number) => {
+          const toPath = kpiLinks[kpi.label] || "/admin/dashboard";
+          return (
+            <Link key={kpi.label} to={toPath} className="block">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.08 }}
+                className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg hover:shadow-gray-100 hover:border-[#4CAF50]/30 transition-all cursor-pointer h-full"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ backgroundColor: kpi.color + "15" }}>
+                    <kpi.icon size={20} style={{ color: kpi.color }} />
+                  </div>
+                  <div className={`flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ${kpi.up ? "bg-[#4CAF50]/10 text-[#4CAF50]" : "bg-red-50 text-red-500"}`}>
+                    {kpi.up ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
+                    {kpi.change}
+                  </div>
+                </div>
+                <div className="text-2xl font-black text-gray-900 mb-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{kpi.value}</div>
+                <div className="text-xs text-gray-400">{kpi.label}</div>
+              </motion.div>
+            </Link>
+          );
+        })}
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
@@ -493,7 +546,9 @@ function DashboardView({ kpiCards, weeklyData, monthlyDonations, recentDonations
               <h4 className="font-bold text-gray-900">Weekly Traffic</h4>
               <p className="text-xs text-gray-400">Visitors & Actions this week</p>
             </div>
-            <RefreshCw size={16} className="text-gray-300 cursor-pointer hover:text-gray-500" />
+            <Link to="/admin/dashboard/analytics" className="text-gray-300 hover:text-gray-500">
+              <RefreshCw size={16} />
+            </Link>
           </div>
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={weeklyData}>
@@ -523,7 +578,9 @@ function DashboardView({ kpiCards, weeklyData, monthlyDonations, recentDonations
               <h4 className="font-bold text-gray-900">Monthly Donations</h4>
               <p className="text-xs text-gray-400">Jan–Jun 2026 (USD)</p>
             </div>
-            <Download size={16} className="text-gray-300 cursor-pointer hover:text-gray-500" />
+            <Link to="/admin/dashboard/donations" className="text-gray-300 hover:text-gray-500">
+              <Download size={16} />
+            </Link>
           </div>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={monthlyDonations}>
@@ -541,7 +598,7 @@ function DashboardView({ kpiCards, weeklyData, monthlyDonations, recentDonations
         <div className="bg-white rounded-2xl border border-gray-100">
           <div className="flex items-center justify-between p-6 border-b border-gray-50">
             <h4 className="font-bold text-gray-900">Recent Donations</h4>
-            <button className="text-xs text-[#0B5D3F] font-semibold hover:underline">View All</button>
+            <Link to="/admin/dashboard/donations" className="text-xs text-[#0B5D3F] font-semibold hover:underline">View All</Link>
           </div>
           <div className="p-4">
             {recentDonations.map((d: any, i: number) => (
@@ -568,7 +625,7 @@ function DashboardView({ kpiCards, weeklyData, monthlyDonations, recentDonations
         <div className="bg-white rounded-2xl border border-gray-100">
           <div className="flex items-center justify-between p-6 border-b border-gray-50">
             <h4 className="font-bold text-gray-900">Activity Feed</h4>
-            <button className="text-xs text-[#0B5D3F] font-semibold hover:underline">See All</button>
+            <Link to="/admin/dashboard/cms" className="text-xs text-[#0B5D3F] font-semibold hover:underline">See All</Link>
           </div>
           <div className="p-4">
             {recentActivity.map((a: any, i: number) => (
