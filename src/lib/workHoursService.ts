@@ -12,7 +12,7 @@ export interface WorkSession {
   clockOut?: string; // ISO string
   activeSeconds: number;
   idleSeconds: number;
-  status: "active" | "idle" | "break" | "completed";
+  status: "active" | "idle" | "break" | "completed" | "offline";
   actionsCount: number;
   lastHeartbeat: string;
 }
