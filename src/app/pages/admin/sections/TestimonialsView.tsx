@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Plus, Search, Edit3, Trash2, Quote, Star, AlertCircle } from "lucide-react";
+import { ImageUploadField } from "../../../components/ui/ImageUploadField";
 
 export interface Testimonial {
   id: number;
@@ -145,9 +146,15 @@ export default function TestimonialsView() {
                 <label className="text-xs font-bold text-gray-600 mb-1.5 block">Country</label>
                 <input type="text" value={formData.country || ""} onChange={e => setFormData({ ...formData, country: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
               </div>
-              <div>
-                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Avatar URL</label>
-                <input type="text" value={formData.avatar || ""} onChange={e => setFormData({ ...formData, avatar: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
+              <div className="sm:col-span-2">
+                <ImageUploadField
+                  label="Profile Avatar / Photo"
+                  value={formData.avatar || ""}
+                  onChange={(url) => setFormData({ ...formData, avatar: url })}
+                  folder="testimonials"
+                  aspectRatio="square"
+                  helpText="Upload a square headshot photo"
+                />
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-600 mb-1.5 block">Rating (1-5)</label>

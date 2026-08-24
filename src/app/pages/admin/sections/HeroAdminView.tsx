@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Plus, Search, Edit3, Trash2, AlertCircle } from "lucide-react";
+import { ImageUploadField } from "../../../components/ui/ImageUploadField";
 
 export interface HeroSlide {
   id: number;
   tag: string;
   heading: string;
   sub: string;
+  image?: string;
 }
 
 export function getInitialHeroSlides(): HeroSlide[] {
@@ -109,6 +111,16 @@ export default function HeroAdminView() {
               <div>
                 <label className="text-xs font-bold text-gray-600 mb-1.5 block">Subheading *</label>
                 <textarea rows={3} value={formData.sub || ""} onChange={e => setFormData({ ...formData, sub: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
+              </div>
+              <div>
+                <ImageUploadField
+                  label="Slide Background Image"
+                  value={formData.image || ""}
+                  onChange={(url) => setFormData({ ...formData, image: url })}
+                  folder="hero"
+                  aspectRatio="wide"
+                  helpText="Upload a high-resolution hero background photo"
+                />
               </div>
             </div>
             <div className="flex gap-3">

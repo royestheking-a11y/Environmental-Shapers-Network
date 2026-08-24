@@ -4,6 +4,7 @@ import {
   Settings, Palette, Bell, Lock, Mail, Shield,
   Search, Code, Save, CheckCircle2, Upload, LogOut, AlertTriangle, Send
 } from "lucide-react";
+import { ImageUploadField } from "../../../components/ui/ImageUploadField";
 
 function getSavedSettings() {
   return {
@@ -339,7 +340,16 @@ export function SettingsView() {
                     className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none resize-none" />
                   <div className="text-xs text-gray-400 mt-1">{settings.seoDesc.length}/160 characters</div>
                 </div>
-                <Field label="OG Image URL" k="ogImage" placeholder="https://esnglobal.org/og-image.jpg" />
+                <div>
+                  <ImageUploadField
+                    label="Social Share (OpenGraph) Cover Image"
+                    value={settings.ogImage || ""}
+                    onChange={(url) => update("ogImage", url)}
+                    folder="settings"
+                    aspectRatio="wide"
+                    helpText="Appears when sharing links on Facebook, Twitter/X, LinkedIn, and WhatsApp"
+                  />
+                </div>
               </div>
             </div>
           )}

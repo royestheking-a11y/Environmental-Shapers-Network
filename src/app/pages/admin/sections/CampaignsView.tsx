@@ -6,6 +6,7 @@ import {
   TrendingUp, CheckCircle2, Clock, AlertCircle, Share2, QrCode,
   AlertTriangle, Copy, Check
 } from "lucide-react";
+import { ImageUploadField } from "../../../components/ui/ImageUploadField";
 
 type CampaignStatus = "active" | "draft" | "completed" | "paused";
 
@@ -207,6 +208,15 @@ export function CampaignsView() {
                     )}
                   </div>
                 ))}
+                <div className="sm:col-span-2">
+                  <ImageUploadField
+                    label="Campaign Banner / Poster Image"
+                    value={form.image}
+                    onChange={(url) => setForm({ ...form, image: url })}
+                    folder="campaigns"
+                    helpText="Upload a featured image or poster for the campaign"
+                  />
+                </div>
                 <div className="sm:col-span-2">
                   <label className="text-xs font-bold text-gray-600 mb-1.5 block">Description</label>
                   <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none resize-none" placeholder="Campaign description..." />

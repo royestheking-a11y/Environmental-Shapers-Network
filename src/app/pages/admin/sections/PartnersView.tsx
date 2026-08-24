@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Plus, Search, Edit3, Trash2, AlertCircle } from "lucide-react";
+import { ImageUploadField } from "../../../components/ui/ImageUploadField";
 
 export interface Partner {
   id: number;
   name: string;
+  logo?: string;
 }
 
 export function getInitialPartners(): Partner[] {
@@ -98,6 +100,16 @@ export default function PartnersView() {
             <div className="mb-4">
               <label className="text-xs font-bold text-gray-600 mb-1.5 block">Partner Name *</label>
               <input type="text" value={formData.name || ""} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
+            </div>
+            <div className="mb-5">
+              <ImageUploadField
+                label="Partner Logo / Emblem"
+                value={formData.logo || ""}
+                onChange={(url) => setFormData({ ...formData, logo: url })}
+                folder="partners"
+                aspectRatio="square"
+                helpText="Upload an official partner logo or icon"
+              />
             </div>
             <div className="flex gap-3">
               <button onClick={handleSave} className="bg-[#0B5D3F] text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#0a5237] transition-all">Save Partner</button>

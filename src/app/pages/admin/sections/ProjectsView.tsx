@@ -5,6 +5,7 @@ import {
   Edit3, Trash2, X, AlertTriangle, Download, CheckCircle2,
   Clock, PauseCircle, Filter
 } from "lucide-react";
+import { ImageUploadField } from "../../../components/ui/ImageUploadField";
 
 type ProjectStatus = "Active" | "Planning" | "Completed" | "On Hold";
 
@@ -222,6 +223,15 @@ export function ProjectsView() {
                 <div>
                   <label className="text-xs font-bold text-gray-600 mb-1.5 block">Progress (0–100)</label>
                   <input type="number" min={0} max={100} value={form.progress} onChange={(e) => setForm({ ...form, progress: Math.min(100, Math.max(0, Number(e.target.value))) })} className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] transition-colors" />
+                </div>
+                <div className="sm:col-span-2">
+                  <ImageUploadField
+                    label="Project Featured Image"
+                    value={form.img}
+                    onChange={(url) => setForm({ ...form, img: url })}
+                    folder="projects"
+                    helpText="Upload a featured project banner image or photo"
+                  />
                 </div>
                 <div className="sm:col-span-2">
                   <label className="text-xs font-bold text-gray-600 mb-1.5 block">Description</label>

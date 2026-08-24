@@ -26,6 +26,7 @@ import StatsAdminView from "./sections/StatsAdminView";
 import MissionAdminView from "./sections/MissionAdminView";
 import ResearchAdminView from "./sections/ResearchAdminView";
 import YouthAdminView from "./sections/YouthAdminView";
+import { ImageUploadField } from "../../components/ui/ImageUploadField";
 import {
   LayoutDashboard, TreePine, Globe2, Users, Heart, Megaphone, Calendar, BarChart3, FileText, Settings,
   Bell, Search, LogOut, ChevronDown, Menu, X, TrendingUp, TrendingDown, Eye, Edit3, Trash2,
@@ -685,14 +686,19 @@ function CMSView({ content, onDelete, onToggle, onShowAdd, showAdd, newContent, 
                 <label className="text-xs font-bold text-gray-600 mb-1.5 block">Excerpt</label>
                 <textarea value={newContent.excerpt || ""} onChange={(e) => setNewContent({ ...newContent, excerpt: e.target.value })} placeholder="Short description..." className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] transition-colors resize-none h-20" />
               </div>
-              <div className="sm:col-span-2">
-                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Image URL</label>
-                <input type="text" value={newContent.image || ""} onChange={(e) => setNewContent({ ...newContent, image: e.target.value })} placeholder="https://..." className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] transition-colors" />
+              <div className="sm:col-span-3">
+                <ImageUploadField
+                  label="Article / News Cover Image"
+                  value={newContent.image || ""}
+                  onChange={(url) => setNewContent({ ...newContent, image: url })}
+                  folder="cms"
+                  helpText="Upload a featured image for this article"
+                />
               </div>
-              <div className="sm:col-span-1 flex items-end pb-3">
+              <div className="sm:col-span-3 flex items-center pt-2">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={newContent.featured || false} onChange={(e) => setNewContent({ ...newContent, featured: e.target.checked })} className="w-4 h-4 rounded text-[#0B5D3F] focus:ring-[#0B5D3F]" />
-                  <span className="text-sm font-bold text-gray-700">Featured</span>
+                  <span className="text-sm font-bold text-gray-700">Mark as Featured Article</span>
                 </label>
               </div>
             </div>
@@ -739,14 +745,19 @@ function CMSView({ content, onDelete, onToggle, onShowAdd, showAdd, newContent, 
                 <label className="text-xs font-bold text-gray-600 mb-1.5 block">Excerpt</label>
                 <textarea value={editingContent.excerpt || ""} onChange={(e) => setEditingContent({ ...editingContent, excerpt: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#173B63] transition-colors resize-none h-20" />
               </div>
-              <div className="sm:col-span-2">
-                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Image URL</label>
-                <input type="text" value={editingContent.image || ""} onChange={(e) => setEditingContent({ ...editingContent, image: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#173B63] transition-colors" />
+              <div className="sm:col-span-3">
+                <ImageUploadField
+                  label="Article / News Cover Image"
+                  value={editingContent.image || ""}
+                  onChange={(url) => setEditingContent({ ...editingContent, image: url })}
+                  folder="cms"
+                  helpText="Upload or change the featured image"
+                />
               </div>
-              <div className="sm:col-span-1 flex items-end pb-3">
+              <div className="sm:col-span-3 flex items-center pt-2">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={editingContent.featured || false} onChange={(e) => setEditingContent({ ...editingContent, featured: e.target.checked })} className="w-4 h-4 rounded text-[#0B5D3F] focus:ring-[#0B5D3F]" />
-                  <span className="text-sm font-bold text-gray-700">Featured</span>
+                  <span className="text-sm font-bold text-gray-700">Mark as Featured Article</span>
                 </label>
               </div>
             </div>

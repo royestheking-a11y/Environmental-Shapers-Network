@@ -5,6 +5,7 @@ import {
   Trash2, Eye, Video, Globe2, CheckCircle2, AlertCircle,
   ChevronRight, QrCode, Download, X, Leaf, AlertTriangle
 } from "lucide-react";
+import { ImageUploadField } from "../../../components/ui/ImageUploadField";
 
 type EventStatus = "upcoming" | "ongoing" | "completed" | "cancelled";
 
@@ -21,6 +22,7 @@ interface ESNEvent {
   status: EventStatus;
   description: string;
   speaker: string;
+  image?: string;
 }
 
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
@@ -47,7 +49,7 @@ const modeIcon = { "In-Person": MapPin, "Virtual": Video, "Hybrid": Globe2 };
 
 const blankEvent: Omit<ESNEvent, "id"> = {
   title: "", type: "Webinar", date: "", time: "", location: "", mode: "Virtual",
-  capacity: 100, registered: 0, status: "upcoming", description: "", speaker: "",
+  capacity: 100, registered: 0, status: "upcoming", description: "", speaker: "", image: "",
 };
 
 function exportRegistrations(ev: ESNEvent) {
@@ -235,6 +237,15 @@ export function EventsView() {
                   <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as EventStatus })} className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none">
                     {["upcoming", "ongoing", "completed", "cancelled"].map((s) => <option key={s}>{s}</option>)}
                   </select>
+                </div>
+                <div className="sm:col-span-2">
+                  <ImageUploadField
+                    label="Event Cover Image / Banner"
+                    value={form.image}
+                    onChange={(url) => setForm({ ...form, image: url })}
+                    folder="events"
+                    helpText="Upload an event flyer or cover image"
+                  />
                 </div>
                 <div className="sm:col-span-2">
                   <label className="text-xs font-bold text-gray-600 mb-1.5 block">Description</label>
