@@ -46,7 +46,7 @@ interface AdminUser {
 
 const sidebarItems = [
   { icon: LayoutDashboard, label: "Dashboard", id: "dashboard" },
-  { icon: FileText, label: "Content", id: "cms", badge: 3 },
+  { icon: FileText, label: "Content", id: "cms" },
   { icon: MonitorPlay, label: "Hero Section", id: "hero" },
   { icon: Focus, label: "Who We Are", id: "whoweare" },
   { icon: BarChart3, label: "Impact Stats", id: "stats" },
@@ -68,7 +68,7 @@ const sidebarItems = [
   { icon: Mail, label: "Newsletter", id: "newsletter" },
   { icon: MessageSquare, label: "Messages", id: "messages" },
   { icon: Shield, label: "Roles & Permissions", id: "roles" },
-  { icon: Users, label: "Applications", id: "applications", badge: 0 },
+  { icon: Users, label: "Applications", id: "applications" },
   { icon: Briefcase, label: "Careers & Volunteering", id: "opportunities" },
   { icon: Database, label: "Data & Backup", id: "data" },
   { icon: Settings, label: "Settings", id: "settings" },
@@ -309,7 +309,7 @@ export default function AdminDashboard() {
       case "dashboard":
         return <DashboardView kpiCards={kpiCards} weeklyData={weeklyData} monthlyDonations={monthlyDonations} recentDonations={recentDonations} recentActivity={activityLogs} />;
       case "cms":
-        return <CMSView content={cmsContent} onDelete={deleteContent} onToggle={toggleStatus} onShowAdd={() => setShowAddContent(true)} showAdd={showAddContent} newContent={newContent} setNewContent={setNewContent} onAdd={addContent} onCancelAdd={() => setShowAddContent(false)} onEdit={startEditContent} editingContent={editingContent} setEditingContent={setEditingContent} onSaveEdit={saveEditContent} deleteConfirmId={cmsDeleteConfirmId} onConfirmDelete={confirmDeleteContent} onCancelDelete={() => setCmsDeleteConfirmId(null)} />;
+        return <CMSView content={cmsContent && cmsContent.length > 0 ? cmsContent : getInitialContent()} onDelete={deleteContent} onToggle={toggleStatus} onShowAdd={() => setShowAddContent(true)} showAdd={showAddContent} newContent={newContent} setNewContent={setNewContent} onAdd={addContent} onCancelAdd={() => setShowAddContent(false)} onEdit={startEditContent} editingContent={editingContent} setEditingContent={setEditingContent} onSaveEdit={saveEditContent} deleteConfirmId={cmsDeleteConfirmId} onConfirmDelete={confirmDeleteContent} onCancelDelete={() => setCmsDeleteConfirmId(null)} onRestoreDefaults={() => saveContent(getInitialContent())} />;
       case "hero":
         return <HeroAdminView />;
       case "whoweare":
@@ -843,17 +843,44 @@ function DashboardView({ kpiCards, weeklyData, monthlyDonations, recentDonations
   );
 }
 
-function CMSView({ content, onDelete, onToggle, onShowAdd, showAdd, newContent, setNewContent, onAdd, onCancelAdd, onEdit, editingContent, setEditingContent, onSaveEdit, deleteConfirmId, onConfirmDelete, onCancelDelete }: any) {
+function CMSView({ content, onDelete, onToggle, onShowAdd, showAdd, newContent, setNewContent, onAdd, onCancelAdd, onEdit, editingContent, setEditingContent, onSaveEdit, deleteConfirmId, onConfirmDelete, onCancelDelete, onRestoreDefaults }: any) {
+  const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
+
+  const items = content && content.length > 0 ? content : [];
+
+  const filteredContent = items.filter((item: any) => {
+    const matchSearch =
+      (item.title || "").toLowerCase().includes(search.toLowerCase()) ||
+      (item.category || "").toLowerCase().includes(search.toLowerCase()) ||
+      (item.author || "").toLowerCase().includes(search.toLowerCase()) ||
+      (item.excerpt || "").toLowerCase().includes(search.toLowerCase());
+    const matchType = typeFilter === "All" || item.type === typeFilter;
+    const matchStatus = statusFilter === "All" || item.status === statusFilter;
+    return matchSearch && matchType && matchStatus;
+  });
+
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h3 className="text-gray-900 font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Content Management</h3>
-          <p className="text-sm text-gray-400">{content.length} items · Manage all website content</p>
+          <p className="text-sm text-gray-400">{items.length} total articles & news items · Real-time live CMS</p>
         </div>
-        <button onClick={onShowAdd} className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all">
-          <Plus size={16} /> New Content
-        </button>
+        <div className="flex items-center gap-3">
+          {items.length === 0 && onRestoreDefaults && (
+            <button
+              onClick={onRestoreDefaults}
+              className="flex items-center gap-2 bg-[#173B63] text-white px-4 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#122e4f] transition-all"
+            >
+              <RefreshCw size={15} /> Load Default Content
+            </button>
+          )}
+          <button onClick={onShowAdd} className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all shadow-md shadow-[#0B5D3F]/20">
+            <Plus size={16} /> New Content
+          </button>
+        </div>
       </div>
 
       <AnimatePresence>
@@ -992,38 +1019,81 @@ function CMSView({ content, onDelete, onToggle, onShowAdd, showAdd, newContent, 
         )}
       </AnimatePresence>
 
-      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-        <div className="flex items-center gap-3 p-5 border-b border-gray-50">
-          <div className="relative flex-1 max-w-xs">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input type="text" placeholder="Search content..." className="w-full pl-9 pr-3 py-2 rounded-lg bg-[#F6FBF8] border border-gray-200 text-xs focus:outline-none" />
+      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+        {/* Controls bar */}
+        <div className="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-5 border-b border-gray-100 bg-[#F6FBF8]/40">
+          <div className="relative flex-1 min-w-[200px] max-w-sm">
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by title, category, author..."
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-gray-200 text-xs focus:outline-none focus:border-[#0B5D3F] transition-all"
+            />
+            {search && (
+              <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <X size={13} />
+              </button>
+            )}
           </div>
-          <button className="flex items-center gap-1.5 text-xs text-gray-500 border border-gray-200 px-3 py-2 rounded-lg hover:bg-gray-50">
-            <Filter size={13} /> Filter
-          </button>
-          <button className="flex items-center gap-1.5 text-xs text-gray-500 border border-gray-200 px-3 py-2 rounded-lg hover:bg-gray-50">
-            <Download size={13} /> Export
-          </button>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              className="px-3 py-2 rounded-xl bg-white border border-gray-200 text-xs font-semibold text-gray-600 focus:outline-none"
+            >
+              <option value="All">All Types</option>
+              <option value="News">News</option>
+              <option value="Event">Event</option>
+              <option value="Report">Report</option>
+              <option value="Campaign">Campaign</option>
+              <option value="Blog">Blog</option>
+            </select>
+
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-3 py-2 rounded-xl bg-white border border-gray-200 text-xs font-semibold text-gray-600 focus:outline-none"
+            >
+              <option value="All">All Status</option>
+              <option value="Published">Published</option>
+              <option value="Draft">Draft</option>
+            </select>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="bg-[#F6FBF8] text-xs font-bold text-gray-500 uppercase tracking-wider">
-                <th className="text-left px-5 py-3">Title</th>
-                <th className="text-left px-4 py-3">Type</th>
-                <th className="text-left px-4 py-3">Status</th>
-                <th className="text-left px-4 py-3">Author</th>
-                <th className="text-left px-4 py-3">Date</th>
-                <th className="text-left px-4 py-3">Views</th>
-                <th className="text-right px-5 py-3">Actions</th>
+                <th className="text-left px-5 py-3.5">Title & Cover</th>
+                <th className="text-left px-4 py-3.5">Type</th>
+                <th className="text-left px-4 py-3.5">Status</th>
+                <th className="text-left px-4 py-3.5">Author</th>
+                <th className="text-left px-4 py-3.5">Date</th>
+                <th className="text-left px-4 py-3.5">Views</th>
+                <th className="text-right px-5 py-3.5">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {content.map((item: any) => (
-                <tr key={item.id} className="border-t border-gray-50 hover:bg-[#F6FBF8]/50 transition-colors">
+              {filteredContent.map((item: any) => (
+                <tr key={item.id} className="border-t border-gray-100 hover:bg-[#F6FBF8]/60 transition-colors">
                   <td className="px-5 py-4">
-                    <div className="text-sm font-semibold text-gray-800 max-w-xs truncate">{item.title}</div>
+                    <div className="flex items-center gap-3">
+                      {item.image ? (
+                        <img src={item.image} alt={item.title} className="w-11 h-11 rounded-xl object-cover shrink-0 border border-gray-200" />
+                      ) : (
+                        <div className="w-11 h-11 rounded-xl bg-[#0B5D3F]/10 flex items-center justify-center text-[#0B5D3F] shrink-0 font-bold text-xs">
+                          {item.type?.charAt(0) || "C"}
+                        </div>
+                      )}
+                      <div className="min-w-0 max-w-xs">
+                        <div className="text-sm font-bold text-gray-900 truncate">{item.title}</div>
+                        <div className="text-xs text-gray-400 truncate">{item.category || "General"} {item.featured ? "· ⭐ Featured" : ""}</div>
+                      </div>
+                    </div>
                   </td>
                   <td className="px-4 py-4">
                     <span className="text-xs font-bold bg-[#0B5D3F]/10 text-[#0B5D3F] px-2.5 py-1 rounded-full">{item.type}</span>
@@ -1032,25 +1102,59 @@ function CMSView({ content, onDelete, onToggle, onShowAdd, showAdd, newContent, 
                     <button
                       onClick={() => onToggle(item.id)}
                       className={`text-xs font-bold px-2.5 py-1 rounded-full transition-all ${item.status === "Published" ? "bg-[#4CAF50]/15 text-[#4CAF50] hover:bg-[#4CAF50]/25" : "bg-yellow-50 text-yellow-600 hover:bg-yellow-100"}`}
+                      title="Click to toggle status"
                     >
                       {item.status}
                     </button>
                   </td>
-                  <td className="px-4 py-4 text-xs text-gray-500">{item.author}</td>
-                  <td className="px-4 py-4 text-xs text-gray-500">{item.date}</td>
-                  <td className="px-4 py-4 text-xs font-semibold text-gray-700">{item.views.toLocaleString()}</td>
+                  <td className="px-4 py-4 text-xs font-medium text-gray-600">{item.author || "Admin"}</td>
+                  <td className="px-4 py-4 text-xs text-gray-500">{item.date || "Recent"}</td>
+                  <td className="px-4 py-4 text-xs font-semibold text-gray-700">{(item.views || 0).toLocaleString()}</td>
                   <td className="px-5 py-4">
                     <div className="flex items-center justify-end gap-2">
-                      <button onClick={() => onEdit(item)} className="p-1.5 rounded-lg hover:bg-[#0B5D3F]/10 text-gray-400 hover:text-[#0B5D3F] transition-all" title="Edit">
-                        <Edit3 size={14} />
+                      <button onClick={() => onEdit(item)} className="p-2 rounded-xl hover:bg-[#0B5D3F]/10 text-gray-400 hover:text-[#0B5D3F] transition-all" title="Edit Article">
+                        <Edit3 size={15} />
                       </button>
-                      <button onClick={() => onDelete(item.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all" title="Delete">
-                        <Trash2 size={14} />
+                      <button onClick={() => onDelete(item.id)} className="p-2 rounded-xl hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all" title="Delete Article">
+                        <Trash2 size={15} />
                       </button>
                     </div>
                   </td>
                 </tr>
               ))}
+
+              {filteredContent.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="text-center py-16 text-gray-400">
+                    <FileText size={36} className="mx-auto mb-3 opacity-30 text-gray-400" />
+                    <p className="text-sm font-bold text-gray-700 mb-1">
+                      {items.length === 0 ? "No Content Articles Found" : "No Matching Articles"}
+                    </p>
+                    <p className="text-xs text-gray-400 max-w-sm mx-auto mb-4">
+                      {items.length === 0
+                        ? "Get started by adding your first article, news story, or press release, or restore the default templates."
+                        : `No articles match your search "${search}" and selected filters.`}
+                    </p>
+                    <div className="flex items-center justify-center gap-3">
+                      {items.length === 0 && onRestoreDefaults ? (
+                        <button
+                          onClick={onRestoreDefaults}
+                          className="bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl text-xs font-bold hover:bg-[#0a5237] transition-all"
+                        >
+                          Load Default Articles
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => { setSearch(""); setTypeFilter("All"); setStatusFilter("All"); }}
+                          className="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl text-xs font-bold hover:bg-gray-200 transition-all"
+                        >
+                          Clear Filters
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
