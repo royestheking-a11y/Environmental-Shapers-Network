@@ -17,6 +17,8 @@ import { ProgramsView } from "./sections/ProgramsView";
 import { UsersView, getInitialUsers } from "./sections/UsersView";
 import { ApplicationsView } from "./sections/ApplicationsView";
 import { OpportunitiesView } from "./sections/OpportunitiesView";
+import { WorkHoursView } from "./sections/WorkHoursView";
+import { formatDuration } from "../../../lib/workHoursService";
 import TestimonialsView from "./sections/TestimonialsView";
 import ThematicAreasView from "./sections/ThematicAreasView";
 import PartnersView from "./sections/PartnersView";
@@ -68,6 +70,7 @@ const sidebarItems = [
   { icon: Mail, label: "Newsletter", id: "newsletter" },
   { icon: MessageSquare, label: "Messages", id: "messages" },
   { icon: Shield, label: "Roles & Permissions", id: "roles" },
+  { icon: Clock, label: "Working Hours", id: "work-hours" },
   { icon: Users, label: "Applications", id: "applications" },
   { icon: Briefcase, label: "Careers & Volunteering", id: "opportunities" },
   { icon: Database, label: "Data & Backup", id: "data" },
@@ -178,6 +181,11 @@ const sectionAliases: Record<string, string> = {
   "mission-values": "mission",
   "youth-development": "youth",
   "media-library": "media",
+  "timesheets": "work-hours",
+  "work-hours": "work-hours",
+  "work_hours": "work-hours",
+  "working-hours": "work-hours",
+  "working_hours": "work-hours",
 };
 
 export default function AdminDashboard() {
@@ -283,6 +291,45 @@ export default function AdminDashboard() {
   const [notifications, setNotifications] = useFirestoreData<AdminNotification[]>("esn_notifications", getInitialNotifications());
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifFilter, setNotifFilter] = useState<"all" | "unread">("all");
+
+  // Real-time Employee Working Hours Engine
+  const [activeSessionSeconds, setActiveSessionSeconds] = useState(0);
+  const [isUserIdle, setIsUserIdle] = useState(false);
+
+  useEffect(() => {
+    let lastActivityTime = Date.now();
+
+    const handleActivity = () => {
+      lastActivityTime = Date.now();
+      setIsUserIdle(false);
+    };
+
+    window.addEventListener("mousemove", handleActivity);
+    window.addEventListener("keydown", handleActivity);
+    window.addEventListener("click", handleActivity);
+    window.addEventListener("scroll", handleActivity);
+
+    const timer = setInterval(() => {
+      const now = Date.now();
+      const idleTime = now - lastActivityTime;
+
+      // If inactive for > 5 minutes (300,000 ms), mark as idle
+      if (idleTime > 300000) {
+        setIsUserIdle(true);
+      } else {
+        setIsUserIdle(false);
+        setActiveSessionSeconds((prev) => prev + 1);
+      }
+    }, 1000);
+
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener("mousemove", handleActivity);
+      window.removeEventListener("keydown", handleActivity);
+      window.removeEventListener("click", handleActivity);
+      window.removeEventListener("scroll", handleActivity);
+    };
+  }, []);
 
   const unreadCount = (notifications || []).filter(n => !n.read).length;
 
@@ -431,6 +478,9 @@ export default function AdminDashboard() {
         return <CampaignsView />;
       case "roles":
         return <RolesView />;
+      case "work-hours":
+      case "timesheets":
+        return <WorkHoursView currentStaffId={user?.email} currentSessionElapsed={activeSessionSeconds} />;
       case "data":
         return <DataBackupView />;
       case "settings":
@@ -561,6 +611,28 @@ export default function AdminDashboard() {
               <Search size={15} className="text-gray-400" />
               <input type="text" placeholder="Quick search..." className="bg-transparent text-sm outline-none text-gray-600 w-full" />
             </div>
+
+            {/* Live Staff Work Session Widget */}
+            <Link
+              to="/admin/dashboard/work-hours"
+              className="hidden sm:flex items-center gap-2.5 bg-[#F6FBF8] border border-gray-200 hover:border-[#0B5D3F]/40 hover:bg-[#0B5D3F]/5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all group"
+              title="Click to view full Working Hours & Timesheets"
+            >
+              <div className="flex items-center gap-1.5 font-mono text-gray-800">
+                <Clock size={14} className="text-[#0B5D3F]" />
+                <span>{formatDuration(activeSessionSeconds, "digital")}</span>
+              </div>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 ${
+                isUserIdle
+                  ? "bg-amber-100 text-amber-800"
+                  : "bg-emerald-100 text-emerald-800"
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${
+                  isUserIdle ? "bg-amber-500" : "bg-emerald-500 animate-pulse"
+                }`} />
+                {isUserIdle ? "Idle" : "Working"}
+              </span>
+            </Link>
 
             {/* Notifications Dropdown */}
             <div className="relative">
