@@ -21,6 +21,9 @@ function FallingLeaf({ delay, x }: { delay: number; x: number }) {
 
 export function MaintenancePage() {
   const settings = useSettings();
+  const contactEmail = (!settings?.contactEmail || settings.contactEmail.includes("esnbd.org") || settings.contactEmail.includes("environmentalshapersnetwork.org"))
+    ? "info@esnglobal.org"
+    : settings.contactEmail;
 
   return (
     <section className="relative min-h-screen overflow-hidden flex items-center justify-center bg-[#0a1a0e]" style={{ cursor: "none" }}>
@@ -118,7 +121,7 @@ export function MaintenancePage() {
               </div>
 
               <a
-                href={`mailto:${settings?.contactEmail || "info@esnglobal.org"}`}
+                href={`mailto:${contactEmail}`}
                 className="flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all rounded-2xl p-4 group"
               >
                 <div className="w-10 h-10 bg-[#4CAF50]/20 rounded-full flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
@@ -126,7 +129,7 @@ export function MaintenancePage() {
                 </div>
                 <div className="text-left">
                   <div className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-0.5">Contact Support</div>
-                  <div className="text-white text-sm font-medium group-hover:text-[#4CAF50] transition-colors">{settings?.contactEmail || "info@esnglobal.org"}</div>
+                  <div className="text-white text-sm font-medium group-hover:text-[#4CAF50] transition-colors">{contactEmail}</div>
                 </div>
               </a>
             </div>

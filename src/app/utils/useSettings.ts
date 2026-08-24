@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { fetchFirestoreData, useFirestoreData } from "../../lib/useFirestore";
 
 const defaultSettings = {
   siteName: "Environmental Shapers Network",
@@ -10,19 +11,27 @@ const defaultSettings = {
   maintenanceMode: false,
 };
 
-import { fetchFirestoreData, useFirestoreData } from "../../lib/useFirestore";
+function normalizeSettings(s: any) {
+  if (!s) return defaultSettings;
+  const contactEmail = (!s.contactEmail || s.contactEmail.includes("esnbd.org") || s.contactEmail.includes("environmentalshapersnetwork.org"))
+    ? "info@esnglobal.org"
+    : s.contactEmail;
+  return {
+    ...defaultSettings,
+    ...s,
+    contactEmail,
+  };
+}
 
 export async function getSavedSettings() {
   try {
     const s = await fetchFirestoreData<any>("esn_settings", defaultSettings);
-    if (s) {
-      return { ...defaultSettings, ...s };
-    }
+    return normalizeSettings(s);
   } catch {}
   return defaultSettings;
 }
 
 export function useSettings() {
   const [settings] = useFirestoreData<any>("esn_settings", defaultSettings);
-  return settings;
+  return normalizeSettings(settings);
 }
