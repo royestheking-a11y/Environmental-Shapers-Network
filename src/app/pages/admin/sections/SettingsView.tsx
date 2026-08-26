@@ -39,21 +39,28 @@ function getSavedSettings() {
 
 const tabs = [
   { id: "general", label: "General", icon: Settings },
-  { id: "appearance", label: "Appearance", icon: Palette },
-  { id: "notifications", label: "Notifications", icon: Bell },
-  { id: "security", label: "Security", icon: Lock },
-  { id: "integrations", label: "Integrations", icon: Code },
-  { id: "email", label: "Email (SMTP)", icon: Mail },
-  { id: "seo", label: "SEO & Meta", icon: Search },
+  { id: "appearance", label: "Appearance & Styling", icon: Palette },
+  { id: "notifications", label: "Notification Preferences", icon: Bell },
+  { id: "security", label: "Security & Access", icon: Lock },
+  { id: "integrations", label: "Integrations & APIs", icon: Code },
 ];
 
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 
 export function SettingsView() {
   const [activeTab, setActiveTab] = useState("general");
-  const [settings, setSettings, loadingSettings] = useFirestoreData<any>("esn_settings", getSavedSettings());
+  const [settings, setSettings] = useFirestoreData<any>("esn_settings", {
+    ...getSavedSettings(),
+    primaryColor: "#0B5D3F",
+    headerStyle: "floating",
+    borderRadius: "rounded-2xl",
+    enableAnimations: true,
+    audioAlerts: true,
+    logoUrl: "",
+    notifyRepresentative: true,
+    notifyCareer: true,
+  });
   const [saved, setSaved] = useState(false);
-  const [emailStatus, setEmailStatus] = useState<"idle" | "sending" | "sent">("idle");
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const update = (key: string, value: any) => setSettings((prev: any) => ({ ...prev, [key]: value }));
@@ -65,14 +72,6 @@ export function SettingsView() {
     setTimeout(() => setSaved(false), 2500);
   };
 
-  const sendTestEmail = () => {
-    setEmailStatus("sending");
-    setTimeout(() => {
-      setEmailStatus("sent");
-      setTimeout(() => setEmailStatus("idle"), 3000);
-    }, 1500);
-  };
-
   const forceLogout = () => {
     localStorage.removeItem("esn_admin_user");
     window.location.href = "/admin";
@@ -80,6 +79,7 @@ export function SettingsView() {
 
   const Toggle = ({ k }: { k: string }) => (
     <button
+      type="button"
       onClick={() => update(k, !(settings as any)[k])}
       className={`w-12 h-6 rounded-full transition-all duration-300 relative shrink-0 ${(settings as any)[k] ? "bg-[#4CAF50]" : "bg-gray-200"}`}
     >
@@ -92,7 +92,7 @@ export function SettingsView() {
       <label className="text-xs font-bold text-gray-600 mb-1.5 block">{label}</label>
       <input
         type={type}
-        value={(settings as any)[k]}
+        value={(settings as any)[k] || ""}
         onChange={(e) => update(k, e.target.value)}
         placeholder={placeholder}
         className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] transition-colors"
@@ -110,62 +110,96 @@ export function SettingsView() {
     </div>
   );
 
+  const colorThemes = [
+    { name: "Forest Emerald (Default)", hex: "#0B5D3F", secondary: "#4CAF50" },
+    { name: "Lush Rainforest", hex: "#004D40", secondary: "#26A69A" },
+    { name: "Ocean Marine", hex: "#0A4368", secondary: "#0288D1" },
+    { name: "Earth Amber", hex: "#78350F", secondary: "#D97706" },
+    { name: "Deep Charcoal", hex: "#1E293B", secondary: "#64748B" },
+  ];
+
   return (
     <div className="flex flex-col gap-7">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h3 className="font-black text-gray-900" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>System Settings</h3>
-          <p className="text-sm text-gray-400 mt-0.5">Configure your ESN platform preferences</p>
+          <h3 className="font-black text-gray-900 text-xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Platform System Settings</h3>
+          <p className="text-sm text-gray-400 mt-0.5">Global organization parameters, visual styling & live system preferences</p>
         </div>
-        <button onClick={saveAll} className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all">
-          {saved ? <><CheckCircle2 size={15} /> Saved!</> : <><Save size={15} /> Save All Changes</>}
+        <button
+          onClick={saveAll}
+          className="flex items-center gap-2 bg-[#0B5D3F] text-white px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-[#0a5237] transition-all shadow-md"
+        >
+          {saved ? <><CheckCircle2 size={15} /> Settings Saved!</> : <><Save size={15} /> Save All Changes</>}
         </button>
       </div>
 
-      <div className="flex gap-6">
-        <div className="w-52 shrink-0 flex flex-col gap-1">
+      <div className="flex flex-col md:flex-row gap-6">
+        <div className="md:w-56 shrink-0 flex md:flex-col gap-1.5 overflow-x-auto pb-2 md:pb-0">
           {tabs.map((t) => (
-            <button key={t.id} onClick={() => setActiveTab(t.id)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all text-left ${activeTab === t.id ? "bg-[#0B5D3F] text-white" : "text-gray-500 hover:bg-gray-100"}`}>
-              <t.icon size={16} />{t.label}
+            <button
+              key={t.id}
+              onClick={() => setActiveTab(t.id)}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all text-left whitespace-nowrap ${
+                activeTab === t.id ? "bg-[#0B5D3F] text-white shadow-sm" : "text-gray-500 hover:bg-gray-100 bg-white md:bg-transparent"
+              }`}
+            >
+              <t.icon size={16} /> {t.label}
             </button>
           ))}
         </div>
 
-        <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-          className="flex-1 bg-white rounded-2xl border border-gray-100 p-8">
-
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex-1 bg-white rounded-3xl border border-gray-100 p-8 shadow-sm"
+        >
           {activeTab === "general" && (
             <div className="flex flex-col gap-6">
               <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
                 <Settings size={20} className="text-[#0B5D3F]" />
-                <div><div className="font-bold text-gray-900">General Settings</div><div className="text-xs text-gray-400">Basic website information</div></div>
+                <div>
+                  <div className="font-bold text-gray-900">Organization & General Profile</div>
+                  <div className="text-xs text-gray-400">Core parameters and localization</div>
+                </div>
               </div>
               <div className="grid sm:grid-cols-2 gap-5">
                 <Field label="Organization Name" k="siteName" />
-                <Field label="Tagline" k="tagline" />
-                <Field label="Contact Email" k="contactEmail" type="email" />
+                <Field label="Platform Tagline" k="tagline" />
+                <Field label="Official Contact Email" k="contactEmail" type="email" />
                 <div>
-                  <label className="text-xs font-bold text-gray-600 mb-1.5 block">Timezone</label>
-                  <select value={settings.timezone} onChange={(e) => update("timezone", e.target.value)} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none">
+                  <label className="text-xs font-bold text-gray-600 mb-1.5 block">Default Timezone</label>
+                  <select
+                    value={settings.timezone || "Asia/Dhaka"}
+                    onChange={(e) => update("timezone", e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none font-bold"
+                  >
                     {["Asia/Dhaka", "UTC", "America/New_York", "Europe/London", "Asia/Kolkata", "Africa/Nairobi"].map(t => <option key={t}>{t}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-gray-600 mb-1.5 block">Default Language</label>
-                  <select value={settings.language} onChange={(e) => update("language", e.target.value)} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none">
+                  <label className="text-xs font-bold text-gray-600 mb-1.5 block">Primary Language</label>
+                  <select
+                    value={settings.language || "English"}
+                    onChange={(e) => update("language", e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none font-bold"
+                  >
                     {["English", "Bangla", "Arabic", "French", "Spanish"].map(l => <option key={l}>{l}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-gray-600 mb-1.5 block">Default Currency</label>
-                  <select value={settings.currency} onChange={(e) => update("currency", e.target.value)} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none">
+                  <label className="text-xs font-bold text-gray-600 mb-1.5 block">Donation Currency</label>
+                  <select
+                    value={settings.currency || "USD"}
+                    onChange={(e) => update("currency", e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none font-bold"
+                  >
                     {["USD", "BDT", "EUR", "GBP", "INR", "KES"].map(c => <option key={c}>{c}</option>)}
                   </select>
                 </div>
               </div>
-              <div className="bg-[#F6FBF8] rounded-xl p-5 border border-gray-100">
-                <SwitchRow label="Maintenance Mode" desc="Take the site offline for maintenance. Visitors will see a maintenance page." k="maintenanceMode" />
+              <div className="bg-[#F6FBF8] rounded-2xl p-5 border border-gray-100">
+                <SwitchRow label="Maintenance Mode" desc="Take the public website offline for scheduled updates. Admin dashboard remains accessible." k="maintenanceMode" />
               </div>
             </div>
           )}
@@ -174,33 +208,77 @@ export function SettingsView() {
             <div className="flex flex-col gap-6">
               <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
                 <Palette size={20} className="text-[#0B5D3F]" />
-                <div><div className="font-bold text-gray-900">Appearance</div><div className="text-xs text-gray-400">Brand colors and visual preferences</div></div>
+                <div>
+                  <div className="font-bold text-gray-900">Appearance & Visual Identity</div>
+                  <div className="text-xs text-gray-400">Customize brand themes, layout styles, and dashboard visuals</div>
+                </div>
               </div>
+
+              {/* Theme Presets */}
               <div>
-                <label className="text-xs font-bold text-gray-600 mb-3 block">Brand Colors</label>
-                <div className="flex gap-3 flex-wrap">
-                  {[["#0B5D3F", "Forest Green"], ["#4CAF50", "Leaf Green"], ["#173B63", "Dark Blue"], ["#D6A95A", "Accent Gold"]].map(([c, l]) => (
-                    <div key={c} className="flex items-center gap-2 bg-[#F6FBF8] px-4 py-2.5 rounded-xl border border-gray-100">
-                      <div className="w-6 h-6 rounded-full border-2 border-white shadow-sm" style={{ backgroundColor: c }} />
-                      <span className="text-xs font-semibold text-gray-600">{l}</span>
-                      <span className="text-xs font-mono text-gray-400">{c}</span>
-                    </div>
+                <label className="text-xs font-bold text-gray-700 mb-2.5 block">Primary Color Theme</label>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {colorThemes.map((t) => (
+                    <button
+                      key={t.hex}
+                      type="button"
+                      onClick={() => update("primaryColor", t.hex)}
+                      className={`p-3.5 rounded-2xl border text-left flex items-center gap-3 transition-all ${
+                        settings.primaryColor === t.hex ? "border-[#0B5D3F] bg-[#0B5D3F]/5 ring-2 ring-[#0B5D3F]/20" : "border-gray-200 hover:bg-gray-50"
+                      }`}
+                    >
+                      <div className="w-8 h-8 rounded-xl shadow-inner flex items-center justify-center shrink-0" style={{ backgroundColor: t.hex }}>
+                        {settings.primaryColor === t.hex && <CheckCircle2 size={16} className="text-white" />}
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-gray-900">{t.name}</div>
+                        <div className="text-[10px] font-mono text-gray-400">{t.hex}</div>
+                      </div>
+                    </button>
                   ))}
                 </div>
               </div>
-              <div className="bg-[#F6FBF8] rounded-xl p-5 border border-gray-100">
-                <SwitchRow label="Dark Mode (Admin Panel)" desc="Enable dark theme for the admin interface." k="darkMode" />
-              </div>
+
+              {/* Header Style */}
               <div>
-                <label className="text-xs font-bold text-gray-600 mb-2 block">Favicon & Logo</label>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  {["Upload Logo (PNG)", "Upload Favicon (ICO)"].map((l) => (
-                    <div key={l} className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-[#4CAF50] cursor-pointer transition-all group">
-                      <Upload size={20} className="mx-auto mb-2 text-gray-300 group-hover:text-[#4CAF50] transition-colors" />
-                      <p className="text-xs text-gray-400 group-hover:text-gray-600">{l}</p>
-                    </div>
+                <label className="text-xs font-bold text-gray-700 mb-2.5 block">Public Header Layout Style</label>
+                <div className="grid sm:grid-cols-3 gap-3">
+                  {[
+                    { id: "floating", label: "Floating Glassmorphic", desc: "Rounded floating pill with glass backdrop" },
+                    { id: "solid", label: "Solid Clean Navbar", desc: "Full-width top navigation bar" },
+                    { id: "minimal", label: "Minimal Transparent", desc: "Transparent overlay with sticky scroll" },
+                  ].map((h) => (
+                    <button
+                      key={h.id}
+                      type="button"
+                      onClick={() => update("headerStyle", h.id)}
+                      className={`p-4 rounded-2xl border text-left transition-all ${
+                        (settings.headerStyle || "floating") === h.id ? "border-[#0B5D3F] bg-[#0B5D3F]/5 ring-2 ring-[#0B5D3F]/20" : "border-gray-200 hover:bg-gray-50"
+                      }`}
+                    >
+                      <div className="text-xs font-bold text-gray-900 mb-1">{h.label}</div>
+                      <div className="text-[11px] text-gray-500">{h.desc}</div>
+                    </button>
                   ))}
                 </div>
+              </div>
+
+              {/* Logo Upload */}
+              <div>
+                <ImageUploadField
+                  label="Network Official Brand Logo"
+                  value={settings.logoUrl || ""}
+                  onChange={(url) => update("logoUrl", url)}
+                  folder="branding"
+                  aspectRatio="square"
+                  helpText="Upload PNG, SVG, or high-resolution logo for headers and platform footer"
+                />
+              </div>
+
+              {/* Switches */}
+              <div className="bg-[#F6FBF8] rounded-2xl p-5 border border-gray-100 divide-y divide-gray-100">
+                <SwitchRow label="Dark Theme (Admin Panel)" desc="Switch admin dashboard interface to sleek dark palette." k="darkMode" />
+                <SwitchRow label="Smooth Micro-Animations" desc="Enable fluid Framer Motion transitions and floating visual effects." k="enableAnimations" />
               </div>
             </div>
           )}
@@ -209,13 +287,18 @@ export function SettingsView() {
             <div className="flex flex-col gap-6">
               <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
                 <Bell size={20} className="text-[#0B5D3F]" />
-                <div><div className="font-bold text-gray-900">Notification Preferences</div><div className="text-xs text-gray-400">Choose when to receive admin notifications</div></div>
+                <div>
+                  <div className="font-bold text-gray-900">Notification Preferences & Alerts</div>
+                  <div className="text-xs text-gray-400">Configure instant alerts for donor activity and application funnels</div>
+                </div>
               </div>
-              <div className="bg-[#F6FBF8] rounded-xl p-5 border border-gray-100">
-                <SwitchRow label="New Donation Received" desc="Get notified when a donation is made" k="notifyNewDonation" />
-                <SwitchRow label="New Member Registered" desc="Alert when someone joins the platform" k="notifyNewMember" />
-                <SwitchRow label="New Project Submitted" desc="When a project is submitted for review" k="notifyNewProject" />
-                <SwitchRow label="Weekly Summary Report" desc="Receive weekly analytics digest" k="notifyWeeklyReport" />
+              <div className="bg-[#F6FBF8] rounded-2xl p-5 border border-gray-100 divide-y divide-gray-100">
+                <SwitchRow label="New Donation Verified" desc="Instant alert when a supporter successfully completes a donation transaction" k="notifyNewDonation" />
+                <SwitchRow label="Volunteer Application Submitted" desc="Notify reviewers whenever a new volunteer registers on the platform" k="notifyNewMember" />
+                <SwitchRow label="Career Position Application" desc="Notify HR/Hiring team when a job resume is submitted" k="notifyCareer" />
+                <SwitchRow label="Global Representative Application" desc="Alert leadership when an international country ambassador applies" k="notifyRepresentative" />
+                <SwitchRow label="Weekly Analytics Summary" desc="Receive consolidated platform growth digests every Monday" k="notifyWeeklyReport" />
+                <SwitchRow label="Audio Chime Notifications" desc="Play a subtle sound in admin dashboard when new real-time activity arrives" k="audioAlerts" />
               </div>
             </div>
           )}
@@ -224,37 +307,38 @@ export function SettingsView() {
             <div className="flex flex-col gap-6">
               <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
                 <Lock size={20} className="text-[#0B5D3F]" />
-                <div><div className="font-bold text-gray-900">Security Settings</div><div className="text-xs text-gray-400">Protect your admin account and data</div></div>
+                <div><div className="font-bold text-gray-900">Security & Access Management</div><div className="text-xs text-gray-400">Session policies and administrative credentials</div></div>
               </div>
-              <div className="bg-[#F6FBF8] rounded-xl p-5 border border-gray-100">
-                <SwitchRow label="Two-Factor Authentication" desc="Require 2FA for all admin logins" k="twoFactor" />
+              <div className="bg-[#F6FBF8] rounded-2xl p-5 border border-gray-100">
+                <SwitchRow label="Two-Factor Authentication (2FA)" desc="Require verified 2FA authentication on administrative logins" k="twoFactor" />
               </div>
               <div className="grid sm:grid-cols-2 gap-5">
                 <div>
                   <label className="text-xs font-bold text-gray-600 mb-1.5 block">Session Timeout (minutes)</label>
-                  <select value={settings.sessionTimeout} onChange={(e) => update("sessionTimeout", e.target.value)} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none">
+                  <select value={settings.sessionTimeout || "60"} onChange={(e) => update("sessionTimeout", e.target.value)} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none font-bold">
                     {["15", "30", "60", "120", "480"].map(v => <option key={v}>{v}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="text-xs font-bold text-gray-600 mb-1.5 block">Max Failed Login Attempts</label>
-                  <select value={settings.loginAttempts} onChange={(e) => update("loginAttempts", e.target.value)} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none">
+                  <select value={settings.loginAttempts || "5"} onChange={(e) => update("loginAttempts", e.target.value)} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none font-bold">
                     {["3", "5", "10"].map(v => <option key={v}>{v}</option>)}
                   </select>
                 </div>
               </div>
-              <div className="bg-red-50 border border-red-200 rounded-xl p-5">
-                <div className="text-sm font-bold text-red-700 mb-3">Danger Zone</div>
-                <div className="flex items-center justify-between">
+              <div className="bg-red-50 border border-red-200 rounded-2xl p-6">
+                <div className="text-sm font-bold text-red-700 mb-2">Danger Zone</div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <div className="text-sm text-red-600 font-medium">Delete All Sessions</div>
-                    <div className="text-xs text-red-400">Force log out all admin users immediately</div>
+                    <div className="text-sm text-red-600 font-bold">Terminate All Active Admin Sessions</div>
+                    <div className="text-xs text-red-400">Force disconnect all current sessions across all devices</div>
                   </div>
                   <button
+                    type="button"
                     onClick={() => setShowLogoutConfirm(true)}
-                    className="text-xs font-bold text-red-600 border border-red-300 px-4 py-2 rounded-lg hover:bg-red-100 transition-all flex items-center gap-1.5"
+                    className="text-xs font-bold text-red-600 border border-red-300 bg-white px-4 py-2.5 rounded-xl hover:bg-red-100 transition-all flex items-center gap-1.5 shadow-sm"
                   >
-                    <LogOut size={13} /> Force Logout
+                    <LogOut size={13} /> Force Logout All
                   </button>
                 </div>
                 {showLogoutConfirm && (
@@ -262,10 +346,10 @@ export function SettingsView() {
                     <AlertTriangle size={16} className="text-red-500 shrink-0 mt-0.5" />
                     <div className="flex-1">
                       <div className="text-sm font-bold text-red-700 mb-1">Confirm Force Logout?</div>
-                      <div className="text-xs text-red-500 mb-3">This ends all active sessions including yours. You will be redirected to login.</div>
+                      <div className="text-xs text-red-500 mb-3">This immediately ends all sessions and redirects you to the login screen.</div>
                       <div className="flex gap-2">
-                        <button onClick={forceLogout} className="bg-red-500 text-white px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-red-600 transition-all">Yes, Logout All</button>
-                        <button onClick={() => setShowLogoutConfirm(false)} className="border border-red-300 text-red-500 px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-red-50 transition-all">Cancel</button>
+                        <button type="button" onClick={forceLogout} className="bg-red-500 text-white px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-red-600 transition-all">Yes, Terminate</button>
+                        <button type="button" onClick={() => setShowLogoutConfirm(false)} className="border border-red-300 bg-white text-red-500 px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-red-50 transition-all">Cancel</button>
                       </div>
                     </div>
                   </div>
@@ -278,78 +362,14 @@ export function SettingsView() {
             <div className="flex flex-col gap-6">
               <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
                 <Code size={20} className="text-[#0B5D3F]" />
-                <div><div className="font-bold text-gray-900">Integrations & APIs</div><div className="text-xs text-gray-400">Connect third-party services</div></div>
+                <div><div className="font-bold text-gray-900">Integrations & API Gateways</div><div className="text-xs text-gray-400">Connect analytics, security, and payment gateways</div></div>
               </div>
               <div className="grid sm:grid-cols-2 gap-5">
-                <Field label="Google Analytics ID" k="googleAnalytics" placeholder="UA-XXXXXXX-X" />
-                <Field label="Facebook Pixel ID" k="facebookPixel" placeholder="1234567890" />
-                <Field label="reCAPTCHA Site Key" k="recaptchaKey" placeholder="6Ld..." />
-                <Field label="Stripe Publishable Key" k="stripeKey" placeholder="pk_live_..." />
-                <Field label="PayPal Business Email" k="paypalEmail" type="email" />
-              </div>
-            </div>
-          )}
-
-          {activeTab === "email" && (
-            <div className="flex flex-col gap-6">
-              <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
-                <Mail size={20} className="text-[#0B5D3F]" />
-                <div><div className="font-bold text-gray-900">Email (SMTP) Configuration</div><div className="text-xs text-gray-400">Set up outgoing email delivery</div></div>
-              </div>
-              <div className="grid sm:grid-cols-2 gap-5">
-                <Field label="SMTP Host" k="smtpHost" placeholder="smtp.sendgrid.net" />
-                <Field label="SMTP Port" k="smtpPort" placeholder="587" />
-                <Field label="SMTP Username" k="smtpUser" placeholder="apikey" />
-                <div>
-                  <label className="text-xs font-bold text-gray-600 mb-1.5 block">SMTP Password</label>
-                  <input type="password" placeholder="••••••••••••" className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] transition-colors" />
-                </div>
-              </div>
-              <div className="flex items-center gap-4 flex-wrap">
-                <button
-                  onClick={sendTestEmail}
-                  disabled={emailStatus === "sending"}
-                  className="flex items-center gap-2 border border-[#0B5D3F] text-[#0B5D3F] px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0B5D3F]/10 transition-all disabled:opacity-60"
-                >
-                  {emailStatus === "sending"
-                    ? <><Send size={15} className="animate-pulse" /> Sending...</>
-                    : emailStatus === "sent"
-                    ? <><CheckCircle2 size={15} className="text-[#4CAF50]" /> Email Sent!</>
-                    : <><Mail size={15} /> Send Test Email</>}
-                </button>
-                {emailStatus === "sent" && (
-                  <span className="text-xs text-[#4CAF50] font-semibold bg-[#4CAF50]/10 px-3 py-1.5 rounded-full">
-                    Test email delivered to {settings.contactEmail}
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
-
-          {activeTab === "seo" && (
-            <div className="flex flex-col gap-6">
-              <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
-                <Search size={20} className="text-[#0B5D3F]" />
-                <div><div className="font-bold text-gray-900">SEO & Meta Tags</div><div className="text-xs text-gray-400">Optimize for search engines</div></div>
-              </div>
-              <div className="flex flex-col gap-5">
-                <Field label="Default SEO Title" k="seoTitle" />
-                <div>
-                  <label className="text-xs font-bold text-gray-600 mb-1.5 block">Default Meta Description</label>
-                  <textarea value={settings.seoDesc} onChange={(e) => update("seoDesc", e.target.value)} rows={3}
-                    className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none resize-none" />
-                  <div className="text-xs text-gray-400 mt-1">{settings.seoDesc.length}/160 characters</div>
-                </div>
-                <div>
-                  <ImageUploadField
-                    label="Social Share (OpenGraph) Cover Image"
-                    value={settings.ogImage || ""}
-                    onChange={(url) => update("ogImage", url)}
-                    folder="settings"
-                    aspectRatio="wide"
-                    helpText="Appears when sharing links on Facebook, Twitter/X, LinkedIn, and WhatsApp"
-                  />
-                </div>
+                <Field label="Google Analytics Tracking ID" k="googleAnalytics" placeholder="G-XXXXXXXXXX" />
+                <Field label="Meta / Facebook Pixel ID" k="facebookPixel" placeholder="1234567890" />
+                <Field label="Google reCAPTCHA v3 Key" k="recaptchaKey" placeholder="6Ld..." />
+                <Field label="Stripe Publishable API Key" k="stripeKey" placeholder="pk_live_..." />
+                <Field label="PayPal Merchant Email" k="paypalEmail" type="email" />
               </div>
             </div>
           )}

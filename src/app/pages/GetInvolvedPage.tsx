@@ -6,7 +6,7 @@ import {
   CheckCircle2, MapPin, Globe2, Mail, Building2, Clock, Check,
   Leaf, RefreshCw, Calendar, Star, Sprout, BarChart2, Megaphone,
   Monitor, Pen, GraduationCap, Languages, UserCheck, Trophy,
-  Send, FileText, Phone, User, Info, AlertCircle, ExternalLink
+  Send, FileText, Phone, User, Info, AlertCircle, ExternalLink, X
 } from "lucide-react";
 
 import { fetchFirestoreData, saveFirestoreData, useFirestoreData } from "../../lib/useFirestore";

@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import { motion } from "motion/react";
-import { ArrowRight, Target, Users, Calendar, Megaphone } from "lucide-react";
+import { ArrowRight, Target, Users, Calendar, Megaphone, Heart } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getInitialCampaigns, Campaign } from "./admin/sections/CampaignsView";
 import { resolveIcon } from "./admin/sections/ProgramsView";

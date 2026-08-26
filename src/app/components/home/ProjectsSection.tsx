@@ -90,7 +90,7 @@ export function ProjectsSection() {
                 >
                   <Link
                     to={`/projects/${project.id}`}
-                    className="block group bg-white rounded-3xl overflow-hidden border border-gray-100 hover:border-[#0B5D3F]/20 hover:shadow-2xl hover:shadow-[#0B5D3F]/10 transition-all duration-400 hover:-translate-y-1.5 cursor-pointer h-full flex flex-col justify-between"
+                    className="group bg-white rounded-3xl overflow-hidden border border-gray-100 hover:border-[#0B5D3F]/20 hover:shadow-2xl hover:shadow-[#0B5D3F]/10 transition-all duration-400 hover:-translate-y-1.5 cursor-pointer h-full flex flex-col justify-between"
                   >
                     <div>
                       <div className="relative h-48 overflow-hidden">
