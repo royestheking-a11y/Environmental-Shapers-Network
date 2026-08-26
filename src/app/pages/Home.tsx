@@ -2,7 +2,6 @@ import { HeroSection } from "../components/home/HeroSection";
 import { WhoWeAreSection } from "../components/home/WhoWeAreSection";
 import { MissionSection } from "../components/home/MissionSection";
 import { WhatWeDoSection } from "../components/home/WhatWeDoSection";
-import { ThematicFocusAreasSection } from "../components/home/ThematicFocusAreasSection";
 import { StatsSection } from "../components/home/StatsSection";
 import { CoreProgramsSection } from "../components/home/CoreProgramsSection";
 import { CampaignsSection } from "../components/home/CampaignsSection";
@@ -20,7 +19,6 @@ export default function Home() {
       <WhoWeAreSection />
       <MissionSection />
       <WhatWeDoSection />
-      <ThematicFocusAreasSection />
       <CoreProgramsSection />
       <ProjectsSection />
       <CampaignsSection />

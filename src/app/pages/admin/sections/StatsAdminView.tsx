@@ -38,8 +38,19 @@ export default function StatsAdminView() {
   });
 
   const saveStats = (newData: StatItem[]) => {
-    setStats(newData);
-    
+    // Automatically recalculate and synchronize CO2 sequestered whenever Trees Planted changes
+    const treeStat = newData.find(s => s.label.toLowerCase().includes("tree") || s.iconName === "TreePine");
+    let synchronized = newData;
+    if (treeStat && treeStat.value) {
+      const computedCO2 = Math.round(treeStat.value * 0.0625);
+      synchronized = newData.map(s => {
+        if (s.label.toLowerCase().includes("co₂") || s.label.toLowerCase().includes("co2") || s.label.toLowerCase().includes("carbon")) {
+          return { ...s, value: computedCO2, label: "CO₂ Sequestered", suffix: " MT" };
+        }
+        return s;
+      });
+    }
+    setStats(synchronized);
   };
 
   const handleSave = () => {
@@ -67,6 +78,8 @@ export default function StatsAdminView() {
     }
   };
 
+  const isTreeStat = (formData.label || "").toLowerCase().includes("tree") || formData.iconName === "TreePine";
+
   const filtered = (stats || []).filter(s => {
     if (!s) return false;
     const label = String(s.label || "").toLowerCase();
@@ -79,7 +92,7 @@ export default function StatsAdminView() {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-gray-900 font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Impact Stats</h3>
-          <p className="text-sm text-gray-400">Manage the key statistics shown on the homepage.</p>
+          <p className="text-sm text-gray-400">Manage the key statistics shown on the homepage with dynamic Tree-CO₂ calculation.</p>
         </div>
         <button onClick={() => { setEditingId(null); setFormData({ label: "", description: "", iconName: "TreePine", value: 0, suffix: "+", color: "text-[#0B5D3F]", bgColor: "bg-[#0B5D3F]/10" }); setShowAdd(true); }} className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all">
           <Plus size={16} /> Add Stat
@@ -102,6 +115,11 @@ export default function StatsAdminView() {
               <div>
                 <label className="text-xs font-bold text-gray-600 mb-1.5 block">Value (Number) *</label>
                 <input type="number" value={formData.value || 0} onChange={e => setFormData({ ...formData, value: Number(e.target.value) })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
+                {isTreeStat && (
+                  <p className="text-xs text-[#0B5D3F] font-semibold mt-1.5 bg-[#EBF8F1] p-2 rounded-lg border border-[#A2DCBA]">
+                    🌳 Auto-Calculation: {Number(formData.value || 0).toLocaleString()} Trees = <strong>{Math.round(Number(formData.value || 0) * 0.0625).toLocaleString()} MT CO₂ Sequestered</strong> (0.0625 MT / tree)
+                  </p>
+                )}
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-600 mb-1.5 block">Suffix (e.g. +, MT)</label>

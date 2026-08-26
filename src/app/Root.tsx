@@ -8,7 +8,6 @@ import { CustomCursor } from "./components/ui/CustomCursor";
 import { ScrollProgress } from "./components/ui/ScrollProgress";
 import { PageTransition } from "./components/ui/PageTransition";
 import { MaintenancePage } from "./pages/MaintenancePage";
-import { FloatingSocials } from "./components/ui/FloatingSocials";
 import { FloatingAI } from "./components/ui/FloatingAI";
 import { useFirestoreData } from "../lib/useFirestore";
 
@@ -72,7 +71,6 @@ export function Root() {
         {!isAdmin && <Footer />}
         <ScrollToTop />
         {!isAdmin && <CookieConsent />}
-        {!isAdmin && <FloatingSocials />}
         {!isAdmin && <FloatingAI />}
       </div>
     </>

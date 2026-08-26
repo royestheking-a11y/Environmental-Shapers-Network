@@ -1,32 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, useInView } from "motion/react";
-import { getInitialStats } from "../../pages/admin/sections/StatsAdminView";
+import { getInitialStats, StatItem } from "../../pages/admin/sections/StatsAdminView";
 import { useFirestoreData } from "../../../lib/useFirestore";
 import { resolveIcon } from "../../pages/admin/sections/ProgramsView";
 
-export interface StatItem {
-  iconName: string;
-  value: number;
-  suffix: string;
-  label: string;
-  description: string;
-  color: string;
-  bgColor: string;
-}
-
-const defaultStats: StatItem[] = [
-  { iconName: "TreePine", value: 2400000, suffix: "+", label: "Trees Planted", description: "Across reforestation projects worldwide", color: "text-[#0B5D3F]", bgColor: "bg-[#0B5D3F]/10" },
-  { iconName: "Users", value: 190, suffix: "+", label: "Countries Reached", description: "Our global network of change-makers", color: "text-[#173B63]", bgColor: "bg-[#173B63]/10" },
-  { iconName: "Target", value: 470, suffix: "+", label: "Active Projects", description: "Environmental initiatives in progress", color: "text-[#4CAF50]", bgColor: "bg-[#4CAF50]/10" },
-  { iconName: "Globe2", value: 80, suffix: "+", label: "Partner Countries", description: "International collaborations active", color: "text-[#D6A95A]", bgColor: "bg-[#D6A95A]/10" },
-  { iconName: "Building2", value: 12000, suffix: "+", label: "Communities", description: "Local communities benefited globally", color: "text-[#0B5D3F]", bgColor: "bg-[#0B5D3F]/10" },
-  { iconName: "Leaf", value: 150000, suffix: " MT", label: "CO₂ Reduced", description: "Metric tons of carbon sequestered", color: "text-[#4CAF50]", bgColor: "bg-[#4CAF50]/10" },
-];
+export { type StatItem };
 
 function formatNumber(n: number): string {
   if (n >= 1000000) return (n / 1000000).toFixed(1) + "M";
   if (n >= 1000) return (n / 1000).toFixed(0) + "K";
-  return n.toString();
+  return n.toLocaleString();
 }
 
 function AnimatedCounter({ target, suffix }: { target: number; suffix: string }) {
@@ -63,7 +46,25 @@ export function StatsSection() {
   const sectionRef = useRef(null);
   const inView = useInView(sectionRef, { once: true, margin: "-100px" });
   const [statsRaw] = useFirestoreData<StatItem[]>("esn_stats_admin", getInitialStats());
-  const stats = statsRaw && statsRaw.length > 0 ? statsRaw : defaultStats;
+  const rawList = statsRaw && statsRaw.length > 0 ? statsRaw : getInitialStats();
+
+  // Dynamically calculate CO2 sequestered based on trees planted (0.0625 MT CO2 per tree)
+  const treeStat = rawList.find(s => s.label.toLowerCase().includes("tree") || s.iconName === "TreePine");
+  const treeCount = treeStat ? treeStat.value : 2400000;
+  const calculatedCO2 = Math.round(treeCount * 0.0625);
+
+  const stats = rawList.map(stat => {
+    if (stat.label.toLowerCase().includes("co₂") || stat.label.toLowerCase().includes("co2") || stat.label.toLowerCase().includes("carbon")) {
+      return {
+        ...stat,
+        value: calculatedCO2,
+        suffix: " MT",
+        label: "CO₂ Sequestered",
+        description: "Metric tons of carbon sequestered",
+      };
+    }
+    return stat;
+  });
 
   return (
     <section ref={sectionRef} className="py-16 bg-white relative overflow-hidden border-t border-gray-100">
@@ -103,3 +104,4 @@ export function StatsSection() {
     </section>
   );
 }
+

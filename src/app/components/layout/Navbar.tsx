@@ -41,6 +41,7 @@ const navItems: NavItem[] = [
     mega: true,
     items: [
       { label: "All Programs", href: "/programs", icon: Mountain, desc: "Explore all our programs" },
+      { label: "Youth Development", href: "/programs/youth", icon: Users, desc: "Youth climate leadership and development" },
       { label: "Events & Calendar", href: "/events", icon: Calendar, desc: "Upcoming events and calendar" },
       { label: "Research & Policy", href: "/research", icon: BookOpen, desc: "Our research and policy work" }
     ]
@@ -55,7 +56,6 @@ const navItems: NavItem[] = [
       { label: "Partner With Us", href: "/partner", icon: HeartHandshake, desc: "Become a partner" }
     ]
   },
-  { label: "Youth", href: "/programs/youth", mega: false },
   { label: "Impact", href: "/impact", mega: false },
   { label: "Contact", href: "/contact", mega: false },
 ];

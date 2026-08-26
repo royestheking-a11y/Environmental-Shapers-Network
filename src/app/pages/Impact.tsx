@@ -1,17 +1,9 @@
-import { useRef } from "react";
+import { useState, useRef } from "react";
 import { motion, useInView } from "motion/react";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
-import { TreePine, Droplets, Wind, Globe2, Users, Target, TrendingUp, Award, Leaf } from "lucide-react";
-
-const treeData = [
-  { year: "2018", trees: 120000 },
-  { year: "2019", trees: 350000 },
-  { year: "2020", trees: 680000 },
-  { year: "2021", trees: 1100000 },
-  { year: "2022", trees: 1650000 },
-  { year: "2023", trees: 2100000 },
-  { year: "2024", trees: 2400000 },
-];
+import { TreePine, Droplets, Wind, Globe2, Users, Target, TrendingUp, Award, Leaf, Calculator, ArrowRight, Sparkles } from "lucide-react";
+import { useFirestoreData } from "../../lib/useFirestore";
+import { getInitialStats, StatItem } from "./admin/sections/StatsAdminView";
 
 const carbonData = [
   { month: "Jan", reduced: 8500 },
@@ -44,18 +36,49 @@ const sdgProgress = [
   { sdg: "SDG 7", label: "Clean Energy", progress: 45, color: "#D6A95A" },
 ];
 
-const kpis = [
-  { icon: TreePine, value: "2.4M+", label: "Trees Planted", change: "+18% vs last year", color: "#0B5D3F" },
-  { icon: Droplets, value: "150,000 MT", label: "CO₂ Sequestered", change: "+24% vs last year", color: "#173B63" },
-  { icon: Users, value: "12,000+", label: "Communities Reached", change: "+31% vs last year", color: "#4CAF50" },
-  { icon: Globe2, value: "80+", label: "Countries Active", change: "+5 new countries", color: "#D6A95A" },
-  { icon: Target, value: "470+", label: "Active Projects", change: "+67 new projects", color: "#0B5D3F" },
-  { icon: Award, value: "24", label: "International Awards", change: "+3 this year", color: "#4CAF50" },
-];
+function formatCount(n: number): string {
+  if (n >= 1000000) return (n / 1000000).toFixed(1) + "M+";
+  if (n >= 1000) return (n / 1000).toFixed(0) + "K+";
+  return n.toLocaleString() + "+";
+}
 
 export default function Impact() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
+
+  const [statsRaw] = useFirestoreData<StatItem[]>("esn_stats_admin", getInitialStats());
+  const rawList = statsRaw && statsRaw.length > 0 ? statsRaw : getInitialStats();
+
+  const treeStat = rawList.find(s => s.label.toLowerCase().includes("tree") || s.iconName === "TreePine");
+  const currentTreeCount = treeStat ? treeStat.value : 2400000;
+  const currentCO2 = Math.round(currentTreeCount * 0.0625);
+
+  // Dynamic tree trend dataset based on current count
+  const dynamicTreeData = [
+    { year: "2018", trees: Math.round(currentTreeCount * 0.05) },
+    { year: "2019", trees: Math.round(currentTreeCount * 0.15) },
+    { year: "2020", trees: Math.round(currentTreeCount * 0.28) },
+    { year: "2021", trees: Math.round(currentTreeCount * 0.46) },
+    { year: "2022", trees: Math.round(currentTreeCount * 0.69) },
+    { year: "2023", trees: Math.round(currentTreeCount * 0.88) },
+    { year: "2024", trees: currentTreeCount },
+  ];
+
+  // Interactive Live Calculator state
+  const [calcTrees, setCalcTrees] = useState<number>(currentTreeCount);
+  const calcCO2MT = Math.round(calcTrees * 0.0625);
+  const calcCO2Kg = Math.round(calcTrees * 62.5);
+  const calcVehicles = Math.round(calcCO2MT / 4.6);
+  const calcHectares = (calcTrees / 500).toFixed(1);
+
+  const dynamicKpis = [
+    { icon: TreePine, value: formatCount(currentTreeCount), label: "Trees Planted", change: "+18% vs last year", color: "#0B5D3F" },
+    { icon: Droplets, value: `${currentCO2.toLocaleString()} MT`, label: "CO₂ Sequestered", change: `Derived from ${formatCount(currentTreeCount)} trees`, color: "#173B63" },
+    { icon: Users, value: "12,000+", label: "Communities Reached", change: "+31% vs last year", color: "#4CAF50" },
+    { icon: Globe2, value: "80+", label: "Countries Active", change: "+5 new countries", color: "#D6A95A" },
+    { icon: Target, value: "470+", label: "Active Projects", change: "+67 new projects", color: "#0B5D3F" },
+    { icon: Award, value: "24", label: "International Awards", change: "+3 this year", color: "#4CAF50" },
+  ];
 
   return (
     <div className="pt-20">
@@ -79,7 +102,7 @@ export default function Impact() {
       <section ref={ref} className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5">
-            {kpis.map((kpi, i) => (
+            {dynamicKpis.map((kpi, i) => (
               <motion.div
                 key={kpi.label}
                 initial={{ opacity: 0, y: 30 }}
@@ -95,6 +118,98 @@ export default function Impact() {
                 <div className="text-xs text-[#4CAF50] font-medium">{kpi.change}</div>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Live Tree-to-Carbon Calculation System */}
+      <section className="py-12 bg-gradient-to-b from-white to-[#F6FBF8]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="bg-gradient-to-br from-[#0B5D3F] via-[#0D4B34] to-[#173B63] rounded-3xl p-8 md:p-12 text-white shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="relative z-10">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs font-bold uppercase tracking-wider mb-4">
+                <Calculator size={13} className="text-[#4CAF50]" />
+                Dynamic Impact Engine
+              </div>
+              <div className="grid lg:grid-cols-2 gap-10 items-center">
+                <div>
+                  <h3 className="text-2xl md:text-3xl font-black mb-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    Tree & CO₂ Sequestration Calculator
+                  </h3>
+                  <p className="text-white/80 text-sm leading-relaxed mb-6">
+                    Our carbon sequestration model follows verified scientific metrics where 1 mature tree absorbs approximately <strong>62.5 kg (0.0625 MT)</strong> of atmospheric CO₂ over its lifetime. Adjust the tree count below to view the synchronized carbon impact in real-time.
+                  </p>
+
+                  <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/15">
+                    <div className="flex justify-between items-center text-sm font-bold mb-3">
+                      <span>Planted Trees:</span>
+                      <span className="text-[#4CAF50] font-mono text-lg">{calcTrees.toLocaleString()} trees</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={10000}
+                      max={10000000}
+                      step={50000}
+                      value={calcTrees}
+                      onChange={(e) => setCalcTrees(Number(e.target.value))}
+                      className="w-full h-2.5 bg-white/20 rounded-lg appearance-none cursor-pointer accent-[#4CAF50]"
+                    />
+                    <div className="flex justify-between text-[11px] text-white/50 mt-2">
+                      <span>10K Trees</span>
+                      <span>5M Trees</span>
+                      <span>10M Trees</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/15">
+                    <div className="w-10 h-10 rounded-xl bg-[#4CAF50]/20 flex items-center justify-center mb-3">
+                      <Droplets size={20} className="text-[#4CAF50]" />
+                    </div>
+                    <div className="text-2xl font-black font-mono text-white mb-1">
+                      {calcCO2MT.toLocaleString()} MT
+                    </div>
+                    <div className="text-xs text-white/70 font-semibold">CO₂ Sequestered</div>
+                    <div className="text-[11px] text-[#4CAF50] mt-1">{calcCO2Kg.toLocaleString()} kg CO₂ captured</div>
+                  </div>
+
+                  <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/15">
+                    <div className="w-10 h-10 rounded-xl bg-[#D6A95A]/20 flex items-center justify-center mb-3">
+                      <Wind size={20} className="text-[#D6A95A]" />
+                    </div>
+                    <div className="text-2xl font-black font-mono text-white mb-1">
+                      {calcVehicles.toLocaleString()}
+                    </div>
+                    <div className="text-xs text-white/70 font-semibold">Vehicles Offset / Year</div>
+                    <div className="text-[11px] text-[#D6A95A] mt-1">Passenger car emissions neutralized</div>
+                  </div>
+
+                  <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/15">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-400/20 flex items-center justify-center mb-3">
+                      <Leaf size={20} className="text-emerald-300" />
+                    </div>
+                    <div className="text-2xl font-black font-mono text-white mb-1">
+                      {calcHectares} ha
+                    </div>
+                    <div className="text-xs text-white/70 font-semibold">Forest Canopy Restored</div>
+                    <div className="text-[11px] text-emerald-300 mt-1">~500 trees / hectare density</div>
+                  </div>
+
+                  <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/15">
+                    <div className="w-10 h-10 rounded-xl bg-cyan-400/20 flex items-center justify-center mb-3">
+                      <TreePine size={20} className="text-cyan-300" />
+                    </div>
+                    <div className="text-2xl font-black font-mono text-white mb-1">
+                      1 : 0.0625
+                    </div>
+                    <div className="text-xs text-white/70 font-semibold">Standard Ratio</div>
+                    <div className="text-[11px] text-cyan-300 mt-1">16 trees = 1.0 MT CO₂ absorbed</div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -120,7 +235,7 @@ export default function Impact() {
                 </div>
               </div>
               <ResponsiveContainer width="100%" height={260}>
-                <AreaChart data={treeData}>
+                <AreaChart data={dynamicTreeData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                   <XAxis dataKey="year" tick={{ fontSize: 12 }} />
                   <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} />

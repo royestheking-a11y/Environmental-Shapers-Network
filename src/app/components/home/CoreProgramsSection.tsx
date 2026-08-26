@@ -22,7 +22,7 @@ export function CoreProgramsSection() {
           className="text-center mb-20"
         >
           <div className="flex items-center justify-center gap-3 mb-6">
-            <span className="text-[#0A3D2A] text-xs font-bold uppercase tracking-[0.2em]">Core Programs</span>
+            <span className="text-[#0A3D2A] text-xs font-bold uppercase tracking-[0.2em]">Programs</span>
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-[#0A3D2A] mb-6 leading-[1.15]">
             Pillars of Global Environmental Action
