@@ -122,11 +122,16 @@ function ContentRenderer({ blocks }: { blocks: ContentBlock[] }) {
   );
 }
 
+import { useFirestoreData } from "../../lib/useFirestore";
+
 export default function NewsArticle() {
   const { id } = useParams<{ id: string }>();
   const [copied, setCopied] = useState(false);
-  const article = articles.find((a) => String(a.id) === id);
-  const related = articles.filter((a) => article?.relatedIds.includes(a.id));
+  const [cmsArticles] = useFirestoreData<any[]>("esn_cms_content", articles);
+
+  const allArticles = cmsArticles && cmsArticles.length > 0 ? cmsArticles : articles;
+  const article = allArticles.find((a) => String(a.id) === id);
+  const related = allArticles.filter((a) => (article?.relatedIds || []).includes(a.id));
 
   if (!article) {
     return (

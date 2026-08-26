@@ -184,9 +184,39 @@ function StatCard({ value, label, i }: { value: string; label: string; i: number
   );
 }
 
+import { useFirestoreData } from "../../lib/useFirestore";
+
 export default function ResearchAreaPage() {
   const { area } = useParams<{ area: string }>();
-  const data = area ? researchData[area] : null;
+  const [adminAreas] = useFirestoreData<any[]>("esn_research_admin", []);
+  
+  const staticData = area ? researchData[area] : null;
+  const adminMatch = adminAreas.find((a: any) => a.slug === area || a.id === area);
+
+  const data = adminMatch ? {
+    slug: adminMatch.slug || area,
+    label: adminMatch.title || staticData?.label || "Research Area",
+    tagline: adminMatch.desc || staticData?.tagline || "",
+    description: adminMatch.fullDesc || staticData?.description || adminMatch.desc,
+    icon: staticData?.icon || Leaf,
+    color: adminMatch.color || staticData?.color || "#0B5D3F",
+    heroImage: adminMatch.image || staticData?.heroImage || "https://images.unsplash.com/photo-1511497584788-876760111969?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1400",
+    stats: staticData?.stats || [
+      { value: adminMatch.stats || "40+", label: "Field Projects" },
+      { value: "100%", label: "Peer-Reviewed" },
+      { value: "18+", label: "Academic Partners" },
+      { value: "Open", label: "Open Access Data" },
+    ],
+    methodology: staticData?.methodology || [
+      { title: "Empirical Field Research", desc: "Deploying scientific field instrumentation and environmental sensors across affected bioregions." },
+      { title: "AI & Satellite Analytics", desc: "Processing multi-spectral Earth observation data with predictive ecological algorithms." },
+      { title: "Policy Translation", desc: "Synthesizing empirical findings into actionable legislative briefs for governments and climate summits." }
+    ],
+    publications: staticData?.publications || [
+      { title: "ESN Global Environmental Assessment 2026", type: "Annual Review", year: "2026", url: "#" },
+      { title: "Policy Frameworks for Ecosystem Protection", type: "Policy Brief", year: "2025", url: "#" }
+    ]
+  } : staticData;
 
   if (!data) {
     return (

@@ -7,6 +7,7 @@ import {
   Twitter, Facebook, Instagram, Linkedin, Youtube,
   Leaf, TreePine, Heart
 } from "lucide-react";
+import { fetchFirestoreData, saveFirestoreData } from "../../../lib/useFirestore";
 const esnLogoWhite = "/logo-white.png";
 
 const sdgDetails: Record<number, { title: string; desc: string }> = {
@@ -100,6 +101,33 @@ const socials = [
 
 export function Footer() {
   const settings = useSettings();
+  const [email, setEmail] = useState("");
+  const [subscribed, setSubscribed] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !email.includes("@")) return;
+    setSubmitting(true);
+    try {
+      const currentSubs = await fetchFirestoreData<any[]>("esn_subscribers", []);
+      const newSub = {
+        id: Date.now(),
+        email: email.trim().toLowerCase(),
+        date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+        source: "Footer Newsletter",
+        status: "Active"
+      };
+      await saveFirestoreData("esn_subscribers", [newSub, ...currentSubs.filter(s => s.email !== newSub.email)]);
+      setSubscribed(true);
+      setEmail("");
+      setTimeout(() => setSubscribed(false), 5000);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
   
   return (
     <footer className="relative bg-[#0a1f14] text-white overflow-hidden">
@@ -129,15 +157,34 @@ export function Footer() {
                 Get the latest updates on environmental campaigns, research insights, and volunteer opportunities from across the globe.
               </p>
             </div>
-            <div className="flex gap-3">
-              <input
-                type="email"
-                placeholder="Enter your email address"
-                className="flex-1 bg-white/10 border border-white/20 rounded-xl px-5 py-3.5 text-white placeholder:text-gray-500 focus:outline-none focus:border-[#4CAF50] transition-colors duration-200"
-              />
-              <button className="bg-[#4CAF50] hover:bg-[#43a047] text-white px-6 py-3.5 rounded-xl font-semibold flex items-center gap-2 transition-all duration-300 hover:scale-105 whitespace-nowrap">
-                Subscribe <ArrowRight size={16} />
-              </button>
+            <div>
+              {subscribed ? (
+                <div className="bg-[#4CAF50]/20 border border-[#4CAF50] text-white px-6 py-4 rounded-2xl flex items-center gap-3">
+                  <Heart size={20} className="text-[#4CAF50]" />
+                  <div>
+                    <div className="font-bold text-sm">Welcome to Environmental Shapers Network!</div>
+                    <div className="text-xs text-gray-300">You are now subscribed to our global newsletter.</div>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3">
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email address"
+                    className="flex-1 bg-white/10 border border-white/20 rounded-xl px-5 py-3.5 text-white placeholder:text-gray-500 focus:outline-none focus:border-[#4CAF50] transition-colors duration-200"
+                  />
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="bg-[#4CAF50] hover:bg-[#43a047] text-white px-6 py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all duration-300 hover:scale-105 whitespace-nowrap disabled:opacity-50"
+                  >
+                    {submitting ? "Subscribing..." : <>Subscribe <ArrowRight size={16} /></>}
+                  </button>
+                </form>
+              )}
             </div>
           </div>
         </div>
