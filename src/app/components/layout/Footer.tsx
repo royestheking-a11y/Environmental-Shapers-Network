@@ -196,27 +196,41 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Link Columns */}
-          <div className="lg:col-span-4 grid grid-cols-2 md:grid-cols-4 gap-8">
-            {Object.entries(footerLinks).map(([title, links]) => (
-              <div key={title}>
-                <h4 className="text-white text-sm font-bold uppercase tracking-wider mb-5" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                  {title}
-                </h4>
-                <ul className="flex flex-col gap-3">
-                  {links.map((link) => (
-                    <li key={link.label}>
-                      <Link
-                        to={link.href}
-                        className="text-gray-400 hover:text-[#4CAF50] text-sm transition-colors duration-200 hover:translate-x-1 inline-block"
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+          {/* Link Columns & Payment Banner */}
+          <div className="lg:col-span-4 flex flex-col justify-between">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              {Object.entries(footerLinks).map(([title, links]) => (
+                <div key={title}>
+                  <h4 className="text-white text-sm font-bold uppercase tracking-wider mb-5" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    {title}
+                  </h4>
+                  <ul className="flex flex-col gap-3">
+                    {links.map((link) => (
+                      <li key={link.label}>
+                        <Link
+                          to={link.href}
+                          className="text-gray-400 hover:text-[#4CAF50] text-sm transition-colors duration-200 hover:translate-x-1 inline-block"
+                        >
+                          {link.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+
+            {/* Secured Online Payment Banner */}
+            <div className="mt-8 pt-6 border-t border-white/10">
+              <div className="bg-white rounded-2xl p-3 sm:p-4 shadow-xl border border-white/20 transition-all hover:shadow-2xl overflow-hidden">
+                <img
+                  src="/payment-banner.webp"
+                  alt="Secured Online Payment Gateways - SSLCOMMERZ, Visa, MasterCard, AMEX, bKash, Rocket, Nagad"
+                  className="w-full h-auto object-contain block max-h-16"
+                  loading="lazy"
+                />
               </div>
-            ))}
+            </div>
           </div>
         </div>
 
