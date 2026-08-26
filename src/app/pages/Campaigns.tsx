@@ -110,12 +110,15 @@ export default function Campaigns() {
                       </div>
                     </div>
                     
-                    <Link
-                      to={`/campaigns/${campaign.id}`}
-                      className="block w-full py-3 rounded-xl border-2 border-gray-100 text-gray-900 font-bold text-center hover:bg-gray-50 transition-colors"
-                    >
-                      View Campaign
-                    </Link>
+                    <div className="flex gap-2">
+                      <Link
+                        to={`/donate?campaign=${encodeURIComponent(campaign.title)}`}
+                        className="flex-1 py-3 rounded-xl text-white font-bold text-sm text-center shadow-md hover:opacity-95 transition-all flex items-center justify-center gap-1.5"
+                        style={{ backgroundColor: campaign.color }}
+                      >
+                        <Heart size={14} fill="currentColor" /> Donate Now
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </motion.div>

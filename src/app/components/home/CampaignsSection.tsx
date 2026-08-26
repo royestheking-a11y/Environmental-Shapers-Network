@@ -131,15 +131,19 @@ export function CampaignsSection() {
                   {/* Actions */}
                   <div className="flex gap-2.5">
                     <Link
-                      to={`/campaigns/${campaign.id}`}
-                      className="flex-1 text-center py-3 rounded-xl font-semibold text-sm text-white transition-all duration-300 hover:scale-105"
+                      to={`/donate?campaign=${encodeURIComponent(campaign.title)}`}
+                      className="flex-1 text-center py-3 rounded-xl font-semibold text-sm text-white transition-all duration-300 hover:scale-105 shadow-md flex items-center justify-center gap-1.5"
                       style={{ backgroundColor: campaign.color }}
                     >
-                      Donate Now
+                      <Heart size={14} fill="currentColor" /> Donate Now
                     </Link>
-                    <button className="w-11 h-11 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center hover:bg-[#0B5D3F]/10 hover:border-[#0B5D3F]/30 transition-all">
-                      <Heart size={16} className="text-gray-400" />
-                    </button>
+                    <Link
+                      to={`/donate?campaign=${encodeURIComponent(campaign.title)}`}
+                      className="w-11 h-11 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center hover:bg-[#0B5D3F]/10 hover:border-[#0B5D3F]/30 transition-all text-[#0B5D3F]"
+                      title="Support this campaign"
+                    >
+                      <Heart size={16} />
+                    </Link>
                   </div>
                 </div>
               </motion.div>

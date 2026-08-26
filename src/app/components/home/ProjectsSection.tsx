@@ -87,59 +87,64 @@ export function ProjectsSection() {
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.08 }}
-                  className="group bg-white rounded-3xl overflow-hidden border border-gray-100 hover:border-[#0B5D3F]/15 hover:shadow-xl hover:shadow-[#0B5D3F]/8 transition-all duration-400 hover:-translate-y-1"
                 >
-                  <div className="relative h-48 overflow-hidden">
-                    <ImageWithFallback
-                      src={project.img}
-                      alt={project.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-600"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                    <div className="absolute top-4 left-4">
-                      <span
-                        className={`text-white text-xs font-bold px-3 py-1.5 rounded-full ${project.status === "Active" ? "bg-[#4CAF50]" : "bg-gray-500"}`}
-                      >
-                        {project.status}
-                      </span>
-                    </div>
-                    <div className="absolute top-4 right-4">
-                      <span className="bg-[#D6A95A] text-white text-xs font-bold px-2.5 py-1 rounded-full">{project.theme}</span>
-                    </div>
-                    <div className="absolute bottom-4 left-4 flex items-center gap-1.5 text-white text-xs">
-                      <MapPin size={12} />
-                      {project.country}
-                    </div>
-                  </div>
+                  <Link
+                    to={`/projects/${project.id}`}
+                    className="block group bg-white rounded-3xl overflow-hidden border border-gray-100 hover:border-[#0B5D3F]/20 hover:shadow-2xl hover:shadow-[#0B5D3F]/10 transition-all duration-400 hover:-translate-y-1.5 cursor-pointer h-full flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="relative h-48 overflow-hidden">
+                        <ImageWithFallback
+                          src={project.img}
+                          alt={project.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-600"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                        <div className="absolute top-4 left-4">
+                          <span
+                            className={`text-white text-xs font-bold px-3 py-1.5 rounded-full ${project.status === "Active" ? "bg-[#4CAF50]" : "bg-gray-500"}`}
+                          >
+                            {project.status}
+                          </span>
+                        </div>
+                        <div className="absolute top-4 right-4">
+                          <span className="bg-[#D6A95A] text-white text-xs font-bold px-2.5 py-1 rounded-full">{project.theme}</span>
+                        </div>
+                        <div className="absolute bottom-4 left-4 flex items-center gap-1.5 text-white text-xs font-medium">
+                          <MapPin size={12} />
+                          {project.country}
+                        </div>
+                      </div>
 
-                  <div className="p-6">
-                    <div className="flex items-start gap-3 mb-4">
-                      <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                        style={{ backgroundColor: project.color + "15" }}
-                      >
-                        <Icon size={18} style={{ color: project.color }} />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-gray-900 text-base mb-0.5" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                          {project.name}
-                        </h4>
-                        <div className="text-xs text-gray-400">{project.startDate}</div>
+                      <div className="p-6 pb-2">
+                        <div className="flex items-start gap-3 mb-4">
+                          <div
+                            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                            style={{ backgroundColor: project.color + "15" }}
+                          >
+                            <Icon size={18} style={{ color: project.color }} />
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-gray-900 text-base mb-0.5 group-hover:text-[#0B5D3F] transition-colors" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                              {project.name}
+                            </h4>
+                            <div className="text-xs text-gray-400">{project.startDate}</div>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between py-3 border-t border-gray-50">
-                      <div className="text-sm font-semibold" style={{ color: project.color }}>
-                        {project.impact}
+                    <div className="px-6 pb-6 pt-2">
+                      <div className="flex items-center justify-between py-3 border-t border-gray-50">
+                        <div className="text-sm font-bold" style={{ color: project.color }}>
+                          {project.impact}
+                        </div>
+                        <span className="inline-flex items-center gap-1 text-xs text-[#0B5D3F] font-bold group-hover:underline">
+                          View Details <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
+                        </span>
                       </div>
-                      <Link
-                        to={`/projects/${project.id}`}
-                        className="flex items-center gap-1 text-xs text-gray-400 hover:text-[#0B5D3F] transition-colors font-medium"
-                      >
-                        Learn More <ExternalLink size={12} />
-                      </Link>
                     </div>
-                  </div>
+                  </Link>
                 </motion.div>
               );
             })}

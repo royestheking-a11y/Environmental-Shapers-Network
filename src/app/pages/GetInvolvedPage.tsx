@@ -524,13 +524,100 @@ function MembershipPage() {
 // ─── Campus Chapters Page ──────────────────────────────────────────────────────
 
 function CampusPage() {
+  const [selectedChapter, setSelectedChapter] = useState<any | null>(null);
+  const [joinSubmitted, setJoinSubmitted] = useState(false);
+
   const chapters = [
-    { name: "University of Dhaka Chapter", country: "Bangladesh", members: 240, projects: 12, established: "2016" },
-    { name: "IIT Delhi Chapter", country: "India", members: 185, projects: 9, established: "2017" },
-    { name: "University of Nairobi Chapter", country: "Kenya", members: 160, projects: 11, established: "2018" },
-    { name: "São Paulo State University", country: "Brazil", members: 210, projects: 14, established: "2017" },
-    { name: "University of Copenhagen", country: "Denmark", members: 130, projects: 7, established: "2019" },
-    { name: "National University of Singapore", country: "Singapore", members: 145, projects: 8, established: "2019" },
+    {
+      name: "University of Dhaka Chapter",
+      country: "Bangladesh",
+      city: "Dhaka",
+      members: 240,
+      projects: 12,
+      established: "2016",
+      lead: "Tanvir Ahmed (Chapter President)",
+      email: "dhaka.chapter@esnglobal.org",
+      treesPlanted: "32,000+",
+      meeting: "Wednesdays at 4:00 PM · Curzon Hall Green Yard",
+      image: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800",
+      description: "Founded in 2016, the DU Chapter is ESN's pioneer campus network in South Asia, leading weekly urban cleanups, nursery development, and climate policy symposiums.",
+      keyProjects: ["Buriganga River Waste Interceptor", "Sundarbans Youth Field Delegation", "University Plastic-Free Campaign", "Eco-Seedling Distribution Drive"],
+    },
+    {
+      name: "IIT Delhi Chapter",
+      country: "India",
+      city: "New Delhi",
+      members: 185,
+      projects: 9,
+      established: "2017",
+      lead: "Aarav Sharma (Chapter Lead)",
+      email: "iitd.chapter@esnglobal.org",
+      treesPlanted: "18,500+",
+      meeting: "Thursdays at 5:30 PM · Student Activity Centre",
+      image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800",
+      description: "Engineers and researchers deploying IoT air quality monitoring sensors, decentralized solar charging stations, and campus e-waste recycling hubs.",
+      keyProjects: ["Smart Campus Air Monitor Mesh", "Hostel Solar Energy Challenge", "Yamuna Floodplain Afforestation", "E-Waste Circularity Drive"],
+    },
+    {
+      name: "University of Nairobi Chapter",
+      country: "Kenya",
+      city: "Nairobi",
+      members: 160,
+      projects: 11,
+      established: "2018",
+      lead: "Wanjiku Mwangi (Regional Coordinator)",
+      email: "uon.chapter@esnglobal.org",
+      treesPlanted: "45,000+",
+      meeting: "Saturdays at 10:00 AM · Taifa Hall Green Lawn",
+      image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800",
+      description: "Leading extensive agroforestry and indigenous seed saving projects in the Great Rift Valley in partnership with rural community schools.",
+      keyProjects: ["Karura Forest Buffer Plantation", "Indigenous Tree Seedling Bank", "Green Schools Climate Fellowship", "Drought Adaptation Workshops"],
+    },
+    {
+      name: "São Paulo State University",
+      country: "Brazil",
+      city: "São Paulo",
+      members: 210,
+      projects: 14,
+      established: "2017",
+      lead: "Lucas Oliveira (Chapter President)",
+      email: "unesp.chapter@esnglobal.org",
+      treesPlanted: "28,000+",
+      meeting: "Tuesdays at 6:00 PM · Biology Department Lounge",
+      image: "https://images.unsplash.com/photo-1498429089284-41f8cf3ffd39?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800",
+      description: "Focuses on Atlantic Forest restoration, river basin water testing, and training indigenous youth in drone-based ecological mapping.",
+      keyProjects: ["Atlantic Rainforest Corridors", "Urban River Bio-Filters", "Indigenous Youth Drone Lab", "Campus Zero-Waste Transition"],
+    },
+    {
+      name: "University of Copenhagen",
+      country: "Denmark",
+      city: "Copenhagen",
+      members: 130,
+      projects: 7,
+      established: "2019",
+      lead: "Astrid Lind (Lead Organizer)",
+      email: "ku.chapter@esnglobal.org",
+      treesPlanted: "12,000+",
+      meeting: "Mondays at 4:30 PM · Science Campus Hub",
+      image: "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800",
+      description: "Nordic student coalition specializing in circular economy modeling, climate finance policy briefs, and Arctic ecosystem awareness.",
+      keyProjects: ["Nordic Campus Carbon Audit", "Baltic Coastal Microplastic Survey", "Youth COP Delegation Policy Brief", "Circular Canteen Policy"],
+    },
+    {
+      name: "National University of Singapore",
+      country: "Singapore",
+      city: "Singapore",
+      members: 145,
+      projects: 8,
+      established: "2019",
+      lead: "Cheryl Tan (Chapter Lead)",
+      email: "nus.chapter@esnglobal.org",
+      treesPlanted: "15,000+",
+      meeting: "Fridays at 5:00 PM · UTown Eco-Auditorium",
+      image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800",
+      description: "Pioneering urban mangrove monitoring, coral nursery research, and green technology hackathons across Southeast Asian campuses.",
+      keyProjects: ["Pulau Ubin Mangrove Restoration", "Southern Islands Coral Nursery", "ASEAN Eco-Innovation Hackathon", "Campus Biodiversity Census"],
+    },
   ];
 
   return (
@@ -541,25 +628,189 @@ function CampusPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-12">
           {[["200+", "Campus Chapters"], ["50+", "Countries"], ["28K+", "Student Members"], ["600+", "Campus Projects"]].map(([v, l]) => <StatCard key={l} value={v} label={l} />)}
         </div>
-        <div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider mb-2">Network</div>
-        <h2 className="text-gray-900 mb-6" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 2vw, 1.8rem)", fontWeight: 800 }}>Featured Chapters</h2>
-        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5 mb-12">
+        
+        <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+          <div>
+            <div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider mb-1">Global Campus Network</div>
+            <h2 className="text-gray-900" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 2vw, 1.8rem)", fontWeight: 800 }}>Featured University Chapters</h2>
+          </div>
+          <span className="text-xs text-gray-500 bg-white px-3 py-1.5 rounded-full border border-gray-200">
+            Click any university to view chapter details
+          </span>
+        </div>
+
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 mb-16">
           {chapters.map((c, i) => (
-            <motion.div key={c.name} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
-              className="bg-white rounded-2xl p-6 border border-gray-100 hover:border-[#4CAF50]/30 hover:shadow-md transition-all">
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 rounded-xl bg-[#0B5D3F]/10 flex items-center justify-center"><BookOpen size={18} className="text-[#0B5D3F]" /></div>
-                <span className="text-xs text-gray-400">Est. {c.established}</span>
+            <motion.div
+              key={c.name}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.08 }}
+              onClick={() => setSelectedChapter(c)}
+              className="group bg-white rounded-3xl overflow-hidden border border-gray-100 hover:border-[#4CAF50]/40 hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 cursor-pointer flex flex-col justify-between"
+            >
+              <div>
+                <div className="relative h-40 overflow-hidden">
+                  <img src={c.image} alt={c.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[11px] font-bold text-[#0B5D3F]">
+                    Est. {c.established}
+                  </div>
+                  <div className="absolute bottom-3 left-3 right-3 text-white text-xs font-semibold flex items-center gap-1">
+                    <Globe2 size={12} className="text-[#4CAF50]" /> {c.city}, {c.country}
+                  </div>
+                </div>
+
+                <div className="p-6">
+                  <h3 className="font-bold text-gray-900 mb-2 text-base group-hover:text-[#0B5D3F] transition-colors leading-snug" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    {c.name}
+                  </h3>
+                  <p className="text-xs text-gray-500 line-clamp-2 mb-4 leading-relaxed">
+                    {c.description}
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-2 bg-[#F6FBF8] p-3 rounded-xl border border-gray-100 text-xs">
+                    <div>
+                      <div className="text-[10px] text-gray-400 font-medium">Students</div>
+                      <div className="font-black text-[#0B5D3F] text-sm">{c.members}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-gray-400 font-medium">Projects</div>
+                      <div className="font-black text-[#4CAF50] text-sm">{c.projects} active</div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="font-bold text-gray-900 mb-1 text-sm">{c.name}</div>
-              <div className="text-xs text-gray-500 flex items-center gap-1 mb-4"><Globe2 size={10} /> {c.country}</div>
-              <div className="flex gap-4 text-xs">
-                <div><span className="font-bold text-[#0B5D3F]">{c.members}</span> <span className="text-gray-400">members</span></div>
-                <div><span className="font-bold text-[#4CAF50]">{c.projects}</span> <span className="text-gray-400">projects</span></div>
+
+              <div className="px-6 pb-5 pt-0">
+                <button className="w-full py-2.5 rounded-xl bg-[#F6FBF8] group-hover:bg-[#0B5D3F] text-[#0B5D3F] group-hover:text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5">
+                  View Chapter Profile <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
+                </button>
               </div>
             </motion.div>
           ))}
         </div>
+
+        {/* Chapter Details Modal */}
+        <AnimatePresence>
+          {selectedChapter && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-100 relative overflow-hidden"
+              >
+                {/* Header Image */}
+                <div className="relative h-48 sm:h-56">
+                  <img src={selectedChapter.image} alt={selectedChapter.name} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                  <button
+                    onClick={() => { setSelectedChapter(null); setJoinSubmitted(false); }}
+                    className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center transition-all"
+                  >
+                    <X size={18} />
+                  </button>
+                  <div className="absolute bottom-4 left-6 right-6 text-white">
+                    <span className="inline-block bg-[#4CAF50] text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-2">
+                      Campus Chapter
+                    </span>
+                    <h3 className="text-xl sm:text-2xl font-black" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                      {selectedChapter.name}
+                    </h3>
+                    <div className="text-xs text-white/80 flex items-center gap-1.5 mt-1">
+                      <MapPin size={13} className="text-[#4CAF50]" /> {selectedChapter.city}, {selectedChapter.country} · Established {selectedChapter.established}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-6 sm:p-8 space-y-6">
+                  {/* Stats Grid */}
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-[#F6FBF8] p-3.5 rounded-2xl text-center border border-gray-100">
+                      <div className="text-lg font-black text-[#0B5D3F]">{selectedChapter.members}</div>
+                      <div className="text-[11px] text-gray-500 font-medium">Student Members</div>
+                    </div>
+                    <div className="bg-[#F6FBF8] p-3.5 rounded-2xl text-center border border-gray-100">
+                      <div className="text-lg font-black text-[#4CAF50]">{selectedChapter.projects}</div>
+                      <div className="text-[11px] text-gray-500 font-medium">Active Projects</div>
+                    </div>
+                    <div className="bg-[#F6FBF8] p-3.5 rounded-2xl text-center border border-gray-100">
+                      <div className="text-lg font-black text-[#D6A95A]">{selectedChapter.treesPlanted}</div>
+                      <div className="text-[11px] text-gray-500 font-medium">Trees Planted</div>
+                    </div>
+                  </div>
+
+                  {/* Overview */}
+                  <div>
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">About This Chapter</h4>
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                      {selectedChapter.description}
+                    </p>
+                  </div>
+
+                  {/* Key Initiatives */}
+                  <div>
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Key Campus Initiatives</h4>
+                    <div className="grid sm:grid-cols-2 gap-2.5">
+                      {selectedChapter.keyProjects.map((p: string) => (
+                        <div key={p} className="flex items-center gap-2 text-xs font-semibold text-gray-800 bg-[#F6FBF8] p-2.5 rounded-xl border border-gray-100">
+                          <CheckCircle2 size={14} className="text-[#4CAF50] shrink-0" />
+                          <span>{p}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Meeting Schedule & Contact */}
+                  <div className="bg-[#EBF8F1] rounded-2xl p-4 border border-[#A2DCBA] text-xs space-y-2">
+                    <div className="flex items-center gap-2 text-[#0B5D3F] font-bold">
+                      <Calendar size={14} /> Weekly Meeting:
+                    </div>
+                    <div className="text-gray-700 font-medium pl-6">{selectedChapter.meeting}</div>
+                    <div className="flex items-center gap-2 text-[#0B5D3F] font-bold pt-1">
+                      <Mail size={14} /> Chapter Contact:
+                    </div>
+                    <div className="text-gray-700 font-medium pl-6">{selectedChapter.lead} · {selectedChapter.email}</div>
+                  </div>
+
+                  {/* Modal Actions */}
+                  <div className="pt-2 flex flex-col sm:flex-row gap-3">
+                    {joinSubmitted ? (
+                      <div className="w-full bg-[#E8F5E9] text-[#0B5D3F] p-3.5 rounded-xl text-center text-xs font-bold">
+                        🎉 Membership request sent to {selectedChapter.name}! The student coordinator will reach out soon.
+                      </div>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => {
+                            saveApplication("member", {
+                              name: "Campus Student Member",
+                              university: selectedChapter.name,
+                              type_label: `Campus Chapter Member (${selectedChapter.name})`,
+                              country: selectedChapter.country,
+                            });
+                            setJoinSubmitted(true);
+                          }}
+                          className="flex-1 py-3.5 rounded-xl bg-[#0B5D3F] hover:bg-[#094c34] text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2"
+                        >
+                          <Users size={15} /> Join This Campus Chapter
+                        </button>
+                        <a
+                          href={`mailto:${selectedChapter.email}?subject=Inquiry about ${encodeURIComponent(selectedChapter.name)}`}
+                          className="py-3.5 px-6 rounded-xl bg-white border border-gray-200 hover:border-[#0B5D3F] text-gray-700 font-bold text-xs uppercase tracking-wider transition-all text-center"
+                        >
+                          Contact Lead
+                        </a>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
         <div className="bg-white rounded-2xl p-8 border border-gray-100 mb-8 shadow-sm">
           <h3 className="text-gray-900 mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700 }}>Start a Chapter at Your University</h3>
           <p className="text-gray-600 text-sm leading-relaxed mb-5">Any registered student group at an accredited university can apply to become an official ESN Campus Chapter. Chapters receive training, resources, mentorship, and access to the global ESN network.</p>
