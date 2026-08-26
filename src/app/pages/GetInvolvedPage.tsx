@@ -6,7 +6,7 @@ import {
   CheckCircle2, MapPin, Globe2, Mail, Building2, Clock, Check,
   Leaf, RefreshCw, Calendar, Star, Sprout, BarChart2, Megaphone,
   Monitor, Pen, GraduationCap, Languages, UserCheck, Trophy,
-  Send, FileText, Phone, User, Info, AlertCircle
+  Send, FileText, Phone, User, Info, AlertCircle, ExternalLink
 } from "lucide-react";
 
 import { fetchFirestoreData, saveFirestoreData, useFirestoreData } from "../../lib/useFirestore";
@@ -101,7 +101,7 @@ function VolunteerPage() {
   const [roles, setRoles, loadingRoles] = useFirestoreData<any[]>("esn_volunteer_roles", defaultRoles);
 
   const [selected, setSelected] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: "", email: "", phone: "", country: "", motivation: "", skills: "", availability: "", role: "" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", country: "", resumeLink: "", motivation: "", skills: "", availability: "", role: "" });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -127,7 +127,7 @@ function VolunteerPage() {
     <div className="bg-[#F6FBF8] min-h-screen">
       <PageHero title="Volunteer With ESN" sub="Give your time, skills, and passion to protect the planet." image="https://images.unsplash.com/photo-1593113598332-cd288d649433?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400" icon={Heart} />
       <div className="max-w-6xl mx-auto px-6 py-12">
-        <SuccessCard title="Application Received!" sub="Thank you for applying to volunteer with ESN. Our volunteer coordinator will review your application and get back to you within 3–5 business days." onReset={() => { setSubmitted(false); setShowForm(false); setForm({ name: "", email: "", phone: "", country: "", motivation: "", skills: "", availability: "", role: "" }); }} />
+        <SuccessCard title="Application Received!" sub="Thank you for applying to volunteer with ESN. Our volunteer coordinator will review your application and get back to you within 3–5 business days." onReset={() => { setSubmitted(false); setShowForm(false); setForm({ name: "", email: "", phone: "", country: "", resumeLink: "", motivation: "", skills: "", availability: "", role: "" }); }} />
       </div>
     </div>
   );
@@ -217,6 +217,26 @@ function VolunteerPage() {
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Your Skills & Experience *</label>
                   <textarea required rows={3} value={form.skills} onChange={(e) => setForm({ ...form, skills: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all resize-none" placeholder="Describe your relevant skills and experience..." />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Resume / CV Drive Link (Google Drive, OneDrive, Dropbox) *</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                      <FileText size={16} />
+                    </div>
+                    <input
+                      required
+                      type="url"
+                      value={form.resumeLink}
+                      onChange={(e) => setForm({ ...form, resumeLink: e.target.value })}
+                      className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all text-sm"
+                      placeholder="https://drive.google.com/file/d/... or shareable cloud link"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1.5 flex items-center gap-1.5">
+                    <Info size={13} className="text-[#0B5D3F] shrink-0" />
+                    Please paste a shareable Google Drive, Dropbox, or OneDrive link. Ensure link permissions are set to <strong className="font-semibold text-gray-700">"Anyone with the link can view"</strong>.
+                  </p>
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Availability *</label>
@@ -577,7 +597,7 @@ function CareersPage() {
   const [jobListings, setJobListings, loadingJobs] = useFirestoreData<any[]>("esn_career_jobs", defaultJobs);
   const [selectedJob, setSelectedJob] = useState<any | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", phone: "", country: "", linkedIn: "", coverLetter: "", noticePeriod: "", expectedSalary: "" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", country: "", resumeLink: "", linkedIn: "", coverLetter: "", noticePeriod: "", expectedSalary: "" });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState("All");
@@ -605,7 +625,7 @@ function CareersPage() {
     <div className="bg-[#F6FBF8] min-h-screen">
       <PageHero title="Career Opportunities" sub="Join a team of passionate people working to protect our planet." image="https://images.unsplash.com/photo-1497366216548-37526070297c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400" icon={Briefcase} />
       <div className="max-w-6xl mx-auto px-6 py-12">
-        <SuccessCard title="Application Submitted!" sub={`Your application for "${selectedJob?.title}" has been received. Our HR team will review and contact you within 5–7 business days.`} onReset={() => { setSubmitted(false); setShowForm(false); setSelectedJob(null); setForm({ name: "", email: "", phone: "", country: "", linkedIn: "", coverLetter: "", noticePeriod: "", expectedSalary: "" }); }} />
+        <SuccessCard title="Application Submitted!" sub={`Your application for "${selectedJob?.title}" has been received. Our HR team will review and contact you within 5–7 business days.`} onReset={() => { setSubmitted(false); setShowForm(false); setSelectedJob(null); setForm({ name: "", email: "", phone: "", country: "", resumeLink: "", linkedIn: "", coverLetter: "", noticePeriod: "", expectedSalary: "" }); }} />
       </div>
     </div>
   );
@@ -723,6 +743,26 @@ function CareersPage() {
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Country *</label>
                     <input required value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all" placeholder="e.g. Bangladesh" />
                   </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Resume / CV Drive Link (Google Drive / Dropbox / OneDrive) *</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                      <FileText size={16} />
+                    </div>
+                    <input
+                      required
+                      type="url"
+                      value={form.resumeLink}
+                      onChange={(e) => setForm({ ...form, resumeLink: e.target.value })}
+                      className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all text-sm"
+                      placeholder="https://drive.google.com/file/d/... (Shareable Google Drive or cloud link)"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1.5 flex items-center gap-1.5">
+                    <Info size={13} className="text-[#0B5D3F] shrink-0" />
+                    Paste a shareable link to your CV/Resume. Make sure file access is set to <strong className="font-semibold text-gray-700">"Anyone with the link can view"</strong>.
+                  </p>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>

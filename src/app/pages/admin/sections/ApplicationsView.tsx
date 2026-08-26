@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   Heart, Users, Handshake, Briefcase, Search, RefreshCw, Download,
   Check, X, Clock, Eye, ChevronDown, ChevronUp, Filter, AlertTriangle,
-  Mail, Phone, Globe2, MapPin, Calendar, Star, CheckCircle2
+  Mail, Phone, Globe2, MapPin, Calendar, Star, CheckCircle2,
+  FileText, ExternalLink, Copy, Link as LinkIcon
 } from "lucide-react";
 
 type AppType = "volunteer" | "partner" | "member" | "career";
@@ -33,6 +34,10 @@ interface Application {
   reason?: string;
   budget?: string;
   type_label?: string;
+  resumeLink?: string;
+  linkedIn?: string;
+  expectedSalary?: string;
+  noticePeriod?: string;
   [key: string]: any;
 }
 
@@ -58,6 +63,14 @@ const STATUS_CONFIG = {
 
 import { fetchFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 
+const getLinkProvider = (url?: string) => {
+  if (!url) return "Document";
+  if (url.includes("drive.google.com") || url.includes("docs.google.com")) return "Google Drive";
+  if (url.includes("dropbox.com")) return "Dropbox";
+  if (url.includes("onedrive.live.com") || url.includes("sharepoint.com")) return "OneDrive";
+  return "Cloud Storage";
+};
+
 async function loadAllApps(): Promise<Application[]> {
   const all: Application[] = [];
   for (const type of Object.keys(APP_KEYS) as AppType[]) {
@@ -80,12 +93,12 @@ async function saveAppStatus(app: Application, status: AppStatus) {
 
 async function seedDemoApps() {
   const demos: { type: AppType; data: Partial<Application> }[] = [
-    { type: "volunteer", data: { name: "Anika Rahman", email: "anika@gmail.com", phone: "+880 171234567", country: "Bangladesh", role: "Field Volunteer", skills: "Biology graduate, 3 years tree planting exp", availability: "5–10 hours/week", motivation: "I grew up near the Sundarbans and want to give back." } },
-    { type: "volunteer", data: { name: "James Osei", email: "james.o@yahoo.com", phone: "+233 241234567", country: "Ghana", role: "Research Assistant", skills: "MSc Environmental Science, data analysis, R/Python", availability: "10+ hours/week", motivation: "I've followed ESN's work for years and want to contribute to climate research." } },
-    { type: "career", data: { name: "Priya Singh", email: "priya.singh@outlook.com", phone: "+91 9876543210", country: "India", jobTitle: "Research Associate — Climate Policy", dept: "Research", location: "Remote", coverLetter: "With my PhD in Environmental Policy from IIT Delhi, I am eager to contribute to ESN's research agenda..." } },
+    { type: "volunteer", data: { name: "Anika Rahman", email: "anika@gmail.com", phone: "+880 171234567", country: "Bangladesh", role: "Field Volunteer", skills: "Biology graduate, 3 years tree planting exp", availability: "5–10 hours/week", motivation: "I grew up near the Sundarbans and want to give back.", resumeLink: "https://drive.google.com/file/d/1yZ_demo_resume_anika/view?usp=sharing" } },
+    { type: "volunteer", data: { name: "James Osei", email: "james.o@yahoo.com", phone: "+233 241234567", country: "Ghana", role: "Research Assistant", skills: "MSc Environmental Science, data analysis, R/Python", availability: "10+ hours/week", motivation: "I've followed ESN's work for years and want to contribute to climate research.", resumeLink: "https://drive.google.com/file/d/1wX_demo_cv_james/view?usp=sharing" } },
+    { type: "career", data: { name: "Priya Singh", email: "priya.singh@outlook.com", phone: "+91 9876543210", country: "India", jobTitle: "Research Associate — Climate Policy", dept: "Research", location: "Remote", coverLetter: "With my PhD in Environmental Policy from IIT Delhi, I am eager to contribute to ESN's research agenda...", resumeLink: "https://drive.google.com/file/d/1aB_demo_cv_priya_phd/view?usp=sharing" } },
     { type: "partner", data: { orgName: "GreenTech Solutions Ltd", contactName: "Mohammed Al-Farsi", email: "mfarsi@greentech.ae", phone: "+971 501234567", type_label: "Corporate Partners", website: "https://greentech.ae", description: "We seek to offset 10,000 tons of CO₂ through ESN's reforestation programs as part of our 2030 sustainability pledge.", budget: "$100,000 – $500,000", timeline: "Short-term (1–3 months)" } },
     { type: "member", data: { name: "Sofia Hernandez", email: "sofia.h@eco.mx", phone: "+52 5551234567", country: "Mexico", tier: "Advocate", occupation: "Environmental Consultant", reason: "I want to be part of the global movement and contribute to ESN's mission from Latin America." } },
-    { type: "career", data: { name: "David Kimura", email: "d.kimura@mail.jp", phone: "+81 9012345678", country: "Japan", jobTitle: "Digital Marketing Specialist", dept: "Marketing", location: "Remote", coverLetter: "I have 5 years experience running digital campaigns for NGOs and am passionate about ESN's mission..." } },
+    { type: "career", data: { name: "David Kimura", email: "d.kimura@mail.jp", phone: "+81 9012345678", country: "Japan", jobTitle: "Digital Marketing Specialist", dept: "Marketing", location: "Remote", coverLetter: "I have 5 years experience running digital campaigns for NGOs and am passionate about ESN's mission...", resumeLink: "https://drive.google.com/file/d/1kL_demo_cv_david_marketing/view?usp=sharing" } },
   ];
 
   for (const [idx, { type, data }] of demos.entries()) {
@@ -106,6 +119,7 @@ export function ApplicationsView() {
   const [expanded, setExpanded] = useState<number | null>(null);
   const [confirmAction, setConfirmAction] = useState<{ app: Application; status: AppStatus } | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [copiedId, setCopiedId] = useState<number | null>(null);
 
   const reload = () => {
     setRefreshing(true);
@@ -127,8 +141,14 @@ export function ApplicationsView() {
     setConfirmAction(null);
   };
 
+  const copyToClipboard = (id: number, url: string) => {
+    navigator.clipboard.writeText(url);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
   const exportCSV = () => {
-    const headers = ["ID", "Type", "Name/Org", "Email", "Role/Position", "Country", "Status", "Submitted"];
+    const headers = ["ID", "Type", "Name/Org", "Email", "Role/Position", "Country", "Status", "Resume Link", "Submitted"];
     const rows = filtered.map((a) => [
       a.id, TYPE_CONFIG[a.type].label,
       a.name || a.contactName || a.orgName || "-",
@@ -136,6 +156,7 @@ export function ApplicationsView() {
       a.role || a.jobTitle || a.tier || a.type_label || "-",
       a.country || "-",
       a.status,
+      a.resumeLink || "-",
       new Date(a.submittedAt).toLocaleDateString(),
     ]);
     const csv = [headers, ...rows].map((r) => r.map((v) => `"${v}"`).join(",")).join("\n");
@@ -150,7 +171,11 @@ export function ApplicationsView() {
   const filtered = apps.filter((a) => {
     const typeOk = activeType === "all" || a.type === activeType;
     const statusOk = activeStatus === "all" || a.status === activeStatus;
-    const searchOk = !q || (a.name || a.contactName || a.orgName || "").toLowerCase().includes(q) || (a.email || "").toLowerCase().includes(q) || (a.role || a.jobTitle || "").toLowerCase().includes(q);
+    const searchOk = !q ||
+      (a.name || a.contactName || a.orgName || "").toLowerCase().includes(q) ||
+      (a.email || "").toLowerCase().includes(q) ||
+      (a.role || a.jobTitle || "").toLowerCase().includes(q) ||
+      (a.resumeLink || "").toLowerCase().includes(q);
     return typeOk && statusOk && searchOk;
   });
 
@@ -163,6 +188,7 @@ export function ApplicationsView() {
     pending: apps.filter((a) => a.status === "Pending").length,
     approved: apps.filter((a) => a.status === "Approved").length,
     rejected: apps.filter((a) => a.status === "Rejected").length,
+    withResume: apps.filter((a) => a.resumeLink).length,
   };
 
   const getDisplayName = (a: Application) => a.name || a.contactName || a.orgName || "—";
@@ -192,7 +218,7 @@ export function ApplicationsView() {
           { label: "Total", value: counts.all, color: "#0B5D3F" },
           { label: "Pending", value: counts.pending, color: "#D97706" },
           { label: "Approved", value: counts.approved, color: "#059669" },
-          { label: "Rejected", value: counts.rejected, color: "#DC2626" },
+          { label: "Resumes Attached", value: counts.withResume, color: "#173B63" },
         ].map((k) => (
           <div key={k.label} className="bg-white rounded-2xl p-4 border border-gray-100 flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: k.color + "15" }}>
@@ -227,7 +253,7 @@ export function ApplicationsView() {
         {/* Search */}
         <div className="relative ml-auto">
           <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8 pr-4 py-2 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] text-sm w-48 transition-all" placeholder="Search applicants…" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8 pr-4 py-2 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] text-sm w-48 transition-all" placeholder="Search applicants or links…" />
         </div>
       </div>
 
@@ -248,14 +274,14 @@ export function ApplicationsView() {
             return (
               <motion.div key={`${app.type}-${app.id}`} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all">
                 {/* Row */}
-                <div className="flex items-center gap-4 p-5">
+                <div className="flex items-center gap-4 p-5 flex-wrap sm:flex-nowrap">
                   {/* Type icon */}
                   <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: tc.bg }}>
                     <tc.icon size={18} style={{ color: tc.color }} />
                   </div>
 
                   {/* Info */}
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-[200px]">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-bold text-gray-900 text-sm">{getDisplayName(app)}</span>
                       <span className="text-xs px-2 py-0.5 rounded-full font-bold" style={{ backgroundColor: tc.bg, color: tc.color }}>{tc.label}</span>
@@ -267,6 +293,22 @@ export function ApplicationsView() {
                       {getRole(app) !== "—" && <span className="italic text-gray-400">{getRole(app)}</span>}
                     </div>
                   </div>
+
+                  {/* Resume Quick Action Button */}
+                  {app.resumeLink ? (
+                    <a
+                      href={app.resumeLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      title="Open applicant's Resume Drive Link in a new tab"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#EBF8F1] hover:bg-[#D3F0E0] text-[#0B5D3F] border border-[#A2DCBA] rounded-xl text-xs font-bold transition-all shadow-xs shrink-0"
+                    >
+                      <FileText size={13} className="text-[#0B5D3F]" />
+                      <span>Resume Link</span>
+                      <ExternalLink size={11} className="text-[#0B5D3F]/70" />
+                    </a>
+                  ) : null}
 
                   {/* Status badge */}
                   <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold shrink-0" style={{ backgroundColor: sc.bg, color: sc.color }}>
@@ -322,26 +364,94 @@ export function ApplicationsView() {
                           {app.availability && (
                             <div className="flex justify-between text-sm"><span className="text-gray-400">Availability</span><span className="font-medium text-gray-800">{app.availability}</span></div>
                           )}
+                          {app.expectedSalary && (
+                            <div className="flex justify-between text-sm"><span className="text-gray-400">Expected Salary</span><span className="font-medium text-gray-800">{app.expectedSalary}</span></div>
+                          )}
+                          {app.noticePeriod && (
+                            <div className="flex justify-between text-sm"><span className="text-gray-400">Notice Period</span><span className="font-medium text-gray-800">{app.noticePeriod}</span></div>
+                          )}
+                          {app.linkedIn && (
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-400">LinkedIn</span>
+                              <a href={app.linkedIn} target="_blank" rel="noopener noreferrer" className="text-[#0B5D3F] hover:underline flex items-center gap-1">
+                                View Profile <ExternalLink size={11} />
+                              </a>
+                            </div>
+                          )}
                           {app.budget && (
                             <div className="flex justify-between text-sm"><span className="text-gray-400">Budget</span><span className="font-medium text-gray-800">{app.budget}</span></div>
                           )}
                         </div>
-                        {/* Right — free text */}
+
+                        {/* Right — Document & Free text */}
                         <div className="flex flex-col gap-4">
+                          {/* Resume Drive Card */}
+                          {app.resumeLink && (
+                            <div className="bg-gradient-to-br from-[#F4FAF6] to-[#EBF5EF] rounded-2xl p-5 border border-[#0B5D3F]/15 shadow-sm">
+                              <div className="flex items-center justify-between gap-2 mb-3">
+                                <div className="flex items-center gap-2.5">
+                                  <div className="w-8 h-8 rounded-lg bg-[#0B5D3F]/10 flex items-center justify-center">
+                                    <FileText size={16} className="text-[#0B5D3F]" />
+                                  </div>
+                                  <div>
+                                    <span className="text-xs font-bold text-gray-900 block">Applicant Resume / CV Drive Link</span>
+                                    <span className="text-[11px] text-[#0B5D3F] font-semibold">{getLinkProvider(app.resumeLink)} Document</span>
+                                  </div>
+                                </div>
+                                <span className="text-[10px] bg-white border border-[#0B5D3F]/20 text-[#0B5D3F] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                  Drive Attached
+                                </span>
+                              </div>
+                              
+                              <div className="bg-white rounded-xl p-3 border border-gray-200 mb-3.5 flex items-center justify-between gap-3 overflow-hidden">
+                                <div className="font-mono text-xs text-gray-600 truncate flex-1 select-all" title={app.resumeLink}>
+                                  {app.resumeLink}
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => copyToClipboard(app.id, app.resumeLink!)}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-lg text-xs font-semibold border border-gray-200 shrink-0 transition-all cursor-pointer"
+                                  title="Copy link to clipboard"
+                                >
+                                  {copiedId === app.id ? (
+                                    <><Check size={12} className="text-green-600" /><span className="text-green-600 text-[11px]">Copied</span></>
+                                  ) : (
+                                    <><Copy size={12} /><span className="text-[11px]">Copy</span></>
+                                  )}
+                                </button>
+                              </div>
+
+                              <div className="flex items-center gap-3 flex-wrap">
+                                <a
+                                  href={app.resumeLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center justify-center gap-2 bg-[#0B5D3F] hover:bg-[#0a5237] text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm flex-1 sm:flex-initial"
+                                >
+                                  <ExternalLink size={13} />
+                                  Open Resume in New Tab
+                                </a>
+                                <span className="text-[11px] text-gray-400">
+                                  Opens directly in Google Drive / viewer
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
                           {(app.motivation || app.coverLetter || app.reason || app.description || app.skills) && (
                             <div>
                               <div className="text-xs font-black text-gray-400 uppercase tracking-wider mb-2">
                                 {app.coverLetter ? "Cover Letter" : app.motivation ? "Motivation" : app.description ? "Vision" : app.reason ? "Reason" : "Skills"}
                               </div>
-                              <p className="text-sm text-gray-600 leading-relaxed bg-[#F6FBF8] rounded-xl p-4 border border-gray-100">
+                              <p className="text-sm text-gray-600 leading-relaxed bg-[#F6FBF8] rounded-xl p-4 border border-gray-100 whitespace-pre-line">
                                 {app.coverLetter || app.motivation || app.description || app.reason || app.skills}
                               </p>
                             </div>
                           )}
                           {app.skills && app.motivation && (
                             <div>
-                              <div className="text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Skills</div>
-                              <p className="text-sm text-gray-600 bg-[#F6FBF8] rounded-xl p-4 border border-gray-100">{app.skills}</p>
+                              <div className="text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Skills & Experience</div>
+                              <p className="text-sm text-gray-600 bg-[#F6FBF8] rounded-xl p-4 border border-gray-100 whitespace-pre-line">{app.skills}</p>
                             </div>
                           )}
                         </div>
@@ -386,3 +496,4 @@ export function ApplicationsView() {
     </div>
   );
 }
+
