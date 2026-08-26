@@ -18,7 +18,7 @@ interface BackupEntry {
   tables: number;
 }
 
-import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
+import { useFirestoreData, saveFirestoreData, fetchFirestoreData } from "../../../../lib/useFirestore";
 
 function getInitialBackups(): BackupEntry[] {
   return [

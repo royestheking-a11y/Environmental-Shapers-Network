@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   Mail, Users, Send, Plus, Edit3, Trash2, Eye, Search,
   TrendingUp, Clock, CheckCircle2, X, BarChart2, MousePointerClick,
-  AlertCircle, Leaf
+  AlertCircle, Leaf, Download, RefreshCw
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
