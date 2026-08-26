@@ -7,7 +7,7 @@ import {
   FileText, ExternalLink, Copy, Link as LinkIcon
 } from "lucide-react";
 
-type AppType = "volunteer" | "partner" | "member" | "career";
+type AppType = "volunteer" | "partner" | "member" | "career" | "representative";
 type AppStatus = "Pending" | "Approved" | "Rejected";
 
 interface Application {
@@ -21,11 +21,15 @@ interface Application {
   email?: string;
   phone?: string;
   country?: string;
+  city?: string;
   role?: string;
   tier?: string;
   jobTitle?: string;
   dept?: string;
   location?: string;
+  profession?: string;
+  languages?: string;
+  experience?: string;
   motivation?: string;
   skills?: string;
   availability?: string;
@@ -46,10 +50,12 @@ const APP_KEYS: Record<AppType, string> = {
   partner: "esn_apps_partner",
   member: "esn_apps_member",
   career: "esn_apps_career",
+  representative: "esn_apps_representative",
 };
 
 const TYPE_CONFIG = {
   volunteer: { label: "Volunteers", icon: Heart, color: "#0B5D3F", bg: "#F0FBF4" },
+  representative: { label: "Representatives", icon: Globe2, color: "#173B63", bg: "#F0F7FC" },
   partner: { label: "Partners", icon: Handshake, color: "#173B63", bg: "#F0F4FF" },
   member: { label: "Members", icon: Users, color: "#4CAF50", bg: "#F0FFF4" },
   career: { label: "Careers", icon: Briefcase, color: "#D6A95A", bg: "#FFF8F0" },
@@ -93,6 +99,7 @@ async function saveAppStatus(app: Application, status: AppStatus) {
 
 async function seedDemoApps() {
   const demos: { type: AppType; data: Partial<Application> }[] = [
+    { type: "representative", data: { name: "Samuel Kwame Mensah", email: "s.mensah@greenghana.org", phone: "+233 24 987 6543", country: "Ghana", city: "Accra", role: "Global Country Representative (Ghana)", profession: "Regional Climate Policy Specialist", languages: "English, Twi, French", motivation: "I lead youth reforestation campaigns in coastal Ghana and wish to represent ESN to mobilize national university chapters.", experience: "6 years leading grassroots environmental NGOs; delegate at COP28 Africa Pavilion.", resumeLink: "https://drive.google.com/file/d/1sM_demo_cv_samuel_ghana/view?usp=sharing", type_label: "Country Representative" } },
     { type: "volunteer", data: { name: "Anika Rahman", email: "anika@gmail.com", phone: "+880 171234567", country: "Bangladesh", role: "Field Volunteer", skills: "Biology graduate, 3 years tree planting exp", availability: "5–10 hours/week", motivation: "I grew up near the Sundarbans and want to give back.", resumeLink: "https://drive.google.com/file/d/1yZ_demo_resume_anika/view?usp=sharing" } },
     { type: "volunteer", data: { name: "James Osei", email: "james.o@yahoo.com", phone: "+233 241234567", country: "Ghana", role: "Research Assistant", skills: "MSc Environmental Science, data analysis, R/Python", availability: "10+ hours/week", motivation: "I've followed ESN's work for years and want to contribute to climate research.", resumeLink: "https://drive.google.com/file/d/1wX_demo_cv_james/view?usp=sharing" } },
     { type: "career", data: { name: "Priya Singh", email: "priya.singh@outlook.com", phone: "+91 9876543210", country: "India", jobTitle: "Research Associate — Climate Policy", dept: "Research", location: "Remote", coverLetter: "With my PhD in Environmental Policy from IIT Delhi, I am eager to contribute to ESN's research agenda...", resumeLink: "https://drive.google.com/file/d/1aB_demo_cv_priya_phd/view?usp=sharing" } },

@@ -45,8 +45,8 @@ export function FloatingAI() {
     if (/\b(mission|purpose|goal|aim)\b/.test(text)) {
       return "Our mission is focused on Science-Backed Action, Youth Leadership, and Policy Advocacy. We empower local communities, especially youth, to lead climate adaptation efforts through direct action.";
     }
-    if (/\b(vision|future|2030|plan)\b/.test(text)) {
-      return "Our Vision 2030 is incredibly ambitious! We aim to establish 5,000+ Net-Zero Communities, achieve total Climate Justice, and ultimately build a fully Restored Planet.";
+    if (/\b(vision|future|2050|2030|plan)\b/.test(text)) {
+      return "Our Vision 2050 is ambitious! We aim to establish 5,000+ Net-Zero Communities, achieve total Climate Justice, and build a fully Restored Planet by 2050.";
     }
     if (/\b(donate|support|fund|give|money|contribute)\b/.test(text)) {
       return "Thank you for your generosity! 100% of your contributions go toward our grassroots initiatives. You can support our ecosystem restoration projects by clicking the 'Donate' button in our main navigation bar.";

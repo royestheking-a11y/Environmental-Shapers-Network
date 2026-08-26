@@ -364,7 +364,7 @@ export default function AdminDashboard() {
       setUser(JSON.parse(u));
     }
     const fetchPendingApps = async () => {
-      const keys = ["esn_apps_volunteer", "esn_apps_partner", "esn_apps_member", "esn_apps_career"];
+      const keys = ["esn_apps_volunteer", "esn_apps_partner", "esn_apps_member", "esn_apps_career", "esn_apps_representative"];
       let pending = 0;
       for (const k of keys) {
         try {

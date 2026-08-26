@@ -627,7 +627,7 @@ export default function About() {
               </motion.div>
             </div>
 
-            {/* RIGHT: VISION (The 2030 Goal) */}
+            {/* RIGHT: VISION (The 2050 Goal) */}
             <div className="relative z-10 lg:pt-32">
               <motion.div initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2 }}>
                 <div className="flex items-center gap-5 mb-12">
@@ -635,7 +635,7 @@ export default function About() {
                     <Globe2 size={30} className="text-white" />
                   </div>
                   <div>
-                    <h3 className="text-3xl font-black text-white" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Vision 2030</h3>
+                    <h3 className="text-3xl font-black text-white" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Vision 2050</h3>
                     <p className="text-[#D6A95A] font-semibold tracking-widest uppercase text-xs mt-1.5">The Future We're Building</p>
                   </div>
                 </div>
@@ -649,7 +649,7 @@ export default function About() {
                       </div>
                       <div>
                         <h4 className="text-xl font-bold text-white mb-2">Net-Zero Communities</h4>
-                        <p className="text-white/70 leading-relaxed text-sm">By 2030, we envision 5,000+ localized chapters successfully transitioning their economies to sustainable, zero-waste models.</p>
+                        <p className="text-white/70 leading-relaxed text-sm">By 2050, we envision 5,000+ localized chapters successfully transitioning their economies to sustainable, zero-waste models.</p>
                       </div>
                     </div>
                   </div>
@@ -677,7 +677,7 @@ export default function About() {
                         Our ultimate metric for success: thriving, interconnected ecosystems where humanity operates entirely within the Earth's natural boundaries.
                       </p>
                       <Link to="/projects" className="mt-6 inline-flex items-center gap-2 text-[#9E6B3C] font-bold text-sm bg-white px-5 py-2.5 rounded-full hover:bg-gray-100 transition-all shadow-lg">
-                        See 2030 Roadmap <ArrowRight size={16} />
+                        See 2050 Roadmap <ArrowRight size={16} />
                       </Link>
                     </div>
                   </div>

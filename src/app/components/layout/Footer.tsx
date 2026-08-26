@@ -75,6 +75,7 @@ const footerLinks = {
   ],
   "Get Involved": [
     { label: "Volunteer", href: "/volunteer" },
+    { label: "Global Representatives", href: "/global-representatives" },
     { label: "Membership", href: "/membership" },
     { label: "Campus Chapters", href: "/campus-chapters" },
     { label: "Partner With Us", href: "/partner" },

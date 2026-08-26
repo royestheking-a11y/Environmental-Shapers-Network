@@ -134,17 +134,17 @@ export default function Impact() {
               </div>
               <div className="grid lg:grid-cols-2 gap-10 items-center">
                 <div>
-                  <h3 className="text-2xl md:text-3xl font-black mb-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  <h3 className="text-2xl md:text-3xl font-black mb-3 text-white" style={{ color: "#FFFFFF", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                     Tree & CO₂ Sequestration Calculator
                   </h3>
-                  <p className="text-white/80 text-sm leading-relaxed mb-6">
-                    Our carbon sequestration model follows verified scientific metrics where 1 mature tree absorbs approximately <strong>62.5 kg (0.0625 MT)</strong> of atmospheric CO₂ over its lifetime. Adjust the tree count below to view the synchronized carbon impact in real-time.
+                  <p className="text-sm leading-relaxed mb-6" style={{ color: "rgba(255, 255, 255, 0.85)" }}>
+                    Our carbon sequestration model follows verified scientific metrics where 1 mature tree absorbs approximately <strong className="text-white">62.5 kg (0.0625 MT)</strong> of atmospheric CO₂ over its lifetime. Adjust the tree count below to view the synchronized carbon impact in real-time.
                   </p>
 
                   <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/15">
                     <div className="flex justify-between items-center text-sm font-bold mb-3">
-                      <span>Planted Trees:</span>
-                      <span className="text-[#4CAF50] font-mono text-lg">{calcTrees.toLocaleString()} trees</span>
+                      <span className="text-white" style={{ color: "#FFFFFF" }}>Planted Trees:</span>
+                      <span className="text-[#4CAF50] font-mono text-lg font-bold">{calcTrees.toLocaleString()} trees</span>
                     </div>
                     <input
                       type="range"
@@ -155,7 +155,7 @@ export default function Impact() {
                       onChange={(e) => setCalcTrees(Number(e.target.value))}
                       className="w-full h-2.5 bg-white/20 rounded-lg appearance-none cursor-pointer accent-[#4CAF50]"
                     />
-                    <div className="flex justify-between text-[11px] text-white/50 mt-2">
+                    <div className="flex justify-between text-[11px] mt-2" style={{ color: "rgba(255, 255, 255, 0.6)" }}>
                       <span>10K Trees</span>
                       <span>5M Trees</span>
                       <span>10M Trees</span>

@@ -56,6 +56,8 @@ export const router = createBrowserRouter([
       { path: "awards", Component: OrganizationPage },
       // Get Involved
       { path: "volunteer", Component: GetInvolvedPage },
+      { path: "global-representatives", Component: GetInvolvedPage },
+      { path: "representatives", Component: GetInvolvedPage },
       { path: "membership", Component: GetInvolvedPage },
       { path: "campus-chapters", Component: GetInvolvedPage },
       { path: "partner", Component: GetInvolvedPage },
