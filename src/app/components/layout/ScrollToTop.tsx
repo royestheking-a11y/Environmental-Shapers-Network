@@ -23,7 +23,7 @@ export function ScrollToTop() {
           exit={{ opacity: 0, scale: 0.5, y: 20 }}
           transition={{ type: "spring", stiffness: 300, damping: 20 }}
           onClick={scrollUp}
-          className="fixed bottom-[13rem] right-8 z-50 group"
+          className="fixed bottom-[5.75rem] right-8 z-50 group"
           aria-label="Scroll to top"
         >
           {/* Outer pulsing ring */}

@@ -223,11 +223,14 @@ export function Footer() {
 
             {/* Secured Online Payment Banner */}
             <div className="mt-8 pt-6 border-t border-white/10">
-              <div className="bg-white rounded-2xl p-3 sm:p-4 shadow-xl border border-white/20 transition-all hover:shadow-2xl overflow-hidden">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-3">
+                Secured Online Payment Gateways
+              </p>
+              <div className="rounded-xl overflow-hidden shadow-lg bg-white">
                 <img
                   src="/payment-banner.webp"
                   alt="Secured Online Payment Gateways - SSLCOMMERZ, Visa, MasterCard, AMEX, bKash, Rocket, Nagad"
-                  className="w-full h-auto object-contain block max-h-16"
+                  className="w-full h-auto block object-contain"
                   loading="lazy"
                 />
               </div>
