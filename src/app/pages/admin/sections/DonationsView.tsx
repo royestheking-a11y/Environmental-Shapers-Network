@@ -11,37 +11,10 @@ import {
   ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell, Legend
 } from "recharts";
 
-const monthlyData = [
-  { month: "Jan", amount: 42000, donors: 380 },
-  { month: "Feb", amount: 58000, donors: 510 },
-  { month: "Mar", amount: 71000, donors: 620 },
-  { month: "Apr", amount: 65000, donors: 570 },
-  { month: "May", amount: 89000, donors: 780 },
-  { month: "Jun", amount: 104000, donors: 920 },
-  { month: "Jul", amount: 118000, donors: 1040 },
-];
-
-const channelData = [
-  { name: "Online Card", value: 48, color: "#0B5D3F" },
-  { name: "PayPal", value: 22, color: "#4CAF50" },
-  { name: "Bank Transfer", value: 16, color: "#173B63" },
-  { name: "Mobile Money", value: 9, color: "#D6A95A" },
-  { name: "Crypto", value: 5, color: "#5B8DB8" },
-];
-
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 
 export function getInitialDonations() {
-  return [
-    { id: 1, donor: "Anonymous", email: "—", amount: 500, project: "Plant A Million Trees", method: "Card", date: "Jul 27, 2026", status: "completed", recurring: false, receipt: "RCP-001" },
-    { id: 2, donor: "Sarah Chen", email: "s.chen@email.com", amount: 250, project: "Ocean Initiative", method: "PayPal", date: "Jul 27, 2026", status: "completed", recurring: true, receipt: "RCP-002" },
-    { id: 3, donor: "Ahmad Raza", email: "ahmad@email.com", amount: 100, project: "Youth Program", method: "Card", date: "Jul 26, 2026", status: "completed", recurring: false, receipt: "RCP-003" },
-    { id: 4, donor: "Maria Santos", email: "maria@email.com", amount: 1000, project: "Forest Hub Brazil", method: "Transfer", date: "Jul 26, 2026", status: "completed", recurring: true, receipt: "RCP-004" },
-    { id: 5, donor: "TechCorp Ltd", email: "csr@techcorp.com", amount: 5000, project: "General Fund", method: "Transfer", date: "Jul 25, 2026", status: "completed", recurring: false, receipt: "RCP-005" },
-    { id: 6, donor: "John Doe", email: "jd@email.com", amount: 50, project: "General Fund", method: "Mobile", date: "Jul 25, 2026", status: "pending", recurring: false, receipt: "RCP-006" },
-    { id: 7, donor: "GreenVest VC", email: "give@greenvest.io", amount: 10000, project: "All Projects", method: "Transfer", date: "Jul 24, 2026", status: "completed", recurring: true, receipt: "RCP-007" },
-    { id: 8, donor: "Amara Osei", email: "amara@email.com", amount: 75, project: "Africa Programs", method: "Mobile", date: "Jul 24, 2026", status: "failed", recurring: false, receipt: "RCP-008" },
-  ];
+  return [];
 }
 
 function exportToCSV(donations: any[]) {
@@ -179,8 +152,65 @@ export function DonationsView() {
     const st = String(d?.status || "").toLowerCase();
     return st === "approved" || st === "completed";
   }).length;
-  const avgDonation = Math.round(totalRaised / (approvedCount || 1));
+  const avgDonation = approvedCount > 0 ? Math.round(totalRaised / approvedCount) : 0;
   const recurringCount = safeDonations.filter((d: any) => Boolean(d?.recurring)).length;
+
+  const currentMonthIdx = new Date().getMonth();
+  const currentMonthName = new Date().toLocaleDateString("en-US", { month: "short" });
+  const thisMonthTotal = safeDonations
+    .filter((d: any) => {
+      if (!d?.date) return false;
+      const dt = new Date(d.date);
+      return !isNaN(dt.getTime()) && dt.getMonth() === currentMonthIdx;
+    })
+    .reduce((s: number, d: any) => s + (Number(d?.amount) || 0), 0);
+
+  const monthlyData = [
+    { month: "Jan", amount: 0, donors: 0 },
+    { month: "Feb", amount: 0, donors: 0 },
+    { month: "Mar", amount: 0, donors: 0 },
+    { month: "Apr", amount: 0, donors: 0 },
+    { month: "May", amount: 0, donors: 0 },
+    { month: "Jun", amount: 0, donors: 0 },
+    { month: "Jul", amount: 0, donors: 0 },
+    { month: "Aug", amount: 0, donors: 0 },
+  ].map((item, idx) => {
+    const matchDonations = safeDonations.filter((d: any) => {
+      if (!d?.date) return false;
+      const dt = new Date(d.date);
+      return !isNaN(dt.getTime()) && dt.getMonth() === idx;
+    });
+    return {
+      month: item.month,
+      amount: matchDonations.reduce((sum, d) => sum + (Number(d.amount) || 0), 0),
+      donors: matchDonations.length,
+    };
+  });
+
+  const channelData = (() => {
+    const methods: Record<string, number> = {};
+    safeDonations.forEach((d: any) => {
+      const m = d?.method || "Card";
+      methods[m] = (methods[m] || 0) + 1;
+    });
+    const total = safeDonations.length || 1;
+    const colors: Record<string, string> = {
+      Card: "#0B5D3F",
+      PayPal: "#4CAF50",
+      Transfer: "#173B63",
+      Mobile: "#D6A95A",
+      Crypto: "#5B8DB8",
+    };
+    const entries = Object.entries(methods);
+    if (entries.length === 0) {
+      return [{ name: "No Donations", value: 100, color: "#E5E7EB" }];
+    }
+    return entries.map(([name, count]) => ({
+      name,
+      value: Math.round((count / total) * 100),
+      color: colors[name] || "#0B5D3F",
+    }));
+  })();
 
   return (
     <div className="flex flex-col gap-7">
@@ -209,10 +239,10 @@ export function DonationsView() {
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
         {[
-          { label: "Total Raised", value: `$${(totalRaised / 1000).toFixed(1)}K`, sub: "All time", change: "+18%", up: true, icon: DollarSign, color: "#0B5D3F" },
-          { label: "This Month", value: "$118K", sub: "Jul 2026", change: "+13%", up: true, icon: TrendingUp, color: "#4CAF50" },
-          { label: "Avg. Donation", value: `$${avgDonation}`, sub: "Per transaction", change: "+6%", up: true, icon: Heart, color: "#173B63" },
-          { label: "Recurring Donors", value: recurringCount.toString(), sub: `${pendingCount} pending`, change: "+22%", up: true, icon: Users, color: "#D6A95A" },
+          { label: "Total Raised", value: `$${totalRaised.toLocaleString()}`, sub: "All time", change: `${approvedCount} completed`, up: true, icon: DollarSign, color: "#0B5D3F" },
+          { label: "This Month", value: `$${thisMonthTotal.toLocaleString()}`, sub: `${currentMonthName} 2026`, change: "+100%", up: true, icon: TrendingUp, color: "#4CAF50" },
+          { label: "Avg. Donation", value: `$${avgDonation}`, sub: "Per transaction", change: "Live", up: true, icon: Heart, color: "#173B63" },
+          { label: "Recurring Donors", value: recurringCount.toString(), sub: `${pendingCount} pending`, change: `${safeDonations.length} total`, up: true, icon: Users, color: "#D6A95A" },
         ].map((k) => (
           <motion.div
             key={k.label}

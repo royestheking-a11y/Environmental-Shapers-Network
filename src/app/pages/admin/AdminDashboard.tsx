@@ -1518,54 +1518,58 @@ function AnalyticsView({ weeklyData, monthlyDonations }: any) {
 
   // Compute live aggregates
   const totalAppsCount = (volApps?.length || 0) + (careerApps?.length || 0) + (repApps?.length || 0) + (memApps?.length || 0) + (partnerApps?.length || 0);
-  const totalDonationsAmount = donations?.reduce((acc: number, d: any) => acc + (Number(d.amount) || 0), 0) || 158400;
-  const verifiedDonorsCount = donations?.length ? donations.length : 1420;
-  const totalProjectsCount = projects?.length || 18;
-  const activeCampaignsCount = campaigns?.filter((c: any) => c.status === "Active" || !c.status)?.length || 6;
-  const totalSubscribersCount = 48291 + (subscribers?.length || 0);
+  const totalDonationsAmount = donations?.reduce((acc: number, d: any) => acc + (Number(d.amount) || 0), 0) || 0;
+  const verifiedDonorsCount = donations?.length || 0;
+  const totalProjectsCount = projects?.length || 0;
+  const activeCampaignsCount = campaigns?.filter((c: any) => c.status === "Active" || !c.status)?.length || 0;
+  const totalSubscribersCount = subscribers?.length || 0;
 
   // Dynamic Chart Data based on time range
   const dynamicWeeklyData = timeRange === "7d"
     ? [
-        { day: "Mon", visitors: 4200, actions: 820 },
-        { day: "Tue", visitors: 5600, actions: 1100 },
-        { day: "Wed", visitors: 6100, actions: 1350 },
-        { day: "Thu", visitors: 7400, actions: 1680 },
-        { day: "Fri", visitors: 8900, actions: 2100 },
-        { day: "Sat", visitors: 9800, actions: 2450 },
-        { day: "Sun", visitors: 8200, actions: 1950 },
+        { day: "Mon", visitors: 0, actions: 0 },
+        { day: "Tue", visitors: 0, actions: 0 },
+        { day: "Wed", visitors: 0, actions: 0 },
+        { day: "Thu", visitors: 0, actions: 0 },
+        { day: "Fri", visitors: 0, actions: 0 },
+        { day: "Sat", visitors: 0, actions: 0 },
+        { day: "Sun", visitors: 0, actions: 0 },
       ]
     : timeRange === "90d"
     ? [
-        { day: "May", visitors: 45000, actions: 9800 },
-        { day: "Jun", visitors: 58000, actions: 13200 },
-        { day: "Jul", visitors: 74000, actions: 18500 },
-        { day: "Aug", visitors: 82000, actions: 21400 },
+        { day: "Jun", visitors: 0, actions: 0 },
+        { day: "Jul", visitors: 0, actions: 0 },
+        { day: "Aug", visitors: 0, actions: 0 },
       ]
     : timeRange === "year"
     ? [
-        { day: "Q1", visitors: 140000, actions: 32000 },
-        { day: "Q2", visitors: 220000, actions: 54000 },
-        { day: "Q3", visitors: 310000, actions: 78000 },
-        { day: "Q4 (Est.)", visitors: 380000, actions: 92000 },
+        { day: "Q1", visitors: 0, actions: 0 },
+        { day: "Q2", visitors: 0, actions: 0 },
+        { day: "Q3", visitors: 0, actions: 0 },
+        { day: "Q4", visitors: 0, actions: 0 },
       ]
-    : weeklyData || [
-        { day: "Week 1", visitors: 18400, actions: 4100 },
-        { day: "Week 2", visitors: 22600, actions: 5300 },
-        { day: "Week 3", visitors: 28100, actions: 6900 },
-        { day: "Week 4", visitors: 34500, actions: 8800 },
+    : [
+        { day: "Week 1", visitors: 0, actions: 0 },
+        { day: "Week 2", visitors: 0, actions: 0 },
+        { day: "Week 3", visitors: 0, actions: 0 },
+        { day: "Week 4", visitors: 0, actions: 0 },
       ];
 
-  const dynamicMonthlyDonations = monthlyDonations || [
-    { month: "Jan", amount: 14500 },
-    { month: "Feb", amount: 18200 },
-    { month: "Mar", amount: 22400 },
-    { month: "Apr", amount: 26800 },
-    { month: "May", amount: 31200 },
-    { month: "Jun", amount: 38900 },
-    { month: "Jul", amount: 45600 },
-    { month: "Aug", amount: 52100 },
-  ];
+  const dynamicMonthlyDonations = useMemo(() => {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const currentMonth = new Date().getMonth();
+    return months.slice(0, currentMonth + 1).map((m, idx) => {
+      const matchDonations = (donations || []).filter((d: any) => {
+        if (!d?.date) return false;
+        const dt = new Date(d.date);
+        return !isNaN(dt.getTime()) && dt.getMonth() === idx;
+      });
+      return {
+        month: m,
+        amount: matchDonations.reduce((sum, d) => sum + (Number(d.amount) || 0), 0),
+      };
+    });
+  }, [donations]);
 
   const trafficSources = [
     { name: "Organic Search", value: 46 },

@@ -26,13 +26,7 @@ interface NewsletterCampaign {
 }
 
 function getInitialCampaigns(): NewsletterCampaign[] {
-  return [
-    { id: 1, subject: "ESN July Impact Report: 2.4M Trees & Counting", status: "sent", recipients: 48291, openRate: 54, clickRate: 12, date: "Jul 25, 2026", preview: "This month we crossed a historic milestone..." },
-    { id: 2, subject: "Youth Climate Summit Registration is Now Open!", status: "sent", recipients: 48291, openRate: 61, clickRate: 18, date: "Jul 18, 2026", preview: "Join 500+ delegates from 80 countries in Dhaka..." },
-    { id: 3, subject: "New Report: Nature-Based Solutions for 2030 Goals", status: "sent", recipients: 47100, openRate: 44, clickRate: 9, date: "Jul 10, 2026", preview: "Our latest research shows a 30% mitigation potential..." },
-    { id: 4, subject: "August Newsletter: Ocean Conservation Week", status: "scheduled", recipients: 48500, openRate: 0, clickRate: 0, date: "Aug 1, 2026", preview: "A preview of what's happening in ocean conservation..." },
-    { id: 5, subject: "Partner Spotlight: TechCorp x ESN Partnership", status: "draft", recipients: 0, openRate: 0, clickRate: 0, date: "—", preview: "We are thrilled to announce our new corporate partner..." },
-  ];
+  return [];
 }
 
 const blankCampaign = { subject: "", preview: "", status: "draft" as CampaignStatus, date: "" };
@@ -48,13 +42,7 @@ import { useFirestoreData } from "../../../../lib/useFirestore";
 export function NewsletterView() {
   const [activeTab, setActiveTab] = useState<"campaigns" | "subscribers" | "broadcast">("campaigns");
   const [campaigns, setCampaigns] = useFirestoreData<NewsletterCampaign[]>("esn_newsletters", getInitialCampaigns());
-  const [subsData, setSubsData] = useFirestoreData<any[]>("esn_subscribers", [
-    { id: 1, email: "dr.tariq@unep-env.org", date: "2026-08-20", source: "Footer Newsletter", status: "Active" },
-    { id: 2, email: "s.nair@climateaction.in", date: "2026-08-18", source: "Impact Page", status: "Active" },
-    { id: 3, email: "clara.dupont@sorbonne.fr", date: "2026-08-15", source: "Campus Chapter", status: "Active" },
-    { id: 4, email: "kofi.mensah@africaclimate.org", date: "2026-08-12", source: "Events Page", status: "Active" },
-    { id: 5, email: "elena.rostova@eco-nordic.se", date: "2026-08-10", source: "Footer Newsletter", status: "Active" },
-  ]);
+  const [subsData, setSubsData] = useFirestoreData<any[]>("esn_subscribers", []);
   
   const [search, setSearch] = useState("");
   const [subSearch, setSubSearch] = useState("");
@@ -157,9 +145,9 @@ export function NewsletterView() {
     return !q || email.includes(q);
   });
 
-  const storedSubs = subsData.length;
-  const totalSubs = 48291 + storedSubs;
-  const avgOpen = Math.round(campaigns.filter(c => c.status === "sent").reduce((s, c) => s + c.openRate, 0) / (campaigns.filter(c => c.status === "sent").length || 1));
+  const totalSubs = (subsData || []).length;
+  const sentCampaigns = (campaigns || []).filter(c => c.status === "sent");
+  const avgOpen = sentCampaigns.length ? Math.round(sentCampaigns.reduce((s, c) => s + c.openRate, 0) / sentCampaigns.length) : 0;
 
   return (
     <div className="flex flex-col gap-7">

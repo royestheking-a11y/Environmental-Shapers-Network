@@ -97,27 +97,6 @@ async function saveAppStatus(app: Application, status: AppStatus) {
   } catch {}
 }
 
-async function seedDemoApps() {
-  const demos: { type: AppType; data: Partial<Application> }[] = [
-    { type: "representative", data: { name: "Samuel Kwame Mensah", email: "s.mensah@greenghana.org", phone: "+233 24 987 6543", country: "Ghana", city: "Accra", role: "Global Country Representative (Ghana)", profession: "Regional Climate Policy Specialist", languages: "English, Twi, French", motivation: "I lead youth reforestation campaigns in coastal Ghana and wish to represent ESN to mobilize national university chapters.", experience: "6 years leading grassroots environmental NGOs; delegate at COP28 Africa Pavilion.", resumeLink: "https://drive.google.com/file/d/1sM_demo_cv_samuel_ghana/view?usp=sharing", type_label: "Country Representative" } },
-    { type: "volunteer", data: { name: "Anika Rahman", email: "anika@gmail.com", phone: "+880 171234567", country: "Bangladesh", role: "Field Volunteer", skills: "Biology graduate, 3 years tree planting exp", availability: "5–10 hours/week", motivation: "I grew up near the Sundarbans and want to give back.", resumeLink: "https://drive.google.com/file/d/1yZ_demo_resume_anika/view?usp=sharing" } },
-    { type: "volunteer", data: { name: "James Osei", email: "james.o@yahoo.com", phone: "+233 241234567", country: "Ghana", role: "Research Assistant", skills: "MSc Environmental Science, data analysis, R/Python", availability: "10+ hours/week", motivation: "I've followed ESN's work for years and want to contribute to climate research.", resumeLink: "https://drive.google.com/file/d/1wX_demo_cv_james/view?usp=sharing" } },
-    { type: "career", data: { name: "Priya Singh", email: "priya.singh@outlook.com", phone: "+91 9876543210", country: "India", jobTitle: "Research Associate — Climate Policy", dept: "Research", location: "Remote", coverLetter: "With my PhD in Environmental Policy from IIT Delhi, I am eager to contribute to ESN's research agenda...", resumeLink: "https://drive.google.com/file/d/1aB_demo_cv_priya_phd/view?usp=sharing" } },
-    { type: "partner", data: { orgName: "GreenTech Solutions Ltd", contactName: "Mohammed Al-Farsi", email: "mfarsi@greentech.ae", phone: "+971 501234567", type_label: "Corporate Partners", website: "https://greentech.ae", description: "We seek to offset 10,000 tons of CO₂ through ESN's reforestation programs as part of our 2030 sustainability pledge.", budget: "$100,000 – $500,000", timeline: "Short-term (1–3 months)" } },
-    { type: "member", data: { name: "Sofia Hernandez", email: "sofia.h@eco.mx", phone: "+52 5551234567", country: "Mexico", tier: "Advocate", occupation: "Environmental Consultant", reason: "I want to be part of the global movement and contribute to ESN's mission from Latin America." } },
-    { type: "career", data: { name: "David Kimura", email: "d.kimura@mail.jp", phone: "+81 9012345678", country: "Japan", jobTitle: "Digital Marketing Specialist", dept: "Marketing", location: "Remote", coverLetter: "I have 5 years experience running digital campaigns for NGOs and am passionate about ESN's mission...", resumeLink: "https://drive.google.com/file/d/1kL_demo_cv_david_marketing/view?usp=sharing" } },
-  ];
-
-  for (const [idx, { type, data }] of demos.entries()) {
-    const key = APP_KEYS[type];
-    const existing = await fetchFirestoreData<Application[]>(key, []);
-    if (existing.length === 0) {
-      const app = { id: Date.now() + idx, type, status: "Pending", submittedAt: new Date(Date.now() - idx * 86400000).toISOString(), ...data };
-      await saveFirestoreData(key, [app]);
-    }
-  }
-}
-
 export function ApplicationsView() {
   const [apps, setApps] = useState<Application[]>([]);
   const [activeType, setActiveType] = useState<AppType | "all">("all");
@@ -137,9 +116,7 @@ export function ApplicationsView() {
   };
 
   useEffect(() => {
-    seedDemoApps().then(() => {
-      loadAllApps().then(setApps);
-    });
+    loadAllApps().then(setApps);
   }, []);
 
   const updateStatus = async (app: Application, status: AppStatus) => {

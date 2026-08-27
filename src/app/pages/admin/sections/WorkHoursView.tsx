@@ -56,16 +56,33 @@ export function WorkHoursView({ currentStaffId, currentSessionElapsed = 0 }: Wor
 
   // Weekly day-by-day aggregated chart data (Mon-Sun)
   const weeklyChartData = useMemo(() => {
-    const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    return days.map((day, idx) => {
-      const baseHours = idx < 5 ? 24 + (idx * 3.5) % 12 : 6 + (idx * 2) % 6;
-      return {
-        day,
-        hours: Math.round(baseHours),
-        actions: Math.round(baseHours * 4.2),
-      };
+    const dayMap: Record<number, string> = { 1: "Mon", 2: "Tue", 3: "Wed", 4: "Thu", 5: "Fri", 6: "Sat", 0: "Sun" };
+    const dayTotals: Record<string, { seconds: number; actions: number }> = {
+      Mon: { seconds: 0, actions: 0 },
+      Tue: { seconds: 0, actions: 0 },
+      Wed: { seconds: 0, actions: 0 },
+      Thu: { seconds: 0, actions: 0 },
+      Fri: { seconds: 0, actions: 0 },
+      Sat: { seconds: 0, actions: 0 },
+      Sun: { seconds: 0, actions: 0 },
+    };
+
+    (sessions || []).forEach((s) => {
+      if (!s.date) return;
+      const dayOfWeek = new Date(s.date).getDay();
+      const name = dayMap[dayOfWeek];
+      if (name && dayTotals[name]) {
+        dayTotals[name].seconds += s.activeSeconds || 0;
+        dayTotals[name].actions += s.actionsCount || 0;
+      }
     });
-  }, []);
+
+    return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => ({
+      day,
+      hours: Number((dayTotals[day].seconds / 3600).toFixed(1)),
+      actions: dayTotals[day].actions,
+    }));
+  }, [sessions]);
 
   // Filter staff rows
   const filteredStaff = staffSummaries.filter((s) => {

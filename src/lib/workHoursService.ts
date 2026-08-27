@@ -36,44 +36,7 @@ export interface StaffWorkSummary {
 
 // Generate realistic past 30-day work sessions for team
 export function getInitialWorkSessions(): WorkSession[] {
-  const staff = getInitialStaffUsers();
-  const sessions: WorkSession[] = [];
-  const now = new Date();
-
-  staff.forEach((s) => {
-    // Generate sessions for past 30 days
-    for (let dayOffset = 0; dayOffset < 30; dayOffset++) {
-      const d = new Date(now.getTime() - dayOffset * 24 * 60 * 60 * 1000);
-      const isWeekend = d.getDay() === 0 || d.getDay() === 6;
-      if (isWeekend && Math.random() > 0.3) continue; // fewer sessions on weekends
-
-      const dateStr = d.toISOString().split("T")[0];
-      const hoursWorked = 5.5 + Math.random() * 3.5; // between 5.5h and 9h
-      const activeSec = Math.round(hoursWorked * 3600);
-      const idleSec = Math.round((Math.random() * 0.8 + 0.2) * 3600); // 15-45 mins idle
-
-      const clockInTime = new Date(d.setHours(9, Math.floor(Math.random() * 30), 0, 0));
-      const clockOutTime = new Date(clockInTime.getTime() + (activeSec + idleSec) * 1000);
-
-      sessions.push({
-        id: `sess_${s.id}_${dateStr}`,
-        staffId: s.id,
-        staffEmail: s.email,
-        staffName: s.name,
-        staffRole: s.role,
-        date: dateStr,
-        clockIn: clockInTime.toISOString(),
-        clockOut: dayOffset === 0 ? undefined : clockOutTime.toISOString(),
-        activeSeconds: dayOffset === 0 ? Math.round(3.5 * 3600) : activeSec,
-        idleSeconds: dayOffset === 0 ? 600 : idleSec,
-        status: dayOffset === 0 ? (s.id === 1 ? "active" : "offline") : "completed",
-        actionsCount: Math.floor(Math.random() * 40) + 12,
-        lastHeartbeat: new Date().toISOString(),
-      });
-    }
-  });
-
-  return sessions;
+  return [];
 }
 
 // Format seconds into readable format (e.g. "7h 45m" or "02:45:10")
