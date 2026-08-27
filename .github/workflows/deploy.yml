@@ -40,9 +40,9 @@ jobs:
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: 198.187.29.31
-          username: ${{ secrets.FTP_USERNAME || 'esngnzau' }}
+          username: ${{ secrets.FTP_USERNAME || 'deploy@esnglobal.org' }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist/
-          server-dir: /public_html/
+          server-dir: ./
           protocol: ftps
           dangerous-clean-slate: false
