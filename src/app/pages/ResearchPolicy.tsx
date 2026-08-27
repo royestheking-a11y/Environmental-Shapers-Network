@@ -78,17 +78,23 @@ export default function ResearchPolicy() {
               <p className="text-gray-600 leading-relaxed mb-8">
                 Our global network of scientists, analysts, and policy experts focus on critical areas where evidence can directly influence meaningful climate action and environmental conservation.
               </p>
-              <ul className="space-y-4">
+              <ul className="space-y-3">
                 {[
-                  "Climate Change Adaptation & Mitigation",
-                  "Biodiversity & Ecosystem Conservation",
-                  "Sustainable Agriculture & Food Systems",
-                  "Circular Economy & Waste Management",
-                  "Environmental Justice & Social Equity"
+                  { name: "Ecosystem Health & Monitoring", slug: "ecosystem-health" },
+                  { name: "Ocean & Blue Carbon Science", slug: "ocean-blue-carbon" },
+                  { name: "Clean Energy Transition Research", slug: "clean-energy-transition" },
+                  { name: "Climate Data & Innovation Lab", slug: "climate-data-lab" },
+                  { name: "Social & Environmental Justice Research", slug: "social-environmental-justice" },
+                  { name: "Urban Climate Resilience Studies", slug: "urban-climate-resilience" }
                 ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-4">
-                    <CheckCircle className="text-[#4CAF50] shrink-0 mt-0.5" size={20} />
-                    <span className="text-gray-700 font-medium">{item}</span>
+                  <li key={i}>
+                    <Link to={`/research/${item.slug}`} className="flex items-center justify-between p-3 rounded-2xl bg-white border border-gray-100 hover:border-[#4CAF50] hover:shadow-md transition-all group">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle className="text-[#4CAF50] shrink-0" size={18} />
+                        <span className="text-gray-800 font-semibold text-sm group-hover:text-[#0A3D2A] transition-colors">{item.name}</span>
+                      </div>
+                      <ArrowRight size={14} className="text-gray-400 group-hover:text-[#4CAF50] group-hover:translate-x-1 transition-all" />
+                    </Link>
                   </li>
                 ))}
               </ul>

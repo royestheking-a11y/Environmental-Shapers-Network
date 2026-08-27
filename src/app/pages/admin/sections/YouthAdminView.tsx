@@ -41,7 +41,7 @@ import { useFirestoreData } from "../../../../lib/useFirestore";
 
 export default function YouthAdminView() {
   const [initiatives, setInitiatives, loading] = useFirestoreData<YouthInitiative[]>("esn_youth_initiatives_admin", getInitialYouthInitiatives());
-  const [stats, setStats] = useState<YouthStat[]>(getInitialYouthStats);
+  const [stats, setStats] = useFirestoreData<YouthStat[]>("esn_youth_stats", getInitialYouthStats());
   
   const [activeTab, setActiveTab] = useState<"initiatives" | "stats">("initiatives");
   const [showAdd, setShowAdd] = useState(false);
@@ -53,12 +53,10 @@ export default function YouthAdminView() {
 
   const saveInitiatives = (newData: YouthInitiative[]) => {
     setInitiatives(newData);
-    
   };
 
   const saveStats = (newData: YouthStat[]) => {
     setStats(newData);
-    
   };
 
   const handleSaveInit = () => {

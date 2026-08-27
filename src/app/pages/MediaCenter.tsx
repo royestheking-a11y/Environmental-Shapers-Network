@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Link } from "react-router";
 import {
   Camera, Download, Mail, ArrowRight, Radio, Newspaper, Video, Mic,
   Calendar, Globe2, FileText, X, ExternalLink, Filter, Sparkles, MapPin, Eye
 } from "lucide-react";
+import { useFirestoreData } from "../../lib/useFirestore";
+import { MediaItem } from "./admin/sections/MediaLibraryView";
 
 const pressReleases = [
   { id: 1, title: "ESN Reaches 2.4 Million Trees Planted Milestone", date: "Jul 15, 2026", category: "Milestone", desc: "Global network completes major restoration benchmark across 12 countries in the Global South." },
@@ -109,12 +111,32 @@ const catColors: Record<string, string> = { Milestone: "#0B5D3F", Announcement: 
 export default function MediaCenter() {
   const [selectedImage, setSelectedImage] = useState<any | null>(null);
   const [activeCategory, setActiveCategory] = useState("All");
+  const [dbMedia] = useFirestoreData<MediaItem[]>("esn_media", []);
 
   const categories = ["All", "Summits", "Field", "Youth", "Leadership"];
 
+  const combinedMedia = useMemo(() => {
+    const extraImages = (dbMedia || [])
+      .filter(m => m.type === "image" && m.url)
+      .map(m => ({
+        id: 1000 + m.id,
+        category: m.tags?.some(t => t.toLowerCase().includes("youth")) ? "Youth" :
+                  m.tags?.some(t => t.toLowerCase().includes("summit") || t.toLowerCase().includes("cop")) ? "Summits" :
+                  m.tags?.some(t => t.toLowerCase().includes("team") || t.toLowerCase().includes("lead")) ? "Leadership" : "Field",
+        type: "photo",
+        title: m.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " "),
+        location: "Global Operations",
+        image: m.url,
+        credit: `ESN Media / ${m.uploadedBy || "Staff"}`,
+        desc: m.tags?.length ? `Media tags: ${m.tags.join(", ")}` : "Official high-resolution media imagery."
+      }));
+
+    return [...extraImages, ...mediaGallery];
+  }, [dbMedia]);
+
   const filteredMedia = activeCategory === "All"
-    ? mediaGallery
-    : mediaGallery.filter((m) => m.category === activeCategory);
+    ? combinedMedia
+    : combinedMedia.filter((m) => m.category === activeCategory);
 
   return (
     <div className="bg-[#F6FBF8] min-h-screen">

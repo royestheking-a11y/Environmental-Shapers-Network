@@ -20,7 +20,7 @@ const fallbackPartners = [
 ];
 
 export function TrustedBySection() {
-  const [partnersRaw] = useFirestoreData<any[]>("esn_partners", getInitialPartners());
+  const [partnersRaw] = useFirestoreData<any[]>("esn_partners_admin", getInitialPartners());
   
   const partners = partnersRaw && partnersRaw.length > 0 
     ? partnersRaw.map(p => ({

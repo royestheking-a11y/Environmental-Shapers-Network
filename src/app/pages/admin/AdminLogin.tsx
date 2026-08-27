@@ -163,17 +163,6 @@ export default function AdminLogin() {
               </Link>
             </div>
 
-            {/* Demo Credentials Banner */}
-            <div className="bg-[#4CAF50]/10 border border-[#4CAF50]/25 rounded-xl p-4 mb-7">
-              <div className="flex items-start gap-2">
-                <CheckCircle2 size={15} className="text-[#4CAF50] mt-0.5 shrink-0" />
-                <div>
-                  <p className="text-xs font-bold text-[#0B5D3F] mb-1">Demo Credentials</p>
-                  <p className="text-xs text-gray-500">Email: <span className="font-mono font-bold">admin@esnglobal.org</span></p>
-                  <p className="text-xs text-gray-500">Password: <span className="font-mono font-bold">ESN@Admin2026</span></p>
-                </div>
-              </div>
-            </div>
 
             {/* Error */}
             {error && (

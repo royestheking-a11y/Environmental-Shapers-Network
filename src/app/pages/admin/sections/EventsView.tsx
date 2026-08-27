@@ -9,7 +9,7 @@ import { ImageUploadField } from "../../../components/ui/ImageUploadField";
 
 type EventStatus = "upcoming" | "ongoing" | "completed" | "cancelled";
 
-interface ESNEvent {
+export interface ESNEvent {
   id: number;
   title: string;
   type: string;
@@ -27,7 +27,7 @@ interface ESNEvent {
 
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 
-function getInitialEvents(): ESNEvent[] {
+export function getInitialEvents(): ESNEvent[] {
   return [
     { id: 1, title: "Global Youth Climate Summit 2026", type: "Summit", date: "Aug 15, 2026", time: "09:00 AM", location: "Dhaka, Bangladesh", mode: "Hybrid", capacity: 500, registered: 423, status: "upcoming", description: "Annual gathering of youth climate leaders from 80+ countries.", speaker: "Dr. Priya Sharma" },
     { id: 2, title: "Forest Restoration Volunteer Day", type: "Field", date: "Aug 8, 2026", time: "07:00 AM", location: "Sundarbans, Bangladesh", mode: "In-Person", capacity: 200, registered: 187, status: "upcoming", description: "Community mangrove planting event at the Sundarbans delta.", speaker: "Rizwan Ahmed" },

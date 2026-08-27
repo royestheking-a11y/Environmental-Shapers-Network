@@ -45,7 +45,7 @@ export function ResearchKnowledgeSection() {
             viewport={{ once: true }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
-            <Link to="/programs/research" className="inline-flex items-center justify-center bg-[#0A3D2A] text-white px-8 py-4 rounded-full font-medium hover:bg-[#072B1E] transition-all duration-300 shadow-lg shadow-[#0A3D2A]/20 hover:shadow-xl hover:shadow-[#0A3D2A]/30 hover:-translate-y-1">
+            <Link to="/research" className="inline-flex items-center justify-center bg-[#0A3D2A] text-white px-8 py-4 rounded-full font-medium hover:bg-[#072B1E] transition-all duration-300 shadow-lg shadow-[#0A3D2A]/20 hover:shadow-xl hover:shadow-[#0A3D2A]/30 hover:-translate-y-1">
               Access Research Publications
             </Link>
           </motion.div>

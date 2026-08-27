@@ -29,12 +29,12 @@ export default function SeedDatabase() {
         await saveFirestoreData("esn_hero_admin", getInitialHeroSlides());
         await saveFirestoreData("esn_faq_admin", getInitialFAQs());
         await saveFirestoreData("esn_youth_initiatives_admin", getInitialYouthInitiatives());
-        await saveFirestoreData("esn_youth_stats_admin", getInitialYouthStats());
+        await saveFirestoreData("esn_youth_stats", getInitialYouthStats());
         await saveFirestoreData("esn_research_admin", getInitialResearchAreas());
         await saveFirestoreData("esn_partners_admin", getInitialPartners());
-        await saveFirestoreData("esn_who_we_are_admin", getInitialWhoWeAreFeatures());
+        await saveFirestoreData("esn_whoweare_admin", getInitialWhoWeAreFeatures());
         await saveFirestoreData("esn_campaigns_admin", getInitialCampaigns());
-        await saveFirestoreData("esn_programs_admin", getInitialPrograms());
+        await saveFirestoreData("esn_programs", getInitialPrograms());
         await saveFirestoreData("esn_projects_admin", getInitialProjects());
 
         setStatus("Database seeded successfully! You can check your Firebase Console now.");

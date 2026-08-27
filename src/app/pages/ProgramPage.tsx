@@ -1,7 +1,10 @@
 import { useParams, Link } from "react-router";
 import { motion, useInView } from "motion/react";
-import { useRef } from "react";
+import { useRef, useMemo } from "react";
 import { ArrowRight, Users, BookOpen, Calendar, ChevronRight, Globe2, CheckCircle2, MapPin, Star, TrendingUp, TreePine, Waves, Sun, ShieldAlert, Bug, GraduationCap, Microscope } from "lucide-react";
+import { useFirestoreData } from "../../lib/useFirestore";
+import { getInitialPrograms, resolveIcon, ProgramData } from "./admin/sections/ProgramsView";
+import { getInitialEvents, ESNEvent } from "./admin/sections/EventsView";
 
 const programData: Record<string, {
   slug: string;
@@ -579,7 +582,19 @@ function InsightsPage() {
 function EventsPage() {
   const d = eventsData;
   const Icon = d.icon;
+  const [eventsList] = useFirestoreData<ESNEvent[]>("esn_events", getInitialEvents());
   const typeColors: Record<string, string> = { Summit: "#0B5D3F", Campaign: "#4CAF50", Hackathon: "#173B63", Forum: "#1565C0", Delegation: "#E65100", Gala: "#D6A95A" };
+  
+  const displayEvents = eventsList && eventsList.length > 0
+    ? eventsList.map((e) => ({
+        type: e.type,
+        seats: `${e.registered}/${e.capacity} Seats`,
+        title: e.title,
+        date: `${e.date} · ${e.time}`,
+        location: `${e.location} (${e.mode})`
+      }))
+    : d.upcoming;
+
   return (
     <div className="bg-[#F6FBF8]">
       <HeroBlock heroImage={d.heroImage} label={d.label} tagline={d.tagline} icon={Icon} breadcrumb="ESN Programs" />
@@ -600,8 +615,8 @@ function EventsPage() {
             </div>
           </div>
           <div className="grid md:grid-cols-2 gap-5">
-            {d.upcoming.map((e, i) => (
-              <motion.div key={e.title} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
+            {displayEvents.map((e, i) => (
+              <motion.div key={e.title + i} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
                 className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all group">
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ backgroundColor: (typeColors[e.type] || "#0B5D3F") + "15", color: typeColors[e.type] || "#0B5D3F" }}>
@@ -635,17 +650,58 @@ function EventsPage() {
 export default function ProgramPage() {
   const { program } = useParams<{ program: string }>();
   const pathname = window.location.pathname;
+  const [allPrograms] = useFirestoreData<ProgramData[]>("esn_programs", getInitialPrograms());
 
   if (pathname === "/insights") return <InsightsPage />;
   if (pathname === "/events") return <EventsPage />;
-  if (program && programData[program]) return <GenericProgramPage d={programData[program]} />;
+  
+  if (program && programData[program]) {
+    return <GenericProgramPage d={programData[program]} />;
+  }
+
+  // Dynamic lookup for programs added or customized via the admin dashboard
+  const dbProgram = allPrograms?.find(p => p.slug === program);
+  if (dbProgram) {
+    const dynamicData = {
+      slug: dbProgram.slug,
+      label: dbProgram.title,
+      tagline: `${dbProgram.category} · ${dbProgram.reach}`,
+      description: dbProgram.desc,
+      icon: resolveIcon(dbProgram.iconName),
+      heroImage: dbProgram.image || "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400",
+      stats: [
+        { value: dbProgram.reach || "Global", label: "Program Reach" },
+        { value: "470+", label: "Projects Supported" },
+        { value: "80+", label: "Partner Countries" },
+        { value: "100%", label: "Impact Verified" },
+      ],
+      highlights: dbProgram.highlights && dbProgram.highlights.length > 0 ? dbProgram.highlights : [
+        "Community-led intervention models",
+        "Transparent ecological tracking and data verification",
+        "Cross-border collaboration and policy support"
+      ],
+      cards: [
+        { title: `${dbProgram.title} Field Action`, tag: "Operations", desc: `Direct on-the-ground execution and field deployments across partner communities.` },
+        { title: "Capacity Building & Training", tag: "Education", desc: `Empowering local teams with open-source tools, technical skills, and resources.` },
+        { title: "Policy & Multi-Stakeholder Coalition", tag: "Policy", desc: `Aligning program goals with regional environmental targets and SDG frameworks.` }
+      ],
+      stories: [
+        { name: "Program Participant", role: "Field Coordinator", quote: "Working within this initiative has transformed our local capacity to protect and regenerate our environment.", country: "Global" }
+      ],
+      ctaTitle: `Support ${dbProgram.title}`,
+      ctaDesc: `Help scale our ${dbProgram.title.toLowerCase()} initiatives across vulnerable regions.`,
+      ctaLink1: { text: "Donate to Program", url: "/donate" },
+      ctaLink2: { text: "Partner With Us", url: "/contact" }
+    };
+    return <GenericProgramPage d={dynamicData} />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#F6FBF8] pt-24">
       <Globe2 size={64} className="text-gray-200 mb-6" />
       <h2 className="text-2xl font-bold text-gray-500 mb-4">Program Not Found</h2>
-      <Link to="/" className="text-[#0B5D3F] font-semibold flex items-center gap-2 hover:underline">
-        <ChevronRight size={16} /> Back to Home
+      <Link to="/programs" className="text-[#0B5D3F] font-semibold flex items-center gap-2 hover:underline">
+        <ChevronRight size={16} /> Back to All Programs
       </Link>
     </div>
   );
