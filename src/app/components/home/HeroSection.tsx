@@ -224,6 +224,8 @@ export function HeroSection() {
           src="/Commonwealth Secretariat at COP27.jpeg"
           alt="Forest"
           className="w-full h-full object-cover opacity-50"
+          fetchPriority="high"
+          decoding="async"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-[#0a1a0e]/95 via-[#0a1a0e]/75 to-[#0a1a0e]/30" />
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a1a0e]/60 via-transparent to-[#0a1a0e]/80" />
@@ -355,6 +357,7 @@ export function HeroSection() {
                 src="/Speaking on Climate Adaptation and Resilience in South Asia- CEPCA 2024, Ottawa, Canada.jpeg"
                 alt="Speaking at CEPCA 2024"
                 className="w-full h-full object-cover"
+                decoding="async"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0B5D3F]/30 to-transparent" />
             </motion.div>
@@ -370,6 +373,7 @@ export function HeroSection() {
                 src="/Representing Bangladesh's Coastal Communities on the Global Stage.jpeg"
                 alt="Representing Coastal Communities"
                 className="w-full h-full object-cover"
+                decoding="async"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0B5D3F]/30 to-transparent" />
             </motion.div>
@@ -385,6 +389,7 @@ export function HeroSection() {
                 src="/meeting time.jpeg"
                 alt="Meeting and collaboration"
                 className="w-full h-full object-cover"
+                decoding="async"
               />
             </motion.div>
 
