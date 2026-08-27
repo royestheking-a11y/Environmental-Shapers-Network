@@ -4,7 +4,7 @@ import {
   Heart, Users, Handshake, Briefcase, Search, RefreshCw, Download,
   Check, X, Clock, Eye, ChevronDown, ChevronUp, Filter, AlertTriangle,
   Mail, Phone, Globe2, MapPin, Calendar, Star, CheckCircle2,
-  FileText, ExternalLink, Copy, Link as LinkIcon
+  FileText, ExternalLink, Copy, Link as LinkIcon, Trash2
 } from "lucide-react";
 
 type AppType = "volunteer" | "partner" | "member" | "career" | "representative";
@@ -77,12 +77,36 @@ const getLinkProvider = (url?: string) => {
   return "Cloud Storage";
 };
 
+const DEMO_EMAILS = [
+  "s.mensah@greenghana.org",
+  "anika@gmail.com",
+  "james.o@yahoo.com",
+  "priya.singh@outlook.com",
+  "mfarsi@greentech.ae",
+  "sofia.h@eco.mx",
+  "d.kimura@mail.jp",
+];
+
 async function loadAllApps(): Promise<Application[]> {
   const all: Application[] = [];
   for (const type of Object.keys(APP_KEYS) as AppType[]) {
     try {
       const stored = await fetchFirestoreData<Application[]>(APP_KEYS[type], []);
-      stored.forEach((a: Application) => all.push({ ...a, type }));
+      // Filter out any legacy seeded demo applications
+      const realApps = (stored || []).filter((a: Application) => {
+        if (!a) return false;
+        if (DEMO_EMAILS.includes(a.email || "")) return false;
+        if (a.resumeLink && a.resumeLink.includes("_demo_")) return false;
+        return true;
+      });
+      // If demo items were cleaned, synchronize clean state
+      if (stored.length !== realApps.length) {
+        await saveFirestoreData(APP_KEYS[type], realApps);
+        if (typeof window !== "undefined") {
+          localStorage.setItem(`esn_cache_${APP_KEYS[type]}`, JSON.stringify(realApps));
+        }
+      }
+      realApps.forEach((a: Application) => all.push({ ...a, type }));
     } catch {}
   }
   return all.sort((a, b) => b.id - a.id);
@@ -118,6 +142,29 @@ export function ApplicationsView() {
   useEffect(() => {
     loadAllApps().then(setApps);
   }, []);
+
+  const deleteApp = async (app: Application) => {
+    if (!window.confirm(`Are you sure you want to delete this application?`)) return;
+    const key = APP_KEYS[app.type];
+    const stored = await fetchFirestoreData<Application[]>(key, []);
+    const updated = stored.filter((a) => a.id !== app.id);
+    await saveFirestoreData(key, updated);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(`esn_cache_${key}`, JSON.stringify(updated));
+    }
+    setApps(apps.filter((a) => a.id !== app.id));
+  };
+
+  const clearAllApps = async () => {
+    if (!window.confirm("Are you sure you want to clear all applications from the database?")) return;
+    for (const type of Object.keys(APP_KEYS) as AppType[]) {
+      await saveFirestoreData(APP_KEYS[type], []);
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`esn_cache_${APP_KEYS[type]}`, JSON.stringify([]));
+      }
+    }
+    setApps([]);
+  };
 
   const updateStatus = async (app: Application, status: AppStatus) => {
     setApps(apps.map((a) => (a.id === app.id && a.type === app.type ? { ...a, status } : a)));
@@ -186,7 +233,12 @@ export function ApplicationsView() {
           <h2 className="font-black text-gray-900" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "1.4rem" }}>Applications</h2>
           <p className="text-sm text-gray-500 mt-0.5">Manage all volunteer, career, partnership, and membership applications</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
+          {apps.length > 0 && (
+            <button onClick={clearAllApps} className="flex items-center gap-2 px-4 py-2.5 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm font-semibold hover:bg-red-100 transition-all">
+              <Trash2 size={14} /> Clear All
+            </button>
+          )}
           <button onClick={reload} className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-all">
             <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} /> Refresh
           </button>
@@ -316,6 +368,18 @@ export function ApplicationsView() {
                       Reset
                     </button>
                   )}
+
+                  {/* Delete single app */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteApp(app);
+                    }}
+                    className="w-8 h-8 flex items-center justify-center rounded-xl bg-red-50 hover:bg-red-100 text-red-500 transition-all shrink-0 cursor-pointer"
+                    title="Delete Application"
+                  >
+                    <Trash2 size={13} />
+                  </button>
 
                   {/* Expand */}
                   <button onClick={() => setExpanded(isOpen ? null : app.id)} className="w-8 h-8 flex items-center justify-center rounded-xl bg-gray-50 hover:bg-gray-100 transition-all shrink-0">
