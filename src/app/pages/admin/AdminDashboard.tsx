@@ -616,17 +616,6 @@ export default function AdminDashboard() {
         )}
       </AnimatePresence>
 
-      {/* Floating Menu Toggle Button for Mobile */}
-      {!sidebarOpen && (
-        <button
-          onClick={() => setSidebarOpen(true)}
-          className="fixed bottom-5 left-5 z-40 lg:hidden w-12 h-12 rounded-full bg-[#0B5D3F] hover:bg-[#0a5237] text-white shadow-2xl shadow-green-950/50 flex items-center justify-center border-2 border-white/40 cursor-pointer transition-all active:scale-95"
-          title="Open Admin Navigation"
-        >
-          <Menu size={22} />
-        </button>
-      )}
-
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="bg-white border-b border-gray-100 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between shrink-0 shadow-sm sticky top-0 z-20">
           <div className="flex items-center gap-3 sm:gap-4">

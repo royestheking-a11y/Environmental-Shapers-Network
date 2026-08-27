@@ -12,17 +12,11 @@ import { MaintenancePage } from "./pages/MaintenancePage";
 import { FloatingAI } from "./components/ui/FloatingAI";
 import { useFirestoreData } from "../lib/useFirestore";
 
+import { PlantSproutLoader } from "./components/ui/PlantSproutLoader";
+
 const initialSettings = {
   maintenanceMode: false,
 };
-
-function RouteLoader() {
-  return (
-    <div className="min-h-[50vh] flex items-center justify-center">
-      <div className="w-8 h-8 rounded-full border-2 border-[#4CAF50] border-t-transparent animate-spin" />
-    </div>
-  );
-}
 
 export function Root() {
   const location = useLocation();
@@ -48,7 +42,7 @@ export function Root() {
         {!isAdmin && <ScrollProgress />}
         {!isAdmin && <Navbar />}
         <div className="flex-1 bg-[#F6FBF8]">
-          <Suspense fallback={<RouteLoader />}>
+          <Suspense fallback={<PlantSproutLoader />}>
             {isAdmin ? (
               <Outlet />
             ) : (
