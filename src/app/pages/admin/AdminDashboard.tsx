@@ -202,6 +202,13 @@ export default function AdminDashboard() {
   }, [section, location.pathname]);
 
   const [sidebarOpen, setSidebarOpen] = useState(() => typeof window !== "undefined" ? window.innerWidth >= 1024 : true);
+
+  // Auto-close sidebar on mobile upon navigation
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      setSidebarOpen(false);
+    }
+  }, [location.pathname]);
   const [cmsContent, setCmsContent, loadingCms] = useFirestoreData<any[]>("esn_cms_content", getInitialContent());
   const [user, setUser] = useState<AdminUser | null>(null);
   const [showAddContent, setShowAddContent] = useState(false);
@@ -545,9 +552,10 @@ export default function AdminDashboard() {
                 </div>
                 <button
                   onClick={() => setSidebarOpen(false)}
-                  className="lg:hidden w-8 h-8 rounded-lg bg-white/10 text-white/70 hover:text-white flex items-center justify-center"
+                  className="lg:hidden w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center cursor-pointer transition-all"
+                  title="Close Menu"
                 >
-                  <X size={16} />
+                  <X size={18} />
                 </button>
               </div>
 
@@ -608,20 +616,32 @@ export default function AdminDashboard() {
         )}
       </AnimatePresence>
 
+      {/* Floating Menu Toggle Button for Mobile */}
+      {!sidebarOpen && (
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="fixed bottom-5 left-5 z-40 lg:hidden w-12 h-12 rounded-full bg-[#0B5D3F] hover:bg-[#0a5237] text-white shadow-2xl shadow-green-950/50 flex items-center justify-center border-2 border-white/40 cursor-pointer transition-all active:scale-95"
+          title="Open Admin Navigation"
+        >
+          <Menu size={22} />
+        </button>
+      )}
+
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between shrink-0 shadow-sm">
-          <div className="flex items-center gap-4">
+        <header className="bg-white border-b border-gray-100 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between shrink-0 shadow-sm sticky top-0 z-20">
+          <div className="flex items-center gap-3 sm:gap-4">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-600"
+              className="p-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 hover:bg-gray-100 transition-colors text-gray-700 cursor-pointer flex items-center justify-center shrink-0"
+              title={sidebarOpen ? "Close Sidebar Menu" : "Open Sidebar Menu"}
             >
               {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
             <div>
-              <h4 className="text-gray-900 font-bold capitalize" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              <h4 className="text-gray-900 font-bold capitalize text-sm sm:text-base" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                 {sidebarItems.find(s => s.id === activeSection)?.label || "Dashboard"}
               </h4>
-              <p className="text-xs text-gray-400">Environmental Shapers Network</p>
+              <p className="text-[11px] sm:text-xs text-gray-400">Environmental Shapers Network</p>
             </div>
           </div>
 
