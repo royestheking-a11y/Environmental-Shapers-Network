@@ -1,5 +1,6 @@
+import { Suspense } from "react";
 import { Outlet, useLocation } from "react-router";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence } from "motion/react";
 import { Navbar } from "./components/layout/Navbar";
 import { Footer } from "./components/layout/Footer";
 import { ScrollToTop } from "./components/layout/ScrollToTop";
@@ -15,31 +16,20 @@ const initialSettings = {
   maintenanceMode: false,
 };
 
+function RouteLoader() {
+  return (
+    <div className="min-h-[50vh] flex items-center justify-center">
+      <div className="w-8 h-8 rounded-full border-2 border-[#4CAF50] border-t-transparent animate-spin" />
+    </div>
+  );
+}
+
 export function Root() {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith("/admin");
-  const [settings, , loading] = useFirestoreData<any>("esn_settings", initialSettings);
+  const [settings] = useFirestoreData<any>("esn_settings", initialSettings);
 
   const isMaintenance = Boolean(settings?.maintenanceMode);
-
-  // Check if we have determined maintenance status (either via local cache or completed fetch)
-  const isCacheAvailable = typeof window !== "undefined" && localStorage.getItem("esn_cache_esn_settings") !== null;
-  const isResolving = loading && !isCacheAvailable && !isAdmin;
-
-  // If resolving on brand new session, prevent flashing homepage
-  if (isResolving) {
-    return (
-      <div className="min-h-screen bg-[#0a1a0e] flex flex-col items-center justify-center text-white">
-        <motion.div
-          animate={{ scale: [0.95, 1.05, 0.95], opacity: [0.6, 1, 0.6] }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-          className="flex flex-col items-center gap-4"
-        >
-          <div className="w-12 h-12 rounded-full border-3 border-[#4CAF50] border-t-transparent animate-spin" />
-        </motion.div>
-      </div>
-    );
-  }
 
   // Render maintenance page immediately if maintenance mode is enabled
   if (isMaintenance && !isAdmin) {
@@ -58,15 +48,17 @@ export function Root() {
         {!isAdmin && <ScrollProgress />}
         {!isAdmin && <Navbar />}
         <div className="flex-1 bg-[#F6FBF8]">
-          {isAdmin ? (
-            <Outlet />
-          ) : (
-            <AnimatePresence mode="wait" initial={false}>
-              <PageTransition key={location.pathname}>
-                <Outlet />
-              </PageTransition>
-            </AnimatePresence>
-          )}
+          <Suspense fallback={<RouteLoader />}>
+            {isAdmin ? (
+              <Outlet />
+            ) : (
+              <AnimatePresence mode="wait" initial={false}>
+                <PageTransition key={location.pathname}>
+                  <Outlet />
+                </PageTransition>
+              </AnimatePresence>
+            )}
+          </Suspense>
         </div>
         {!isAdmin && <Footer />}
         <ScrollToTop />

@@ -1,28 +1,30 @@
+import { lazy } from "react";
 import { createBrowserRouter } from "react-router";
 import { Root } from "./Root";
 import Home from "./pages/Home";
-import About from "./pages/About";
-import Projects from "./pages/Projects";
-import ProjectDetail from "./pages/ProjectDetail";
-import NewsArticle from "./pages/NewsArticle";
-import Impact from "./pages/Impact";
-import Contact from "./pages/Contact";
-import Donate from "./pages/Donate";
-import AdminLogin from "./pages/admin/AdminLogin";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import ThematicAreaPage from "./pages/ThematicAreaPage";
-import ProgramPage from "./pages/ProgramPage";
-import OrganizationPage from "./pages/OrganizationPage";
-import GetInvolvedPage from "./pages/GetInvolvedPage";
-import AllPrograms from "./pages/AllPrograms";
-import Campaigns from "./pages/Campaigns";
-import KnowledgeHub from "./pages/KnowledgeHub";
-import MediaCenter from "./pages/MediaCenter";
-import LegalPage from "./pages/LegalPage";
-import TechPartnerPage from "./pages/TechPartnerPage";
-import ResearchAreaPage from "./pages/ResearchAreaPage";
-import YouthEngagement from "./pages/YouthEngagement";
-import ResearchPolicy from "./pages/ResearchPolicy";
+
+const About = lazy(() => import("./pages/About"));
+const Projects = lazy(() => import("./pages/Projects"));
+const ProjectDetail = lazy(() => import("./pages/ProjectDetail"));
+const NewsArticle = lazy(() => import("./pages/NewsArticle"));
+const Impact = lazy(() => import("./pages/Impact"));
+const Contact = lazy(() => import("./pages/Contact"));
+const Donate = lazy(() => import("./pages/Donate"));
+const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const ThematicAreaPage = lazy(() => import("./pages/ThematicAreaPage"));
+const ProgramPage = lazy(() => import("./pages/ProgramPage"));
+const OrganizationPage = lazy(() => import("./pages/OrganizationPage"));
+const GetInvolvedPage = lazy(() => import("./pages/GetInvolvedPage"));
+const AllPrograms = lazy(() => import("./pages/AllPrograms"));
+const Campaigns = lazy(() => import("./pages/Campaigns"));
+const KnowledgeHub = lazy(() => import("./pages/KnowledgeHub"));
+const MediaCenter = lazy(() => import("./pages/MediaCenter"));
+const LegalPage = lazy(() => import("./pages/LegalPage"));
+const TechPartnerPage = lazy(() => import("./pages/TechPartnerPage"));
+const ResearchAreaPage = lazy(() => import("./pages/ResearchAreaPage"));
+const YouthEngagement = lazy(() => import("./pages/YouthEngagement"));
+const ResearchPolicy = lazy(() => import("./pages/ResearchPolicy"));
 
 export const router = createBrowserRouter([
   {
