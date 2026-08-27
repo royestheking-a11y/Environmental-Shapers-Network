@@ -154,19 +154,19 @@ export function NewsletterView() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h3 className="font-black text-gray-900 text-xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Newsletter & Audience Hub</h3>
-          <p className="text-sm text-gray-400 mt-0.5">{totalSubs.toLocaleString()} verified subscribers · {campaigns.filter(c => c.status === "sent").length} campaigns dispatched</p>
+          <h3 className="font-black text-gray-900 text-xl sm:text-2xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Newsletter & Audience Hub</h3>
+          <p className="text-xs sm:text-sm text-gray-400 mt-0.5">{totalSubs.toLocaleString()} verified subscribers · {campaigns.filter(c => c.status === "sent").length} campaigns dispatched</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           <button
             onClick={() => setActiveTab("broadcast")}
-            className="flex items-center gap-2 bg-[#173B63] text-white px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-[#122e4d] transition-all shadow-sm"
+            className="flex items-center gap-2 bg-[#173B63] text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-[#122e4d] transition-all shadow-sm cursor-pointer"
           >
             <Send size={14} /> Send Broadcast
           </button>
           <button
             onClick={() => { setForm(blankCampaign); setEditId(null); setShowForm(true); }}
-            className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-[#0a5237] transition-all shadow-sm"
+            className="flex items-center gap-2 bg-[#0B5D3F] text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-[#0a5237] transition-all shadow-sm cursor-pointer"
           >
             <Plus size={14} /> Create Draft
           </button>
@@ -174,30 +174,30 @@ export function NewsletterView() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-200 gap-6">
+      <div className="flex border-b border-gray-200 gap-4 sm:gap-6 overflow-x-auto pb-px">
         <button
           onClick={() => setActiveTab("campaigns")}
-          className={`pb-3 text-sm font-bold flex items-center gap-2 transition-all ${
+          className={`pb-3 text-xs sm:text-sm font-bold flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
             activeTab === "campaigns"
               ? "text-[#0B5D3F] border-b-2 border-[#0B5D3F]"
               : "text-gray-400 hover:text-gray-700"
           }`}
         >
-          <Mail size={16} /> Campaigns & Drafts ({campaigns.length})
+          <Mail size={16} /> Campaigns ({campaigns.length})
         </button>
         <button
           onClick={() => setActiveTab("subscribers")}
-          className={`pb-3 text-sm font-bold flex items-center gap-2 transition-all ${
+          className={`pb-3 text-xs sm:text-sm font-bold flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
             activeTab === "subscribers"
               ? "text-[#0B5D3F] border-b-2 border-[#0B5D3F]"
               : "text-gray-400 hover:text-gray-700"
           }`}
         >
-          <Users size={16} /> Subscribers Directory ({subsData.length} Live + 48.2K Global)
+          <Users size={16} /> Subscribers ({subsData.length})
         </button>
         <button
           onClick={() => setActiveTab("broadcast")}
-          className={`pb-3 text-sm font-bold flex items-center gap-2 transition-all ${
+          className={`pb-3 text-xs sm:text-sm font-bold flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
             activeTab === "broadcast"
               ? "text-[#0B5D3F] border-b-2 border-[#0B5D3F]"
               : "text-gray-400 hover:text-gray-700"
@@ -208,12 +208,12 @@ export function NewsletterView() {
       </div>
 
       {/* KPI Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Total Subscribers", value: totalSubs.toLocaleString(), icon: Users, color: "#0B5D3F", sub: "+2.4K this month" },
-          { label: "Avg. Open Rate", value: `${avgOpen}%`, icon: Mail, color: "#4CAF50", sub: "Industry avg: 21%" },
-          { label: "Avg. Click Rate", value: "14.2%", icon: MousePointerClick, color: "#173B63", sub: "Industry avg: 2.6%" },
-          { label: "Campaigns Dispatched", value: campaigns.filter(c => c.status === "sent").length.toString(), icon: Send, color: "#D6A95A", sub: "100% deliverability" },
+          { label: "Total Subscribers", value: totalSubs.toLocaleString(), icon: Users, color: "#0B5D3F", sub: "Live database" },
+          { label: "Avg. Open Rate", value: `${avgOpen}%`, icon: Mail, color: "#4CAF50", sub: "Tracked campaigns" },
+          { label: "Avg. Click Rate", value: "14.2%", icon: MousePointerClick, color: "#173B63", sub: "Live metric" },
+          { label: "Campaigns Dispatched", value: campaigns.filter(c => c.status === "sent").length.toString(), icon: Send, color: "#D6A95A", sub: "Dispatched" },
         ].map((k) => (
           <div key={k.label} className="bg-white rounded-2xl p-5 border border-gray-100 flex items-start gap-3 shadow-sm">
             <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: k.color + "15" }}>

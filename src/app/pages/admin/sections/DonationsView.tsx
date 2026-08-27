@@ -213,23 +213,23 @@ export function DonationsView() {
   })();
 
   return (
-    <div className="flex flex-col gap-7">
+    <div className="flex flex-col gap-6 sm:gap-7">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h3 className="font-black text-gray-900" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Donations Manager</h3>
-          <p className="text-sm text-gray-400 mt-0.5">Track, manage and export all donation transactions</p>
+          <h3 className="font-black text-gray-900 text-xl sm:text-2xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Donations Manager</h3>
+          <p className="text-xs sm:text-sm text-gray-400 mt-0.5">Track, manage and export all donation transactions</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           <button
             onClick={refresh}
-            className="flex items-center gap-2 text-sm text-gray-500 border border-gray-200 bg-white px-4 py-2.5 rounded-xl hover:bg-gray-50 transition-all"
+            className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 border border-gray-200 bg-white px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
           >
             <RefreshCw size={14} /> Refresh
           </button>
           <button
             onClick={() => exportToCSV(safeDonations)}
-            className="flex items-center gap-2 text-sm text-white bg-[#0B5D3F] px-5 py-2.5 rounded-xl hover:bg-[#0a5237] transition-all font-semibold"
+            className="flex items-center gap-2 text-xs sm:text-sm text-white bg-[#0B5D3F] px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl hover:bg-[#0a5237] transition-all font-semibold cursor-pointer"
           >
             <Download size={14} /> Export CSV
           </button>
@@ -237,7 +237,7 @@ export function DonationsView() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         {[
           { label: "Total Raised", value: `$${totalRaised.toLocaleString()}`, sub: "All time", change: `${approvedCount} completed`, up: true, icon: DollarSign, color: "#0B5D3F" },
           { label: "This Month", value: `$${thisMonthTotal.toLocaleString()}`, sub: `${currentMonthName} 2026`, change: "+100%", up: true, icon: TrendingUp, color: "#4CAF50" },
@@ -248,7 +248,7 @@ export function DonationsView() {
             key={k.label}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg hover:shadow-gray-100/80 transition-all"
+            className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 hover:shadow-lg hover:shadow-gray-100/80 transition-all"
           >
             <div className="flex items-center justify-between mb-4">
               <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ backgroundColor: k.color + "15" }}>

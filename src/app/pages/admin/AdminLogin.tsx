@@ -124,52 +124,47 @@ export default function AdminLogin() {
       </div>
 
       {/* Right Panel — Login Form */}
-      <div className="w-full lg:w-[55%] bg-white flex flex-col items-center justify-center p-6 lg:p-10 relative overflow-y-auto">
-
-
+      <div className="w-full lg:w-[55%] bg-white flex flex-col items-center justify-center p-4 sm:p-6 lg:p-10 relative overflow-y-auto min-h-screen">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="w-full max-w-md"
+          className="w-full max-w-md py-6"
         >
-          {/* Back button moved to absolute top right */}
-
           {/* Mobile Logo */}
-          <div className="lg:hidden mb-8 text-center">
-            <img src={esnLogo} alt="ESN" className="h-12 w-auto mx-auto object-contain" />
+          <div className="lg:hidden mb-6 text-center">
+            <img src={esnLogo} alt="ESN" className="h-10 sm:h-12 w-auto mx-auto object-contain" />
           </div>
 
           {/* Form Card */}
-          <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-10 border border-gray-100">
+          <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-5 sm:p-8 md:p-10 border border-gray-100">
             {/* Header */}
-            <div className="mb-8 flex justify-between items-start">
+            <div className="mb-6 sm:mb-8 flex justify-between items-start gap-4">
               <div>
-                <div className="w-16 h-16 bg-[#0B5D3F]/10 rounded-2xl flex items-center justify-center mb-5">
-                  <Lock size={28} className="text-[#0B5D3F]" />
+                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-[#0B5D3F]/10 rounded-2xl flex items-center justify-center mb-4">
+                  <Lock size={24} className="text-[#0B5D3F]" />
                 </div>
-                <h3 className="text-[#0B5D3F] mb-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                <h3 className="text-[#0B5D3F] mb-1 font-bold text-xl sm:text-2xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                   Welcome Back
                 </h3>
-                <p className="text-gray-400 text-sm">Sign in to your ESN admin account</p>
+                <p className="text-gray-400 text-xs sm:text-sm">Sign in to your ESN admin account</p>
               </div>
 
               <Link 
                 to="/"
-                className="w-11 h-11 bg-gray-50 hover:bg-[#F6FBF8] rounded-full flex items-center justify-center text-gray-400 hover:text-[#0B5D3F] transition-all border border-gray-100 hover:border-[#0B5D3F]/20 shadow-sm group"
+                className="w-10 h-10 sm:w-11 sm:h-11 bg-gray-50 hover:bg-[#F6FBF8] rounded-full flex items-center justify-center text-gray-400 hover:text-[#0B5D3F] transition-all border border-gray-100 hover:border-[#0B5D3F]/20 shadow-sm group shrink-0"
                 title="Back to Homepage"
               >
                 <Home size={18} className="group-hover:scale-110 transition-transform" />
               </Link>
             </div>
 
-
             {/* Error */}
             {error && (
               <motion.div
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 mb-5 text-sm"
+                className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 mb-5 text-xs sm:text-sm"
               >
                 <AlertCircle size={16} className="shrink-0" />
                 {error}
@@ -177,56 +172,56 @@ export default function AdminLogin() {
             )}
 
             {/* Form */}
-            <form onSubmit={handleLogin} className="flex flex-col gap-5">
+            <form onSubmit={handleLogin} className="flex flex-col gap-4 sm:gap-5">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
+                <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">Email Address</label>
                 <div className="relative">
-                  <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <Mail size={16} className="absolute left-3.5 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] focus:ring-2 focus:ring-[#4CAF50]/20 transition-all"
+                    className="w-full pl-10 sm:pl-11 pr-4 py-3 sm:py-3.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] focus:ring-2 focus:ring-[#4CAF50]/20 transition-all"
                     placeholder="admin@esnglobal.org"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+                <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">Password</label>
                 <div className="relative">
-                  <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <Lock size={16} className="absolute left-3.5 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
                     type={showPass ? "text" : "password"}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-11 pr-12 py-3.5 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] focus:ring-2 focus:ring-[#4CAF50]/20 transition-all"
+                    className="w-full pl-10 sm:pl-11 pr-11 sm:pr-12 py-3 sm:py-3.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] focus:ring-2 focus:ring-[#4CAF50]/20 transition-all"
                     placeholder="Enter your password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPass(!showPass)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3.5 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                   >
                     {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between">
-                <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-                  <input type="checkbox" className="rounded accent-[#4CAF50]" />
-                  Remember me
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm pt-1">
+                <label className="flex items-center gap-2 text-gray-600 cursor-pointer select-none">
+                  <input type="checkbox" className="rounded accent-[#4CAF50] w-4 h-4" />
+                  <span>Remember me</span>
                 </label>
-                <a href="#" className="text-sm text-[#0B5D3F] font-semibold hover:underline">Forgot password?</a>
+                <a href="#" className="text-[#0B5D3F] font-semibold hover:underline">Forgot password?</a>
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2 bg-[#0B5D3F] hover:bg-[#0a5237] disabled:bg-gray-300 text-white py-4 rounded-xl font-bold text-base transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
+                className="w-full flex items-center justify-center gap-2 bg-[#0B5D3F] hover:bg-[#0a5237] disabled:bg-gray-300 text-white py-3.5 sm:py-4 rounded-xl font-bold text-sm sm:text-base transition-all duration-300 hover:scale-[1.01] hover:shadow-lg cursor-pointer mt-1"
               >
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -239,9 +234,9 @@ export default function AdminLogin() {
             </form>
 
             {/* Security note */}
-            <div className="mt-6 flex items-center justify-center gap-2 text-xs text-gray-400">
-              <Shield size={12} />
-              Protected by 256-bit SSL encryption
+            <div className="mt-5 sm:mt-6 flex items-center justify-center gap-1.5 text-[11px] sm:text-xs text-gray-400 text-center">
+              <Shield size={12} className="shrink-0" />
+              <span>Protected by 256-bit SSL encryption</span>
             </div>
           </div>
         </motion.div>

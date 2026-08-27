@@ -92,18 +92,18 @@ export function FloatingAI() {
   };
 
   return (
-    <div className="fixed bottom-8 right-8 z-[60] flex flex-col items-end">
+    <div className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-[60] flex flex-col items-end pointer-events-none">
       <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ duration: 0.4, type: "spring", bounce: 0.3 }}
-            className="mb-6 w-[360px] sm:w-[420px] h-[550px] bg-white/80 backdrop-blur-3xl border border-white/60 rounded-[2rem] shadow-[0_30px_80px_rgba(11,93,63,0.2)] flex flex-col overflow-hidden relative"
+            transition={{ duration: 0.3, type: "spring", bounce: 0.2 }}
+            className="mb-3 w-[calc(100vw-2rem)] sm:w-[420px] max-w-[420px] h-[min(560px,calc(100dvh-110px))] bg-white/95 backdrop-blur-3xl border border-white/60 rounded-3xl shadow-[0_20px_60px_rgba(11,93,63,0.25)] flex flex-col overflow-hidden relative pointer-events-auto"
           >
             {/* Premium Header */}
-            <div className="relative bg-[#0B5D3F]/95 backdrop-blur-lg pt-6 pb-5 px-6 text-white flex items-center justify-between border-b border-[#4CAF50]/30 shadow-lg">
+            <div className="relative bg-[#0B5D3F] pt-5 pb-4 px-5 text-white flex items-center justify-between border-b border-[#4CAF50]/30 shadow-md">
               {/* Subtle background glow in header */}
               <div className="absolute top-0 right-0 w-32 h-32 bg-[#4CAF50]/20 blur-2xl rounded-full pointer-events-none" />
               
@@ -197,7 +197,7 @@ export function FloatingAI() {
       {/* Floating Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative w-14 h-14 rounded-full bg-gradient-to-br from-[#4CAF50] to-[#0B5D3F] text-white flex items-center justify-center shadow-[0_15px_40px_rgba(11,93,63,0.5)] hover:shadow-[0_20px_50px_rgba(11,93,63,0.7)] transition-all duration-500 hover:scale-110 group border-2 border-white/30"
+        className="relative w-14 h-14 rounded-full bg-gradient-to-br from-[#4CAF50] to-[#0B5D3F] text-white flex items-center justify-center shadow-[0_15px_40px_rgba(11,93,63,0.5)] hover:shadow-[0_20px_50px_rgba(11,93,63,0.7)] transition-all duration-500 hover:scale-110 group border-2 border-white/30 pointer-events-auto"
       >
         {/* Pulsing ring behind button */}
         <div className="absolute inset-0 bg-[#4CAF50] rounded-full animate-ping opacity-20" />

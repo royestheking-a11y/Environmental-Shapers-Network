@@ -201,7 +201,7 @@ export default function AdminDashboard() {
     return sectionAliases[lower] || lower;
   }, [section, location.pathname]);
 
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => typeof window !== "undefined" ? window.innerWidth >= 1024 : true);
   const [cmsContent, setCmsContent, loadingCms] = useFirestoreData<any[]>("esn_cms_content", getInitialContent());
   const [user, setUser] = useState<AdminUser | null>(null);
   const [showAddContent, setShowAddContent] = useState(false);
@@ -517,75 +517,94 @@ export default function AdminDashboard() {
     <div className="flex h-screen bg-[#F6FBF8] overflow-hidden">
       <AnimatePresence>
         {sidebarOpen && (
-          <motion.aside
-            initial={{ x: -280 }}
-            animate={{ x: 0 }}
-            exit={{ x: -280 }}
-            transition={{ duration: 0.25 }}
-            className="w-70 bg-[#0a1f14] flex flex-col shrink-0 overflow-y-auto z-30 fixed lg:relative h-full"
-            style={{ width: "280px" }}
-          >
-            <div className="p-6 border-b border-white/8">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[#4CAF50]/20 rounded-xl flex items-center justify-center">
-                  <Leaf size={20} className="text-[#4CAF50]" />
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSidebarOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-xs z-30 lg:hidden"
+            />
+            <motion.aside
+              initial={{ x: -280 }}
+              animate={{ x: 0 }}
+              exit={{ x: -280 }}
+              transition={{ duration: 0.25 }}
+              className="w-70 bg-[#0a1f14] flex flex-col shrink-0 overflow-y-auto z-40 fixed lg:relative h-full top-0 left-0 shadow-2xl lg:shadow-none"
+              style={{ width: "280px" }}
+            >
+              <div className="p-5 sm:p-6 border-b border-white/8 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-[#4CAF50]/20 rounded-xl flex items-center justify-center">
+                    <Leaf size={20} className="text-[#4CAF50]" />
+                  </div>
+                  <div>
+                    <div className="text-white font-black text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>ESN Admin</div>
+                    <div className="text-white/40 text-xs">Control Center</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-white font-black text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>ESN Admin</div>
-                  <div className="text-white/40 text-xs">Control Center</div>
+                <button
+                  onClick={() => setSidebarOpen(false)}
+                  className="lg:hidden w-8 h-8 rounded-lg bg-white/10 text-white/70 hover:text-white flex items-center justify-center"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div className="p-3.5 sm:p-4 mx-3 sm:mx-4 mt-4 bg-white/8 rounded-2xl border border-white/10 mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4CAF50] to-[#0B5D3F] flex items-center justify-center text-white font-bold text-sm shrink-0">
+                    {user.name.charAt(0)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-white text-sm font-semibold truncate">{user.name}</div>
+                    <div className="text-[#4CAF50] text-xs">{user.role}</div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="p-4 mx-4 mt-4 bg-white/8 rounded-2xl border border-white/10 mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4CAF50] to-[#0B5D3F] flex items-center justify-center text-white font-bold text-sm shrink-0">
-                  {user.name.charAt(0)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-white text-sm font-semibold truncate">{user.name}</div>
-                  <div className="text-[#4CAF50] text-xs">{user.role}</div>
-                </div>
-                <ChevronDown size={14} className="text-white/40" />
+              <nav className="flex-1 px-3 pb-4">
+                {sidebarItems.map((item) => {
+                  const isActive = activeSection === item.id;
+                  const targetUrl = item.id === "dashboard" ? "/admin/dashboard" : `/admin/dashboard/${item.id}`;
+                  return (
+                    <Link
+                      key={item.id}
+                      to={targetUrl}
+                      onClick={() => {
+                        if (typeof window !== "undefined" && window.innerWidth < 1024) {
+                          setSidebarOpen(false);
+                        }
+                      }}
+                      className={`w-full flex items-center gap-3 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl text-sm font-semibold transition-all duration-200 mb-1 group ${
+                        isActive
+                          ? "bg-[#4CAF50] text-white shadow-md shadow-green-900/30"
+                          : "text-white/60 hover:bg-white/8 hover:text-white"
+                      }`}
+                    >
+                      <item.icon size={17} />
+                      <span>{item.label}</span>
+                      {item.id === "applications" && pendingAppsCount > 0 && (
+                        <span className="ml-auto bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                          {pendingAppsCount}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </nav>
+
+              <div className="p-4 border-t border-white/8">
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-all text-sm font-semibold cursor-pointer"
+                >
+                  <LogOut size={17} />
+                  Sign Out
+                </button>
               </div>
-            </div>
-
-            <nav className="flex-1 px-3 pb-4">
-              {sidebarItems.map((item) => {
-                const isActive = activeSection === item.id;
-                const targetUrl = item.id === "dashboard" ? "/admin/dashboard" : `/admin/dashboard/${item.id}`;
-                return (
-                  <Link
-                    key={item.id}
-                    to={targetUrl}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 mb-1 group ${
-                      isActive
-                        ? "bg-[#4CAF50] text-white shadow-md shadow-green-900/30"
-                        : "text-white/60 hover:bg-white/8 hover:text-white"
-                    }`}
-                  >
-                    <item.icon size={17} />
-                    <span>{item.label}</span>
-                    {item.id === "applications" && pendingAppsCount > 0 && (
-                      <span className="ml-auto bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                        {pendingAppsCount}
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
-            </nav>
-
-            <div className="p-4 border-t border-white/8">
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-all text-sm font-semibold"
-              >
-                <LogOut size={17} />
-                Sign Out
-              </button>
-            </div>
-          </motion.aside>
+            </motion.aside>
+          </>
         )}
       </AnimatePresence>
 
@@ -842,40 +861,40 @@ function DashboardView({
   });
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="bg-gradient-to-r from-[#0B5D3F] to-[#173B63] rounded-2xl p-7 text-white relative overflow-hidden">
+    <div className="flex flex-col gap-6 sm:gap-8">
+      <div className="bg-gradient-to-r from-[#0B5D3F] to-[#173B63] rounded-2xl p-5 sm:p-7 text-white relative overflow-hidden shadow-lg">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-0 right-20 w-40 h-40 rounded-full bg-white" />
           <div className="absolute bottom-0 right-0 w-24 h-24 rounded-full bg-[#4CAF50]" />
         </div>
         <div className="relative z-10">
-          <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-[#4CAF50] text-sm font-semibold mb-1">Welcome back</p>
-              <h3 className="text-white mb-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>ESN Admin Dashboard</h3>
-              <p className="text-white/65 text-sm">{currentDateFormatted} · All systems operational</p>
+              <p className="text-[#4CAF50] text-xs sm:text-sm font-semibold mb-1">Welcome back</p>
+              <h3 className="text-white mb-1.5 font-black text-lg sm:text-2xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>ESN Admin Dashboard</h3>
+              <p className="text-white/65 text-xs sm:text-sm">{currentDateFormatted} · All systems operational</p>
             </div>
             <div className="hidden md:flex items-center gap-2 bg-white/15 border border-white/25 rounded-xl px-4 py-2 text-sm font-semibold">
               <CheckCircle2 size={15} className="text-[#4CAF50]" />
               Platform Status: Live
             </div>
           </div>
-          <div className="mt-6 grid grid-cols-3 gap-5">
+          <div className="mt-5 sm:mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5 pt-3 border-t border-white/10">
             {[
               [String(pendingAppsCount), "Pending Reviews", "/admin/dashboard/applications"],
               [String(totalMembersCount), "Registered Members", "/admin/dashboard/users"],
               [`$${totalDonationsAmount.toLocaleString()}`, "Total Donations", "/admin/dashboard/donations"]
             ].map(([v, l, path]) => (
-              <Link key={l} to={path} className="group hover:opacity-90 transition-opacity">
-                <div className="text-xl font-black text-[#4CAF50] group-hover:scale-105 transition-transform origin-left">{v}</div>
-                <div className="text-xs text-white/50 group-hover:text-white/80">{l}</div>
+              <Link key={l} to={path} className="group hover:opacity-90 transition-opacity bg-white/5 sm:bg-transparent p-3 sm:p-0 rounded-xl sm:rounded-none">
+                <div className="text-lg sm:text-xl font-black text-[#4CAF50] group-hover:scale-105 transition-transform origin-left">{v}</div>
+                <div className="text-[11px] sm:text-xs text-white/60 group-hover:text-white/90">{l}</div>
               </Link>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         {kpiCards.map((kpi: any, i: number) => {
           const toPath = kpiLinks[kpi.label] || "/admin/dashboard";
           return (
@@ -884,7 +903,7 @@ function DashboardView({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.08 }}
-                className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg hover:shadow-gray-100 hover:border-[#4CAF50]/30 transition-all cursor-pointer h-full"
+                className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 hover:shadow-lg hover:shadow-gray-100 hover:border-[#4CAF50]/30 transition-all cursor-pointer h-full"
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ backgroundColor: kpi.color + "15" }}>

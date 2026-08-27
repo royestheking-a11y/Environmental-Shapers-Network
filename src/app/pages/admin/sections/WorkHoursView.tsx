@@ -113,31 +113,30 @@ export function WorkHoursView({ currentStaffId, currentSessionElapsed = 0 }: Wor
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Top Header */}
+      {/* View Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h3 className="text-gray-900 font-bold text-xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          <div className="flex items-center gap-2.5">
+            <h3 className="font-black text-gray-900 text-xl sm:text-2xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               Staff Working Hours & Timesheets
             </h3>
-            <span className="bg-[#4CAF50]/15 text-[#0B5D3F] text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#4CAF50] animate-pulse" />
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 tracking-wider uppercase">
               Live Tracking
             </span>
           </div>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
             Real-time employee working hours, active working duration, and daily/weekly/monthly attendance logs.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           {/* Timeframe selector */}
           <div className="flex bg-[#F6FBF8] p-1 rounded-xl border border-gray-200 text-xs font-bold">
             {(["daily", "weekly", "monthly"] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setTimeframe(t)}
-                className={`px-3 py-1.5 rounded-lg capitalize transition-all ${
+                className={`px-3 py-1.5 rounded-lg capitalize transition-all cursor-pointer ${
                   timeframe === t
                     ? "bg-[#0B5D3F] text-white shadow-sm"
                     : "text-gray-500 hover:text-gray-900"
@@ -150,7 +149,7 @@ export function WorkHoursView({ currentStaffId, currentSessionElapsed = 0 }: Wor
 
           <button
             onClick={() => exportTimesheetCSV(staffSummaries, sessions)}
-            className="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-gray-50 transition-all shadow-sm"
+            className="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-bold hover:bg-gray-50 transition-all shadow-sm cursor-pointer"
           >
             <Download size={14} /> Export CSV
           </button>
@@ -158,7 +157,7 @@ export function WorkHoursView({ currentStaffId, currentSessionElapsed = 0 }: Wor
       </div>
 
       {/* Top 4 KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Today's Team Time</span>

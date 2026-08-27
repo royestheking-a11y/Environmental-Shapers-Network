@@ -226,30 +226,30 @@ export function ApplicationsView() {
   const getRole = (a: Application) => a.role || a.jobTitle || (a.tier ? `${a.tier} Membership` : a.type_label || "—");
 
   return (
-    <div className="p-6 max-w-full">
+    <div className="p-4 sm:p-6 max-w-full">
       {/* Header */}
       <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
         <div>
           <h2 className="font-black text-gray-900" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "1.4rem" }}>Applications</h2>
-          <p className="text-sm text-gray-500 mt-0.5">Manage all volunteer, career, partnership, and membership applications</p>
+          <p className="text-xs sm:text-sm text-gray-500 mt-0.5">Manage all volunteer, career, partnership, and membership applications</p>
         </div>
-        <div className="flex gap-3 flex-wrap">
+        <div className="flex gap-2 sm:gap-3 flex-wrap">
           {apps.length > 0 && (
-            <button onClick={clearAllApps} className="flex items-center gap-2 px-4 py-2.5 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm font-semibold hover:bg-red-100 transition-all">
+            <button onClick={clearAllApps} className="flex items-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 bg-red-50 border border-red-200 text-red-600 rounded-xl text-xs sm:text-sm font-semibold hover:bg-red-100 transition-all cursor-pointer">
               <Trash2 size={14} /> Clear All
             </button>
           )}
-          <button onClick={reload} className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-all">
+          <button onClick={reload} className="flex items-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl text-xs sm:text-sm font-semibold hover:bg-gray-50 transition-all cursor-pointer">
             <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} /> Refresh
           </button>
-          <button onClick={exportCSV} className="flex items-center gap-2 px-4 py-2.5 bg-[#0B5D3F] text-white rounded-xl text-sm font-semibold hover:bg-[#0a5237] transition-all">
+          <button onClick={exportCSV} className="flex items-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 bg-[#0B5D3F] text-white rounded-xl text-xs sm:text-sm font-semibold hover:bg-[#0a5237] transition-all cursor-pointer">
             <Download size={14} /> Export CSV
           </button>
         </div>
       </div>
 
       {/* KPI row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
         {[
           { label: "Total", value: counts.all, color: "#0B5D3F" },
           { label: "Pending", value: counts.pending, color: "#D97706" },
@@ -260,7 +260,7 @@ export function ApplicationsView() {
             <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: k.color + "15" }}>
               <span className="font-black text-sm" style={{ color: k.color }}>{k.value}</span>
             </div>
-            <span className="text-sm text-gray-500 font-medium">{k.label}</span>
+            <span className="text-xs sm:text-sm text-gray-500 font-medium">{k.label}</span>
           </div>
         ))}
       </div>
