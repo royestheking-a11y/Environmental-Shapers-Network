@@ -17,7 +17,7 @@ export function PlantSproutLoader({
     ? "fixed inset-0 z-[100] bg-[#F6FBF8]/95 backdrop-blur-md flex flex-col items-center justify-center p-6"
     : compact
     ? "py-8 flex flex-col items-center justify-center"
-    : "min-h-[50vh] flex flex-col items-center justify-center p-6";
+    : "min-h-[80vh] w-full flex flex-col items-center justify-center p-6 my-auto";
 
   return (
     <div className={containerClasses}>

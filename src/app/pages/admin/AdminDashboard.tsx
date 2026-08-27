@@ -299,6 +299,27 @@ export default function AdminDashboard() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifFilter, setNotifFilter] = useState<"all" | "unread">("all");
 
+  // Auto-clean any legacy demo notifications from cache & database
+  useEffect(() => {
+    if (notifications && notifications.length > 0) {
+      const demoTitles = [
+        "New Major Donation",
+        "New Volunteer Application",
+        "New Partnership Inquiry",
+        "Security & Login Notice",
+        "Campaign Milestone Reached",
+      ];
+      const realNotifs = notifications.filter(n => !demoTitles.includes(n.title));
+      if (realNotifs.length !== notifications.length) {
+        setNotifications(realNotifs);
+        saveFirestoreData("esn_notifications", realNotifs);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("esn_cache_esn_notifications", JSON.stringify(realNotifs));
+        }
+      }
+    }
+  }, [notifications]);
+
   // Real-time Employee Working Hours Engine
   const [activeSessionSeconds, setActiveSessionSeconds] = useState(0);
   const [isUserIdle, setIsUserIdle] = useState(false);
@@ -739,72 +760,75 @@ export default function AdminDashboard() {
 
                       {/* Notification List */}
                       <div className="max-h-80 overflow-y-auto divide-y divide-gray-50">
-                        {notifications
-                          .filter((n) => (notifFilter === "unread" ? !n.read : true))
-                          .map((n) => {
-                            const iconMap: Record<string, { icon: any; color: string }> = {
-                              heart: { icon: Heart, color: "bg-red-50 text-red-600" },
-                              user: { icon: Users, color: "bg-blue-50 text-blue-600" },
-                              mail: { icon: Mail, color: "bg-emerald-50 text-emerald-600" },
-                              shield: { icon: Shield, color: "bg-purple-50 text-purple-600" },
-                              sparkles: { icon: Sparkles, color: "bg-amber-50 text-amber-600" },
-                              alert: { icon: AlertCircle, color: "bg-orange-50 text-orange-600" },
-                              bell: { icon: Bell, color: "bg-gray-50 text-gray-600" },
-                            };
-                            const { icon: NotifIcon, color: iconBg } =
-                              iconMap[n.iconType || "bell"] || iconMap.bell;
-
-                            return (
-                              <div
-                                key={n.id}
-                                onClick={() => {
-                                  markNotificationRead(n.id);
-                                  if (n.link) {
-                                    setShowNotifications(false);
-                                    navigate(n.link);
-                                  }
-                                }}
-                                className={`p-4 transition-colors flex items-start justify-between gap-3 cursor-pointer group ${
-                                  !n.read ? "bg-emerald-50/30 hover:bg-emerald-50/60" : "hover:bg-gray-50/80"
-                                }`}
-                              >
-                                <div className="flex items-start gap-3 min-w-0">
-                                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${iconBg}`}>
-                                    <NotifIcon size={16} />
-                                  </div>
-                                  <div className="min-w-0">
-                                    <div className="flex items-center gap-2 mb-0.5">
-                                      <p className="font-bold text-xs text-gray-900 truncate">{n.title}</p>
-                                      {!n.read && (
-                                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
-                                      )}
-                                    </div>
-                                    <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed mb-1">{n.message}</p>
-                                    <span className="text-[10px] text-gray-400 font-medium flex items-center gap-1">
-                                      <Clock size={10} /> {n.timestamp}
-                                    </span>
-                                  </div>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    deleteNotificationItem(n.id);
-                                  }}
-                                  className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500 rounded transition-all shrink-0"
-                                  title="Dismiss notification"
-                                >
-                                  <X size={13} />
-                                </button>
-                              </div>
-                            );
-                          })}
-
-                        {notifications.filter((n) => (notifFilter === "unread" ? !n.read : true)).length === 0 && (
-                          <div className="py-12 text-center text-gray-400">
-                            <Bell size={28} className="mx-auto mb-2 opacity-30" />
-                            <p className="text-xs font-semibold">No notifications to show</p>
+                        {notifications.length === 0 || notifications.filter((n) => (notifFilter === "unread" ? !n.read : true)).length === 0 ? (
+                          <div className="p-8 text-center text-gray-400">
+                            <div className="w-12 h-12 rounded-2xl bg-[#0B5D3F]/10 flex items-center justify-center mx-auto mb-3 text-[#0B5D3F]">
+                              <Bell size={22} />
+                            </div>
+                            <p className="text-xs font-bold text-gray-700">No Notifications</p>
+                            <p className="text-[11px] text-gray-400 mt-0.5">Real-time alerts will appear here as activity occurs</p>
                           </div>
+                        ) : (
+                          notifications
+                            .filter((n) => (notifFilter === "unread" ? !n.read : true))
+                            .map((n) => {
+                              const iconMap: Record<string, { icon: any; color: string }> = {
+                                heart: { icon: Heart, color: "bg-red-50 text-red-600" },
+                                user: { icon: Users, color: "bg-blue-50 text-blue-600" },
+                                mail: { icon: Mail, color: "bg-emerald-50 text-emerald-600" },
+                                shield: { icon: Shield, color: "bg-purple-50 text-purple-600" },
+                                sparkles: { icon: Sparkles, color: "bg-amber-50 text-amber-600" },
+                                alert: { icon: AlertCircle, color: "bg-orange-50 text-orange-600" },
+                                bell: { icon: Bell, color: "bg-gray-50 text-gray-600" },
+                              };
+                              const { icon: NotifIcon, color: iconBg } =
+                                iconMap[n.iconType || "bell"] || iconMap.bell;
+
+                              return (
+                                <div
+                                  key={n.id}
+                                  onClick={() => {
+                                    markNotificationRead(n.id);
+                                    if (n.link) {
+                                      setShowNotifications(false);
+                                      navigate(n.link);
+                                    }
+                                  }}
+                                  className={`p-4 transition-colors flex items-start justify-between gap-3 cursor-pointer group ${
+                                    !n.read ? "bg-emerald-50/30 hover:bg-emerald-50/60" : "hover:bg-gray-50/80"
+                                  }`}
+                                >
+                                  <div className="flex items-start gap-3 min-w-0">
+                                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${iconBg}`}>
+                                      <NotifIcon size={16} />
+                                    </div>
+                                    <div className="min-w-0">
+                                      <div className="flex items-center gap-2 mb-0.5">
+                                        <p className="font-bold text-xs text-gray-900 truncate">{n.title}</p>
+                                        {!n.read && (
+                                          <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+                                        )}
+                                      </div>
+                                      <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed mb-1">{n.message}</p>
+                                      <span className="text-[10px] text-gray-400 font-medium flex items-center gap-1">
+                                        <Clock size={10} /> {n.timestamp}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      deleteNotificationItem(n.id);
+                                    }}
+                                    className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500 rounded transition-all shrink-0 cursor-pointer"
+                                    title="Dismiss notification"
+                                  >
+                                    <X size={13} />
+                                  </button>
+                                </div>
+                              );
+                            })
                         )}
                       </div>
 

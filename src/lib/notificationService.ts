@@ -14,68 +14,7 @@ export interface AdminNotification {
 }
 
 export function getInitialNotifications(): AdminNotification[] {
-  return [
-    {
-      id: 1,
-      title: "New Major Donation",
-      message: "Received $2,500 contribution for the Amazon Reforestation Project.",
-      category: "Donation",
-      timestamp: "5 mins ago",
-      isoDate: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-      read: false,
-      link: "/admin/dashboard/donations",
-      iconType: "heart",
-      priority: "high",
-    },
-    {
-      id: 2,
-      title: "New Volunteer Application",
-      message: "Priya Sharma from India submitted a Youth Climate Leader application.",
-      category: "Application",
-      timestamp: "25 mins ago",
-      isoDate: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
-      read: false,
-      link: "/admin/dashboard/applications",
-      iconType: "user",
-      priority: "normal",
-    },
-    {
-      id: 3,
-      title: "New Partnership Inquiry",
-      message: "Nordic Climate Alliance sent a message via the Contact portal.",
-      category: "Message",
-      timestamp: "1 hour ago",
-      isoDate: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-      read: false,
-      link: "/admin/dashboard/messages",
-      iconType: "mail",
-      priority: "normal",
-    },
-    {
-      id: 4,
-      title: "Security & Login Notice",
-      message: "Staff member Carlos Rodriguez signed in with Finance Officer role.",
-      category: "Security",
-      timestamp: "3 hours ago",
-      isoDate: new Date(Date.now() - 3 * 3600 * 1000).toISOString(),
-      read: true,
-      link: "/admin/dashboard/roles",
-      iconType: "shield",
-      priority: "low",
-    },
-    {
-      id: 5,
-      title: "Campaign Milestone Reached",
-      message: "'Clean Ocean Initiative 2026' just passed $375,000 (75% of target).",
-      category: "Campaign",
-      timestamp: "5 hours ago",
-      isoDate: new Date(Date.now() - 5 * 3600 * 1000).toISOString(),
-      read: true,
-      link: "/admin/dashboard/campaigns",
-      iconType: "sparkles",
-      priority: "normal",
-    },
-  ];
+  return [];
 }
 
 /**
