@@ -1,6 +1,7 @@
-import { lazy } from "react";
 import { createBrowserRouter } from "react-router";
+import { lazyWithRetry as lazy } from "../lib/lazyWithRetry";
 import { Root } from "./Root";
+import { RootErrorBoundary } from "./components/ui/RootErrorBoundary";
 import Home from "./pages/Home";
 
 const About = lazy(() => import("./pages/About"));
@@ -30,6 +31,7 @@ export const router = createBrowserRouter([
   {
     path: "/",
     Component: Root,
+    ErrorBoundary: RootErrorBoundary,
     children: [
       { index: true, Component: Home },
       { path: "about", Component: About },
