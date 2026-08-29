@@ -1,6 +1,9 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, setLogLevel } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
+
+// Silence Firebase SDK default logger warnings
+setLogLevel('error');
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
