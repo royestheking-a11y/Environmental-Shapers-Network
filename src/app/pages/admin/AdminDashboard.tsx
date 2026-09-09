@@ -28,6 +28,7 @@ import StatsAdminView from "./sections/StatsAdminView";
 import MissionAdminView from "./sections/MissionAdminView";
 import ResearchAdminView from "./sections/ResearchAdminView";
 import YouthAdminView from "./sections/YouthAdminView";
+import AboutPageAdminView from "./sections/AboutPageAdminView";
 import { ImageUploadField } from "../../components/ui/ImageUploadField";
 import { ActivityLogItem, getInitialActivityLogs } from "../../../lib/activityLogger";
 import { AdminNotification, getInitialNotifications } from "../../../lib/notificationService";
@@ -49,6 +50,7 @@ interface AdminUser {
 const sidebarItems = [
   { icon: LayoutDashboard, label: "Dashboard", id: "dashboard" },
   { icon: FileText, label: "Content", id: "cms" },
+  { icon: Focus, label: "About Page CMS", id: "about-page" },
   { icon: MonitorPlay, label: "Hero Section", id: "hero" },
   { icon: Focus, label: "Who We Are", id: "whoweare" },
   { icon: BarChart3, label: "Impact Stats", id: "stats" },
@@ -175,6 +177,7 @@ const sectionAliases: Record<string, string> = {
   "careers": "opportunities",
   "volunteers": "opportunities",
   "content": "cms",
+  "about-page": "about-page",
   "hero-section": "hero",
   "who-we-are": "whoweare",
   "impact-stats": "stats",
@@ -474,6 +477,8 @@ export default function AdminDashboard() {
         );
       case "cms":
         return <CMSView content={cmsContent && cmsContent.length > 0 ? cmsContent : getInitialContent()} onDelete={deleteContent} onToggle={toggleStatus} onShowAdd={() => setShowAddContent(true)} showAdd={showAddContent} newContent={newContent} setNewContent={setNewContent} onAdd={addContent} onCancelAdd={() => setShowAddContent(false)} onEdit={startEditContent} editingContent={editingContent} setEditingContent={setEditingContent} onSaveEdit={saveEditContent} deleteConfirmId={cmsDeleteConfirmId} onConfirmDelete={confirmDeleteContent} onCancelDelete={() => setCmsDeleteConfirmId(null)} onRestoreDefaults={() => saveContent(getInitialContent())} />;
+      case "about-page":
+        return <AboutPageAdminView />;
       case "hero":
         return <HeroAdminView />;
       case "whoweare":

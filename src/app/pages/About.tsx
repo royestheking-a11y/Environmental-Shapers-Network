@@ -6,164 +6,24 @@ import {
   TreePine, Heart, Star, Sprout, Shield, Lightbulb, HandHeart,
   ArrowRight, Quote, MapPin, ExternalLink, Check, Zap, BookOpen, Sun
 } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 import { ImageWithFallback } from "../components/ui/ImageWithFallback";
+import { useFirestoreData } from "../../lib/useFirestore";
+import { getInitialStats, StatItem } from "./admin/sections/StatsAdminView";
+import { getInitialMissionValues, MissionValue } from "./admin/sections/MissionAdminView";
+import {
+  initialHeroData, initialStoryData, initialMilestones, initialTeamMembers,
+  initialVisionMissionData, initialGlobalPresenceData,
+  AboutHeroData, AboutStoryData, AboutMilestone, AboutTeamMember,
+  AboutVisionMissionData, AboutGlobalPresenceData
+} from "./admin/sections/AboutPageAdminView";
 
-const milestones = [
-  {
-    year: "2019", title: "A Movement is Born", icon: Sprout, color: "#4CAF50",
-    desc: "ESN was founded in Dhaka after catastrophic monsoon floods were linked directly to climate change. Imran Hossain, Abu Hanif and fellow students pledged to turn grief into action — planting 1,000 mangrove saplings in their first weekend.",
-  },
-  {
-    year: "2021", title: "Crossing Borders", icon: Globe2, color: "#0B5D3F",
-    desc: "Expanded to India and Nepal with our first cross-border reforestation program. The 'Green Corridor' project connected degraded forest patches across three nations, covering over 8,000 hectares.",
-  },
-  {
-    year: "2022", title: "UN Recognition", icon: Award, color: "#D6A95A",
-    desc: "Received ECOSOC Special Consultative Status — one of the youngest NGOs in history to achieve this recognition. We presented at the UNFCCC COP25 in Madrid, representing 34 countries.",
-  },
-  {
-    year: "2023", title: "50 Countries Reached", icon: MapPin, color: "#173B63",
-    desc: "Active projects and campus chapters now span 50 countries across 5 continents. Launched our flagship Youth Climate Leadership program, training 4,000+ youth advocates in their first cohort.",
-  },
-  {
-    year: "2024", title: "One Million Trees", icon: TreePine, color: "#4CAF50",
-    desc: "Celebrated the planting of our 1 millionth tree — a mangrove seedling in the Sundarbans, Bangladesh. The landmark was witnessed by community leaders, diplomats, and 300 volunteers from 40 countries.",
-  },
-  {
-    year: "2025", title: "Climate Finance Hub", icon: Zap, color: "#0B5D3F",
-    desc: "Launched the ESN Climate Finance Accelerator, channeling $12M to 180 grassroots environmental projects in the Global South. Opened regional headquarters in Nairobi, Bogotá, and Jakarta.",
-  },
-  {
-    year: "2026", title: "The Global Platform", icon: BookOpen, color: "#D6A95A",
-    desc: "Launched this integrated digital platform connecting 12,000+ communities across 80+ countries. Now the largest open-source environmental data network in Asia and Africa, powering science-based action.",
-  },
-];
+export function resolveIcon(name: string) {
+  const Icon = (LucideIcons as any)[name];
+  return Icon || LucideIcons.HelpCircle;
+}
 
 
-const advisorTeam = [
-  {
-    name: "Dr. Saleemul Huq (Late)",
-    role: "Chief Scientific Advisor",
-    country: "Bangladesh",
-    bio: "Pioneering climate scientist and leading authority on climate change adaptation in developing countries.",
-    img: "",
-    tags: ["Climate Science", "Adaptation"],
-  },
-  {
-    name: "Prof. Johan Rockström",
-    role: "Global Strategy Advisor",
-    country: "Sweden",
-    bio: "Internationally recognized scientist on global sustainability issues, known for the Planetary Boundaries framework.",
-    img: "",
-    tags: ["Sustainability", "Earth Systems"],
-  }
-];
-
-const bdTeam = [
-  {
-    name: "Rahim Uddin",
-    role: "Country Director, BD",
-    country: "Dhaka, Bangladesh",
-    bio: "Oversees all operational initiatives and local community engagement across Bangladesh.",
-    img: "",
-    tags: ["Operations", "Local Outreach"],
-  },
-  {
-    name: "Sumaiya Binte",
-    role: "Head of Campaigns, BD",
-    country: "Chittagong, Bangladesh",
-    bio: "Leads national campaigns focusing on youth involvement and coastal resilience.",
-    img: "",
-    tags: ["Campaigns", "Youth"],
-  }
-];
-
-const teamMembers = [
-  {
-    name: "Imran Hossain",
-    role: "Co-Founder",
-    country: "Dhaka, Bangladesh",
-    bio: "Former flood-disaster volunteer turned global climate advocate. Imran has spoken at UN Climate COPs.",
-    img: "",
-    tags: ["Climate Policy", "Leadership"],
-  },
-  {
-    name: "Abu Hanif",
-    role: "Co-Founder",
-    country: "Dhaka, Bangladesh",
-    bio: "Passionate environmentalist and community leader. Abu Hanif has been instrumental in scaling our grassroots chapters globally.",
-    img: "",
-    tags: ["Community", "Strategy"],
-  },
-  {
-    name: "Carlos Rodriguez",
-    role: "Regional Director, Americas",
-    country: "Bogotá, Colombia",
-    bio: "Conservation biologist with 12 years in Amazonian field research. Carlos built ESN's Latin American network from 3 to 28 active countries in just four years.",
-    img: "",
-    tags: ["Conservation", "Biodiversity"],
-  },
-  {
-    name: "Amara Osei",
-    role: "Director of Community Programs",
-    country: "Accra, Ghana",
-    bio: "Community organizer and former UN Environment Programme fellow. Amara designed ESN's grassroots engagement model now used by 6,000+ local chapters worldwide.",
-    img: "",
-    tags: ["Community", "Inclusion"],
-  },
-  {
-    name: "Ji-yeon Park",
-    role: "Chief Technology Officer",
-    country: "Seoul, South Korea",
-    bio: "Former Google engineer turned climate-tech founder. Ji-yeon built ESN's open-source environmental monitoring network, now tracking 2,400+ ecosystem sites globally.",
-    img: "",
-    tags: ["Technology", "Data"],
-  },
-  {
-    name: "Fatima Al-Rashid",
-    role: "Director of Partnerships",
-    country: "Dubai, UAE",
-    bio: "Negotiated ESN's landmark partnerships with UNDP, WWF, and 40+ corporate sustainability programs. Manages a portfolio of $24M in annual partner funding.",
-    img: "",
-    tags: ["Partnerships", "Finance"],
-  },
-];
-
-const values = [
-  {
-    icon: Target, title: "Science-Led Action", color: "#0B5D3F",
-    desc: "Every initiative we launch is grounded in peer-reviewed research and monitored with rigorous data collection. We measure what we protect.",
-  },
-  {
-    icon: HandHeart, title: "Community First", color: "#4CAF50",
-    desc: "We don't parachute in solutions. We co-design with local communities, ensuring every project is owned, managed, and celebrated by the people it serves.",
-  },
-  {
-    icon: Shield, title: "Radical Transparency", color: "#173B63",
-    desc: "Our finances, impact reports, and methodologies are fully open-access. If we fail, we say so loudly — because failure teaches us to build better.",
-  },
-  {
-    icon: Globe2, title: "Global South Leadership", color: "#D6A95A",
-    desc: "Over 70% of our leadership team comes from countries most affected by climate change. The people most impacted lead the solutions.",
-  },
-  {
-    icon: Lightbulb, title: "Innovation Mindset", color: "#0B5D3F",
-    desc: "From drone-seeding to community-led carbon markets, we embrace bold new approaches when traditional methods fall short of the scale needed.",
-  },
-  {
-    icon: Users, title: "Intersectional Justice", color: "#4CAF50",
-    desc: "Climate change and social inequality are inseparable. We center gender equity, Indigenous rights, and youth leadership in all our programs.",
-  },
-];
-
-const impactStats = [
-  { value: "80+", label: "Countries Active", sub: "Across 6 continents", icon: Globe2 },
-  { value: "1.2M+", label: "Trees Planted", sub: "Since 2019", icon: TreePine },
-  { value: "12,000+", label: "Local Chapters", sub: "In 80+ countries", icon: Users },
-  { value: "$24M", label: "Annual Impact Budget", sub: "Invested in communities", icon: Heart },
-  { value: "48K+", label: "Active Volunteers", sub: "Mobilized globally", icon: HandHeart },
-  { value: "94%", label: "Project Success Rate", sub: "Based on 5-year reviews", icon: Award },
-];
 
 const partners = [
   "United Nations", "WWF Global", "UNDP", "GreenPeace", "IUCN", "World Bank", "C40 Cities", "Bloomberg Philanthropies"
@@ -194,6 +54,22 @@ function FallingLeaf({ delay, x }: { delay: number; x: number }) {
 export default function About() {
   const heroRef = useRef(null);
   
+  // Data hooks
+  const [heroData] = useFirestoreData<AboutHeroData>("esn_about_hero", initialHeroData);
+  const [storyData] = useFirestoreData<AboutStoryData>("esn_about_story", initialStoryData);
+  const [milestonesData] = useFirestoreData<AboutMilestone[]>("esn_about_milestones", initialMilestones);
+  const [teamData] = useFirestoreData<AboutTeamMember[]>("esn_about_team", initialTeamMembers);
+  const [valuesData] = useFirestoreData<MissionValue[]>("esn_mission_admin", getInitialMissionValues());
+  const [statsData] = useFirestoreData<StatItem[]>("esn_stats_admin", getInitialStats());
+  const [visionMissionData] = useFirestoreData<AboutVisionMissionData>("esn_about_vision_mission", initialVisionMissionData);
+  const [presenceData] = useFirestoreData<AboutGlobalPresenceData>("esn_about_global_presence", initialGlobalPresenceData);
+
+  // Filter team
+  const founderTeam = teamData.filter(t => t.category === "Founder");
+  const bdTeamList = teamData.filter(t => t.category === "BD");
+  const globalTeamList = teamData.filter(t => t.category === "Global");
+  const advisorTeamList = teamData.filter(t => t.category === "Advisor");
+
   // Interactive click-to-grow plants state
   const [plants, setPlants] = useState<{ id: number; x: number; y: number }[]>([]);
 
@@ -309,14 +185,14 @@ export default function About() {
             {/* Left text */}
             <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
               <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white text-xs font-bold px-4 py-2 rounded-full mb-8 uppercase tracking-widest">
-                <Leaf size={12} className="text-[#4CAF50]" /> Founded 2019 · Dhaka, Bangladesh
+                <Leaf size={12} className="text-[#4CAF50]" /> {heroData?.foundedText || "Founded 2019 · Dhaka, Bangladesh"}
               </div>
               <h1 className="text-white mb-6 leading-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                Shaping the World's<br />
-                <span className="text-[#4CAF50]">Environmental Future</span>
+                {heroData?.title1 || "Shaping the World's"}<br />
+                <span className="text-[#4CAF50]">{heroData?.title2 || "Environmental Future"}</span>
               </h1>
               <p className="text-white/75 text-xl leading-relaxed mb-8 max-w-lg">
-                We are a global movement of scientists, advocates, and community leaders united by one conviction: a healthy planet is not a privilege — it is the foundation of human dignity.
+                {heroData?.description || "We are a global movement of scientists, advocates, and community leaders united by one conviction: a healthy planet is not a privilege — it is the foundation of human dignity."}
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link to="/projects" className="inline-flex items-center gap-2 bg-[#4CAF50] text-white px-7 py-3.5 rounded-full font-semibold hover:bg-[#43a047] transition-all hover:scale-105 shadow-lg shadow-[#4CAF50]/30">
@@ -388,8 +264,8 @@ export default function About() {
             >
               {/* Large editorial headline */}
               <h2 className="text-[#0B5D3F] leading-[1.1] mb-8 tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(2.2rem, 4vw, 3.5rem)", fontWeight: 900 }}>
-                Born from Urgency,<br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#4CAF50] to-[#0B5D3F]">Sustained by Purpose</span>
+                {storyData?.headline1 || "Born from Urgency,"}<br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#4CAF50] to-[#0B5D3F]">{storyData?.headline2 || "Sustained by Purpose"}</span>
               </h2>
 
               {/* Founding Quote Card — glassmorphic */}
@@ -401,26 +277,20 @@ export default function About() {
                     <path d="M0 24V14.4C0 6.4 4.8 1.6 14.4 0l1.6 2.4C10.4 3.6 7.2 6.4 6.4 10.4H12V24H0zm20 0V14.4C20 6.4 24.8 1.6 34.4 0l1.6 2.4C30.4 3.6 27.2 6.4 26.4 10.4H32V24H20z" fill="#4CAF50"/>
                   </svg>
                   <p className="text-white/90 text-lg leading-relaxed font-medium italic mb-4">
-                    "When the floods came and scientists confirmed climate change as the cause, we realized that hope without action was just a comfortable lie. We had to build something real."
+                    {storyData?.quoteText || "\"When the floods came and scientists confirmed climate change as the cause, we realized that hope without action was just a comfortable lie. We had to build something real.\""}
                   </p>
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-px bg-[#4CAF50]" />
-                    <span className="text-[#A5D6A7] text-sm font-bold">Imran Hossain & Abu Hanif · Co-Founders</span>
+                    <span className="text-[#A5D6A7] text-sm font-bold">{storyData?.quoteAuthor || "Imran Hossain & Abu Hanif · Co-Founders"}</span>
                   </div>
                 </div>
               </div>
 
               {/* Story paragraphs */}
               <div className="space-y-5 text-gray-600 leading-relaxed">
-                <p>
-                  ESN was born in the summer of 2019, weeks after Bangladesh recorded its worst monsoon flooding in a generation. Scientists from MIT and IPCC confirmed what local communities already feared — climate change was amplifying these disasters. A group of young people, led by Imran Hossain and Abu Hanif, responded not with despair but with a plan.
-                </p>
-                <p>
-                  They planted 1,000 mangrove seedlings in the Sundarbans that first weekend. Within six months, 400 volunteers had joined. Within a year, they had their first international chapter in Kolkata. What followed was not a slow institutional climb but an organic explosion of communities joining a movement they felt was genuinely theirs.
-                </p>
-                <p>
-                  Today ESN operates in <strong className="text-[#0B5D3F]">80+ countries</strong> — but the ethos remains unchanged: local ownership, global solidarity, science-driven humility, and a refusal to accept that the world's poorest communities should bear the heaviest burden of a crisis they did least to create.
-                </p>
+                <p>{storyData?.paragraph1 || ""}</p>
+                <p>{storyData?.paragraph2 || ""}</p>
+                <p dangerouslySetInnerHTML={{ __html: storyData?.paragraph3 || "" }} />
               </div>
 
               {/* Proof points */}
@@ -516,14 +386,9 @@ export default function About() {
         <div className="border-t border-gray-100 bg-[#F6FBF8]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {[
-                { icon: Target, label: "Science-Led", desc: "Every action grounded in peer-reviewed research" },
-                { icon: HandHeart, label: "Community First", desc: "Local ownership in every project we run" },
-                { icon: Shield, label: "Radical Transparency", desc: "Full financial & impact data, always open" },
-                { icon: Globe2, label: "Global South Led", desc: "70%+ leadership from most-affected nations" },
-              ].map((p, i) => (
+              {valuesData.slice(0, 4).map((p, i) => (
                 <motion.div
-                  key={p.label}
+                  key={p.title}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -531,11 +396,14 @@ export default function About() {
                   className="flex gap-4 items-start group"
                 >
                   <div className="w-10 h-10 rounded-xl bg-[#0B5D3F]/10 flex items-center justify-center shrink-0 group-hover:bg-[#0B5D3F] transition-colors">
-                    <p.icon size={18} className="text-[#0B5D3F] group-hover:text-white transition-colors" />
+                    {(() => {
+                      const Icon = resolveIcon(p.iconName || "");
+                      return <Icon size={18} className="text-[#0B5D3F] group-hover:text-white transition-colors" />;
+                    })()}
                   </div>
                   <div>
-                    <div className="font-bold text-gray-900 text-sm mb-0.5">{p.label}</div>
-                    <div className="text-gray-500 text-xs leading-relaxed">{p.desc}</div>
+                    <div className="font-bold text-gray-900 text-sm mb-0.5">{p.title}</div>
+                    <div className="text-gray-500 text-xs leading-relaxed">{p.description}</div>
                   </div>
                 </motion.div>
               ))}
@@ -585,44 +453,19 @@ export default function About() {
                 </div>
 
                 <div className="space-y-6">
-                  {/* Mission Step 1 */}
-                  <div className="bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:border-[#4CAF50]/40 transition-all duration-300 group">
-                    <div className="flex gap-5">
-                      <div className="w-12 h-12 rounded-full bg-[#4CAF50]/20 flex items-center justify-center shrink-0 border border-[#4CAF50]/30 group-hover:scale-110 transition-transform">
-                        <span className="text-[#4CAF50] font-black text-lg">01</span>
-                      </div>
-                      <div>
-                        <h4 className="text-xl font-bold text-white mb-2">Science-Backed Action</h4>
-                        <p className="text-white/60 leading-relaxed text-sm">Equipping communities with localized climate data to implement effective, long-term environmental conservation.</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Mission Step 2 */}
-                  <div className="bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:border-[#4CAF50]/40 transition-all duration-300 group">
-                    <div className="flex gap-5">
-                      <div className="w-12 h-12 rounded-full bg-[#4CAF50]/20 flex items-center justify-center shrink-0 border border-[#4CAF50]/30 group-hover:scale-110 transition-transform">
-                        <span className="text-[#4CAF50] font-black text-lg">02</span>
-                      </div>
-                      <div>
-                        <h4 className="text-xl font-bold text-white mb-2">Youth Leadership</h4>
-                        <p className="text-white/60 leading-relaxed text-sm">Training the next generation of climate advocates to take policy-level action and grassroots leadership in vulnerable areas.</p>
+                  {visionMissionData.missionItems.map((item, index) => (
+                    <div key={item.id} className="bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:border-[#4CAF50]/40 transition-all duration-300 group">
+                      <div className="flex gap-5">
+                        <div className="w-12 h-12 rounded-full bg-[#4CAF50]/20 flex items-center justify-center shrink-0 border border-[#4CAF50]/30 group-hover:scale-110 transition-transform">
+                          <span className="text-[#4CAF50] font-black text-lg">0{index + 1}</span>
+                        </div>
+                        <div>
+                          <h4 className="text-xl font-bold text-white mb-2">{item.title}</h4>
+                          <p className="text-white/60 leading-relaxed text-sm">{item.description}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-
-                  {/* Mission Step 3 */}
-                  <div className="bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:border-[#4CAF50]/40 transition-all duration-300 group">
-                    <div className="flex gap-5">
-                      <div className="w-12 h-12 rounded-full bg-[#4CAF50]/20 flex items-center justify-center shrink-0 border border-[#4CAF50]/30 group-hover:scale-110 transition-transform">
-                        <span className="text-[#4CAF50] font-black text-lg">03</span>
-                      </div>
-                      <div>
-                        <h4 className="text-xl font-bold text-white mb-2">Policy Advocacy</h4>
-                        <p className="text-white/60 leading-relaxed text-sm">Working hand-in-hand with governments to ensure marginalized voices directly shape national environmental policies.</p>
-                      </div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </motion.div>
             </div>
@@ -641,40 +484,28 @@ export default function About() {
                 </div>
 
                 <div className="space-y-6">
-                  {/* Vision Point 1 */}
-                  <div className="bg-[#D6A95A]/10 backdrop-blur-md rounded-2xl p-6 border border-[#D6A95A]/20 hover:border-[#D6A95A]/50 transition-all duration-300 group">
-                    <div className="flex gap-5">
-                      <div className="mt-1 w-8 h-8 rounded-full bg-[#D6A95A]/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                        <Check size={14} className="text-[#D6A95A]" />
-                      </div>
-                      <div>
-                        <h4 className="text-xl font-bold text-white mb-2">Net-Zero Communities</h4>
-                        <p className="text-white/70 leading-relaxed text-sm">By 2050, we envision 5,000+ localized chapters successfully transitioning their economies to sustainable, zero-waste models.</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Vision Point 2 */}
-                  <div className="bg-[#D6A95A]/10 backdrop-blur-md rounded-2xl p-6 border border-[#D6A95A]/20 hover:border-[#D6A95A]/50 transition-all duration-300 group">
-                    <div className="flex gap-5">
-                      <div className="mt-1 w-8 h-8 rounded-full bg-[#D6A95A]/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                        <Check size={14} className="text-[#D6A95A]" />
-                      </div>
-                      <div>
-                        <h4 className="text-xl font-bold text-white mb-2">Climate Justice Achieved</h4>
-                        <p className="text-white/70 leading-relaxed text-sm">A world where the most vulnerable populations are fully protected and independently equipped to adapt to extreme weather.</p>
+                  {visionMissionData.visionItems.map(item => (
+                    <div key={item.id} className="bg-[#D6A95A]/10 backdrop-blur-md rounded-2xl p-6 border border-[#D6A95A]/20 hover:border-[#D6A95A]/50 transition-all duration-300 group">
+                      <div className="flex gap-5">
+                        <div className="mt-1 w-8 h-8 rounded-full bg-[#D6A95A]/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                          <Check size={14} className="text-[#D6A95A]" />
+                        </div>
+                        <div>
+                          <h4 className="text-xl font-bold text-white mb-2">{item.title}</h4>
+                          <p className="text-white/70 leading-relaxed text-sm">{item.description}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  ))}
                   
                   {/* Mega Vision Card */}
                   <div className="bg-gradient-to-br from-[#D6A95A] to-[#9E6B3C] rounded-2xl p-8 shadow-2xl shadow-[#D6A95A]/20 relative overflow-hidden group mt-8">
                     <Globe2 className="absolute -right-6 -bottom-6 text-white/20 w-40 h-40 group-hover:scale-110 transition-transform duration-700" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-60" />
                     <div className="relative z-10">
-                      <h4 className="text-2xl font-black text-white mb-3 tracking-tight">A Restored Planet</h4>
+                      <h4 className="text-2xl font-black text-white mb-3 tracking-tight">{visionMissionData.megaVisionTitle}</h4>
                       <p className="text-white/90 leading-relaxed text-sm font-medium">
-                        Our ultimate metric for success: thriving, interconnected ecosystems where humanity operates entirely within the Earth's natural boundaries.
+                        {visionMissionData.megaVisionDescription}
                       </p>
                       <Link to="/projects" className="mt-6 inline-flex items-center gap-2 text-[#9E6B3C] font-bold text-sm bg-white px-5 py-2.5 rounded-full hover:bg-gray-100 transition-all shadow-lg">
                         See 2050 Roadmap <ArrowRight size={16} />
@@ -705,7 +536,7 @@ export default function About() {
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {impactStats.map((s, i) => (
+            {statsData.map((s, i) => (
               <motion.div
                 key={s.label}
                 initial={{ opacity: 0, y: 30 }}
@@ -715,11 +546,14 @@ export default function About() {
                 className="bg-white/8 border border-white/12 backdrop-blur-sm rounded-3xl p-8 hover:bg-white/12 transition-all group"
               >
                 <div className="w-14 h-14 bg-[#4CAF50]/20 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-[#4CAF50]/30 transition-all">
-                  <s.icon size={26} className="text-[#4CAF50]" />
+                  {(() => {
+                    const Icon = resolveIcon(s.iconName || "");
+                    return <Icon size={26} className="text-[#4CAF50]" />;
+                  })()}
                 </div>
-                <div className="text-4xl font-black text-white mb-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{s.value}</div>
+                <div className="text-4xl font-black text-white mb-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{s.value}{s.suffix}</div>
                 <div className="text-white font-semibold mb-1">{s.label}</div>
-                <div className="text-white/50 text-sm">{s.sub}</div>
+                <div className="text-white/50 text-sm">{s.description}</div>
               </motion.div>
             ))}
           </div>
@@ -740,7 +574,7 @@ export default function About() {
           </motion.div>
 
           <div className="grid sm:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {advisorTeam.map((member, i) => (
+            {advisorTeamList.map((member, i) => (
               <motion.div
                 key={member.name}
                 initial={{ opacity: 0, y: 30 }}
@@ -770,7 +604,7 @@ export default function About() {
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {teamMembers.map((member, i) => (
+            {[...founderTeam, ...globalTeamList].map((member, i) => (
               <motion.div
                 key={member.name}
                 initial={{ opacity: 0, y: 30 }}
@@ -825,7 +659,7 @@ export default function About() {
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {bdTeam.map((member, i) => (
+            {bdTeamList.map((member, i) => (
               <motion.div
                 key={member.name}
                 initial={{ opacity: 0, y: 30 }}
@@ -859,7 +693,7 @@ export default function About() {
             <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-[#4CAF50] via-[#0B5D3F] to-[#173B63] md:-translate-x-0.5" />
 
             <div className="flex flex-col gap-14">
-              {milestones.map((m, i) => (
+              {milestonesData.map((m, i) => (
                 <motion.div
                   key={m.year}
                   initial={{ opacity: 0, x: i % 2 === 0 ? -40 : 40 }}
@@ -873,7 +707,10 @@ export default function About() {
                     className="absolute left-8 md:left-1/2 top-6 -translate-x-1/2 w-6 h-6 rounded-full border-4 border-white shadow-lg z-10 flex items-center justify-center"
                     style={{ backgroundColor: m.color }}
                   >
-                    <m.icon size={10} className="text-white" />
+                    {(() => {
+                      const Icon = resolveIcon(m.iconName || "");
+                      return <Icon size={10} className="text-white" />;
+                    })()}
                   </div>
 
                   {/* Year bubble — opposite side on desktop */}
@@ -886,7 +723,10 @@ export default function About() {
                     <div className="bg-[#F6FBF8] rounded-2xl p-6 border border-gray-100 hover:shadow-lg hover:shadow-gray-100 transition-all">
                       <div className="flex items-center gap-3 mb-3">
                         <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: m.color + "20" }}>
-                          <m.icon size={16} style={{ color: m.color }} />
+                          {(() => {
+                            const Icon = resolveIcon(m.iconName || "");
+                            return <Icon size={16} style={{ color: m.color }} />;
+                          })()}
                         </div>
                         <div>
                           <div className="text-xs font-black uppercase tracking-widest md:hidden" style={{ color: m.color }}>{m.year}</div>
@@ -914,23 +754,19 @@ export default function About() {
               </div>
               <h2 className="text-[#0B5D3F] mb-6">Rooted Locally,<br />Acting Globally</h2>
               <p className="text-gray-600 leading-relaxed mb-8">
-                Our model rejects the traditional "headquarters knows best" approach. Every region has full autonomy over program design, funding allocation, and community partnerships — supported by a shared platform, shared data, and shared values.
+                {presenceData.description}
               </p>
               <div className="grid grid-cols-2 gap-4">
-                {[
-                  { region: "South Asia", countries: "12 countries", icon: MapPin, color: "#0B5D3F" },
-                  { region: "Sub-Saharan Africa", countries: "22 countries", icon: Globe2, color: "#173B63" },
-                  { region: "Latin America", countries: "18 countries", icon: Leaf, color: "#4CAF50" },
-                  { region: "Southeast Asia", countries: "10 countries", icon: Sprout, color: "#0B5D3F" },
-                  { region: "MENA", countries: "8 countries", icon: Sun, color: "#D6A95A" },
-                  { region: "Europe & NA", countries: "10 countries", icon: TreePine, color: "#173B63" },
-                ].map((r) => (
+                {presenceData.regions.map((r) => (
                   <div key={r.region} className="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-xl hover:shadow-gray-100 hover:border-[#0B5D3F]/20 transition-all duration-300 group hover:-translate-y-1">
                     <div 
                       className="w-10 h-10 rounded-xl mb-3 flex items-center justify-center transition-transform duration-300 group-hover:scale-110" 
                       style={{ backgroundColor: `${r.color}15`, color: r.color }}
                     >
-                      <r.icon size={20} />
+                      {(() => {
+                        const Icon = resolveIcon(r.iconName || "");
+                        return <Icon size={20} />;
+                      })()}
                     </div>
                     <div className="text-sm font-bold text-gray-800 group-hover:text-[#0B5D3F] transition-colors">{r.region}</div>
                     <div className="text-xs text-gray-500 font-medium mt-0.5">{r.countries}</div>
@@ -951,14 +787,14 @@ export default function About() {
               <div className="absolute bottom-8 left-8 right-8">
                 <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-5 border border-white/50">
                   <div className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Latest Milestone</div>
-                  <div className="font-black text-gray-900 mb-1">1 Million Trees Planted</div>
-                  <div className="text-sm text-gray-500">Sundarbans, Bangladesh · July 2023</div>
+                  <div className="font-black text-gray-900 mb-1">{presenceData.milestoneTitle}</div>
+                  <div className="text-sm text-gray-500">{presenceData.milestoneLocationDate}</div>
                   <div className="mt-3 w-full bg-gray-100 rounded-full h-2">
-                    <div className="h-full bg-gradient-to-r from-[#4CAF50] to-[#0B5D3F] rounded-full" style={{ width: "84%" }} />
+                    <div className="h-full bg-gradient-to-r from-[#4CAF50] to-[#0B5D3F] rounded-full" style={{ width: `${presenceData.milestoneProgress}%` }} />
                   </div>
                   <div className="flex justify-between text-xs text-gray-400 mt-1.5">
-                    <span>1M planted</span>
-                    <span>Goal: 1.2M by Dec 2026</span>
+                    <span>{presenceData.milestoneProgress}% completed</span>
+                    <span>{presenceData.milestoneGoal}</span>
                   </div>
                 </div>
               </div>
