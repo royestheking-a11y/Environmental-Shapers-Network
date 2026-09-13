@@ -11,6 +11,7 @@ export interface StaffUser {
   createdAt: string;
   lastLogin?: string;
   department?: string;
+  weeklyTargetHours?: number;
 }
 
 export function getInitialStaffUsers(): StaffUser[] {
@@ -22,46 +23,70 @@ export function getInitialStaffUsers(): StaffUser[] {
       password: "ESN@Admin2026",
       role: "Super Admin",
       status: "Active",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=150",
       createdAt: "Jan 1, 2026",
       lastLogin: "Active Now",
-      department: "Executive",
+      department: "Executive & Systems",
+      weeklyTargetHours: 40,
     },
     {
       id: 2,
-      name: "Editor User",
-      email: "editor@esnglobal.org",
-      password: "ESN@Editor2026",
-      role: "Content Editor",
+      name: "Imran Hossain",
+      email: "imran@esnglobal.org",
+      password: "ESN@Imran2026",
+      role: "Co-Founder & Executive Lead",
       status: "Active",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=150",
-      createdAt: "Jan 15, 2026",
-      lastLogin: "2 hours ago",
-      department: "Communications",
+      createdAt: "Jan 1, 2026",
+      lastLogin: "10 mins ago",
+      department: "Executive Leadership",
+      weeklyTargetHours: 40,
     },
     {
       id: 3,
-      name: "Carlos Rodriguez",
-      email: "carlos@esnglobal.org",
-      password: "ESN@Carlos2026",
-      role: "Finance Officer",
+      name: "Abu Hanif",
+      email: "hanif@esnglobal.org",
+      password: "ESN@Hanif2026",
+      role: "Co-Founder & Operations Lead",
       status: "Active",
-      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=150",
-      createdAt: "Feb 1, 2026",
-      lastLogin: "Yesterday",
-      department: "Finance & Grants",
+      createdAt: "Jan 1, 2026",
+      lastLogin: "30 mins ago",
+      department: "Global Operations",
+      weeklyTargetHours: 40,
     },
     {
       id: 4,
-      name: "Sarah Jenkins",
-      email: "sarah@esnglobal.org",
-      password: "ESN@Sarah2026",
-      role: "Volunteer Manager",
+      name: "Priya Sharma",
+      email: "priya@esnglobal.org",
+      password: "ESN@Priya2026",
+      role: "Climate Policy Researcher",
       status: "Active",
-      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=150",
+      createdAt: "Jan 15, 2026",
+      lastLogin: "2 hours ago",
+      department: "Research & Science",
+      weeklyTargetHours: 35,
+    },
+    {
+      id: 5,
+      name: "Carlos Rodriguez",
+      email: "carlos@esnglobal.org",
+      password: "ESN@Carlos2026",
+      role: "Regional Director, Americas",
+      status: "Active",
+      createdAt: "Feb 1, 2026",
+      lastLogin: "Yesterday",
+      department: "Regional Hubs",
+      weeklyTargetHours: 40,
+    },
+    {
+      id: 6,
+      name: "Amara Osei",
+      email: "amara@esnglobal.org",
+      password: "ESN@Amara2026",
+      role: "Director of Community Programs",
+      status: "Active",
       createdAt: "Feb 10, 2026",
-      lastLogin: "3 days ago",
+      lastLogin: "3 hours ago",
       department: "Community Programs",
+      weeklyTargetHours: 40,
     },
   ];
 }
@@ -95,18 +120,8 @@ export async function authenticateStaff(email: string, pass: string): Promise<St
       status: "Active",
       createdAt: "Jan 1, 2026",
       lastLogin: "Just now",
-    };
-  }
-
-  if (email.toLowerCase().trim() === "editor@esnglobal.org" && pass === "ESN@Editor2026") {
-    return {
-      id: 2,
-      name: "Editor User",
-      email: "editor@esnglobal.org",
-      role: "Content Editor",
-      status: "Active",
-      createdAt: "Jan 15, 2026",
-      lastLogin: "Just now",
+      department: "Executive & Systems",
+      weeklyTargetHours: 40,
     };
   }
 

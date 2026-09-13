@@ -87,7 +87,6 @@ const footerLinks = {
     { label: "Media Center", href: "/media-center" },
     { label: "Impact Dashboard", href: "/impact" },
     { label: "Contact Us", href: "/contact" },
-    { label: "Admin Login", href: "/admin" },
   ],
 };
 
