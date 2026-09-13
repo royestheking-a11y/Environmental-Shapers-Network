@@ -14,69 +14,45 @@ export interface ActivityLogItem {
   ip?: string;
 }
 
+export function isMockActivityLog(item: any): boolean {
+  if (!item || typeof item !== "object") return false;
+  // Specific legacy mock identifiers
+  if (item.id === 1 || item.id === 2 || item.id === 3 || item.id === 4 || item.id === 5) {
+    return true;
+  }
+  const details = String(item.details || "");
+  if (
+    details.includes("EcoFoundation Germany") ||
+    details.includes("Amazon Reforestation Hub") ||
+    details.includes("Clean Ocean Initiative") ||
+    details.includes("Global Youth Climate Summit 2026") ||
+    details.includes("ESN Cloud Management Platform & Storage engine online")
+  ) {
+    return true;
+  }
+  return false;
+}
+
+export function sanitizeRealActivityLogs(logs: any[]): ActivityLogItem[] {
+  if (!Array.isArray(logs)) return [];
+  return logs.filter((log) => !isMockActivityLog(log));
+}
+
+/**
+ * Returns initial activity logs. Kept empty to ensure only 100% REAL system activities appear.
+ */
 export function getInitialActivityLogs(): ActivityLogItem[] {
-  return [
-    {
-      id: 1,
-      userName: "Admin User",
-      userRole: "Super Admin",
-      userEmail: "admin@esnglobal.org",
-      action: "System Initialized",
-      category: "System",
-      details: "ESN Cloud Management Platform & Storage engine online",
-      timestamp: "Just now",
-      isoDate: new Date().toISOString(),
-      status: "success",
-    },
-    {
-      id: 2,
-      userName: "Editor User",
-      userRole: "Content Editor",
-      userEmail: "editor@esnglobal.org",
-      action: "Updated Project",
-      category: "Projects",
-      details: "Added new high-resolution cover image to Amazon Reforestation Hub",
-      timestamp: "12 mins ago",
-      isoDate: new Date(Date.now() - 12 * 60 * 1000).toISOString(),
-      status: "info",
-    },
-    {
-      id: 3,
-      userName: "Admin User",
-      userRole: "Super Admin",
-      userEmail: "admin@esnglobal.org",
-      action: "Created Campaign",
-      category: "Campaigns",
-      details: "Launched 'Clean Ocean Initiative' with $500,000 goal",
-      timestamp: "45 mins ago",
-      isoDate: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-      status: "success",
-    },
-    {
-      id: 4,
-      userName: "Carlos Rodriguez",
-      userRole: "Finance Officer",
-      userEmail: "finance@esnglobal.org",
-      action: "Approved Donation",
-      category: "Donations",
-      details: "Approved $2,500 contribution from EcoFoundation Germany (Receipt #ESN-8841)",
-      timestamp: "2 hours ago",
-      isoDate: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
-      status: "success",
-    },
-    {
-      id: 5,
-      userName: "Sarah Jenkins",
-      userRole: "Volunteer Manager",
-      userEmail: "sarah@esnglobal.org",
-      action: "Created Event",
-      category: "Events",
-      details: "Published 'Global Youth Climate Summit 2026' with 500 attendee capacity",
-      timestamp: "4 hours ago",
-      isoDate: new Date(Date.now() - 4 * 3600 * 1000).toISOString(),
-      status: "info",
-    },
-  ];
+  return [];
+}
+
+/**
+ * Clears all activity logs
+ */
+export async function clearActivityLogs(): Promise<void> {
+  await saveFirestoreData("esn_activity_logs", []);
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("esn_activity_cleared"));
+  }
 }
 
 /**
@@ -102,10 +78,11 @@ export async function logAdminActivity(
       currentUser = { ...currentUser, ...customUser };
     }
 
-    const currentLogs = await fetchFirestoreData<ActivityLogItem[]>("esn_activity_logs", getInitialActivityLogs());
+    const rawLogs = await fetchFirestoreData<ActivityLogItem[]>("esn_activity_logs", []);
+    const currentLogs = sanitizeRealActivityLogs(rawLogs);
     
     const newLog: ActivityLogItem = {
-      id: Date.now(),
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       userName: currentUser.name || "Admin User",
       userRole: currentUser.role || "Admin",
       userEmail: currentUser.email || "admin@esnglobal.org",
@@ -118,12 +95,15 @@ export async function logAdminActivity(
     };
 
     // Keep the latest 200 logs
-    const updatedLogs = [newLog, ...currentLogs.slice(0, 199)];
+    const updatedLogs = [newLog, ...currentLogs.filter((l) => l.id !== newLog.id)].slice(0, 199);
     await saveFirestoreData("esn_activity_logs", updatedLogs);
     
     // Dispatch an event so components listening can update instantly
-    window.dispatchEvent(new CustomEvent("esn_activity_logged", { detail: newLog }));
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("esn_activity_logged", { detail: newLog }));
+    }
   } catch (err) {
     console.warn("Failed to log activity:", err);
   }
 }
+

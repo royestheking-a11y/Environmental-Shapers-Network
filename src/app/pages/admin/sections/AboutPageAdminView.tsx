@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Plus, Edit3, Trash2, AlertCircle, Save, LayoutTemplate, Users, History, AlignLeft, Image as ImageIcon, Target, Globe2 } from "lucide-react";
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
+import { logAdminActivity } from "../../../../lib/activityLogger";
 import { resolveIcon } from "./ProgramsView";
 import { ImageUploadField } from "../../../components/ui/ImageUploadField";
 
@@ -175,6 +176,7 @@ export default function AboutPageAdminView() {
   const handleSaveHero = async () => {
     setIsSaving(true);
     await saveFirestoreData("esn_about_hero", heroData);
+    await logAdminActivity("Updated About Page", "CMS", "Saved updates to About page Hero section.", "info");
     setIsSaving(false);
     notifySave("Hero section updated and published live!");
   };
@@ -182,6 +184,7 @@ export default function AboutPageAdminView() {
   const handleSaveStory = async () => {
     setIsSaving(true);
     await saveFirestoreData("esn_about_story", storyData);
+    await logAdminActivity("Updated About Page", "CMS", "Saved updates to Story & Quote.", "info");
     setIsSaving(false);
     notifySave("Story & Quote updated and published live!");
   };
@@ -189,6 +192,7 @@ export default function AboutPageAdminView() {
   const handleSaveVision = async () => {
     setIsSaving(true);
     await saveFirestoreData("esn_about_vision_mission", visionData);
+    await logAdminActivity("Updated About Page", "CMS", "Saved updates to Vision & Mission.", "info");
     setIsSaving(false);
     notifySave("Vision & Mission updated and published live!");
   };
@@ -196,6 +200,7 @@ export default function AboutPageAdminView() {
   const handleSavePresence = async () => {
     setIsSaving(true);
     await saveFirestoreData("esn_about_global_presence", presenceData);
+    await logAdminActivity("Updated About Page", "CMS", "Saved updates to Global Presence.", "info");
     setIsSaving(false);
     notifySave("Global Presence updated and published live!");
   };
@@ -211,6 +216,7 @@ export default function AboutPageAdminView() {
     }
     setMilestones(newMilestones);
     await saveFirestoreData("esn_about_milestones", newMilestones);
+    await logAdminActivity("Updated Milestone", "CMS", `Saved milestone "${milestoneFormData.title}" (${milestoneFormData.year}).`, "info");
     setShowAddMilestone(false);
     notifySave("Milestone saved and published live!");
   };
@@ -219,6 +225,7 @@ export default function AboutPageAdminView() {
     const newMilestones = milestones.filter(m => m.id !== id);
     setMilestones(newMilestones);
     await saveFirestoreData("esn_about_milestones", newMilestones);
+    await logAdminActivity("Deleted Milestone", "CMS", "Deleted a milestone from the About page timeline.", "warning");
     notifySave("Milestone deleted and updated live!");
   };
 
@@ -233,6 +240,7 @@ export default function AboutPageAdminView() {
     }
     setTeamMembers(newTeam);
     await saveFirestoreData("esn_about_team", newTeam);
+    await logAdminActivity("Updated Team Member", "CMS", `Saved profile for ${teamFormData.name} (${teamFormData.role}).`, "info");
     setShowAddTeam(false);
     setTeamFormData({ category: "Global", tags: [], img: "" });
   };
@@ -241,6 +249,7 @@ export default function AboutPageAdminView() {
     const newTeam = teamMembers.filter(t => t.id !== id);
     setTeamMembers(newTeam);
     await saveFirestoreData("esn_about_team", newTeam);
+    await logAdminActivity("Removed Team Member", "CMS", "Removed a team member profile from the About page.", "warning");
   };
 
   const tabs = [

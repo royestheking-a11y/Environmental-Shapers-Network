@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 import { StaffUser, getInitialStaffUsers } from "../../../../lib/staffAuthService";
-import { ActivityLogItem, getInitialActivityLogs, logAdminActivity } from "../../../../lib/activityLogger";
+import { ActivityLogItem, getInitialActivityLogs, logAdminActivity, sanitizeRealActivityLogs, clearActivityLogs } from "../../../../lib/activityLogger";
 import { ImageUploadField } from "../../../components/ui/ImageUploadField";
 
 const allPermissions = [
@@ -72,9 +72,40 @@ export function RolesView() {
   const [newPassword, setNewPassword] = useState("");
 
   // Activity Logs State
-  const [logs, setLogs] = useFirestoreData<ActivityLogItem[]>("esn_activity_logs", getInitialActivityLogs());
+  const [rawLogs, setRawLogs] = useFirestoreData<ActivityLogItem[]>("esn_activity_logs", getInitialActivityLogs());
+  const [logs, setLogs] = useState<ActivityLogItem[]>(() => sanitizeRealActivityLogs(rawLogs || []));
   const [activitySearch, setActivitySearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+
+  useEffect(() => {
+    const cleaned = sanitizeRealActivityLogs(rawLogs || []);
+    setLogs(cleaned);
+    if (rawLogs && rawLogs.length > cleaned.length) {
+      setRawLogs(cleaned);
+      saveFirestoreData("esn_activity_logs", cleaned);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("esn_cache_esn_activity_logs", JSON.stringify(cleaned));
+      }
+    }
+  }, [rawLogs]);
+
+  useEffect(() => {
+    const handleLog = (e: any) => {
+      if (e.detail) {
+        setLogs((prev) => [e.detail, ...prev.filter((p) => p.id !== e.detail.id)].slice(0, 200));
+      }
+    };
+    const handleCleared = () => {
+      setLogs([]);
+    };
+    window.addEventListener("esn_activity_logged", handleLog);
+    window.addEventListener("esn_activity_cleared", handleCleared);
+    return () => {
+      window.removeEventListener("esn_activity_logged", handleLog);
+      window.removeEventListener("esn_activity_cleared", handleCleared);
+    };
+  }, []);
 
   // Save Roles
   const saveRoles = async (list: Role[]) => {
@@ -583,7 +614,7 @@ export function RolesView() {
               />
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
-              <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Filter Category:</span>
+              <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Filter:</span>
               {["All", "Projects", "Campaigns", "Programs", "Events", "Donations", "Media", "Users", "Roles", "Settings", "Auth"].map((cat) => (
                 <button
                   key={cat}
@@ -597,6 +628,45 @@ export function RolesView() {
                   {cat}
                 </button>
               ))}
+              <div className="h-6 w-px bg-gray-200 mx-1" />
+              <button
+                type="button"
+                onClick={() => {
+                  const headers = ["ID", "Timestamp", "Action", "Category", "Details", "User Name", "User Role", "User Email", "Status"];
+                  const rows = logs.map((l) => [
+                    `"${l.id}"`,
+                    `"${l.timestamp}"`,
+                    `"${l.action}"`,
+                    `"${l.category}"`,
+                    `"${(l.details || "").replace(/"/g, '""')}"`,
+                    `"${l.userName}"`,
+                    `"${l.userRole}"`,
+                    `"${l.userEmail}"`,
+                    `"${l.status || "info"}"`,
+                  ]);
+                  const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+                  const link = document.createElement("a");
+                  link.setAttribute("href", encodeURI(csvContent));
+                  link.setAttribute("download", `esn_audit_log_${new Date().toISOString().split("T")[0]}.csv`);
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }}
+                className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#F6FBF8] text-[#0B5D3F] hover:bg-[#0B5D3F]/10 border border-[#0B5D3F]/20 flex items-center gap-1.5 transition-all whitespace-nowrap"
+                title="Export Audit Trail to CSV"
+              >
+                <Download size={13} />
+                Export CSV
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowClearConfirm(true)}
+                className="px-3 py-1.5 rounded-xl text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100 border border-red-200/50 flex items-center gap-1.5 transition-all whitespace-nowrap"
+                title="Clear all recorded system logs"
+              >
+                <Trash2 size={13} />
+                Clear Logs
+              </button>
             </div>
           </div>
 
@@ -937,6 +1007,55 @@ export function RolesView() {
                 </button>
                 <button onClick={() => setResetModalUser(null)} className="px-5 py-3 rounded-xl text-gray-500 hover:bg-gray-100 font-semibold">
                   Cancel
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* CLEAR AUDIT TRAIL CONFIRMATION MODAL */}
+      <AnimatePresence>
+        {showClearConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+            onClick={() => setShowClearConfirm(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mb-4">
+                <Trash2 size={24} />
+              </div>
+              <h4 className="font-bold text-gray-900 text-lg mb-2">Clear All System Activity Logs?</h4>
+              <p className="text-xs text-gray-500 mb-6 leading-relaxed">
+                This will permanently delete all recorded audit logs and system activity from both local storage and cloud database. This action cannot be undone.
+              </p>
+              <div className="flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowClearConfirm(false)}
+                  className="px-4 py-2 text-xs font-bold text-gray-600 hover:bg-gray-100 rounded-xl"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await clearActivityLogs();
+                    setLogs([]);
+                    setShowClearConfirm(false);
+                  }}
+                  className="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-sm transition-all"
+                >
+                  Clear All Logs
                 </button>
               </div>
             </motion.div>

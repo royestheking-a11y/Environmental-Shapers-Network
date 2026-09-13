@@ -11,6 +11,7 @@ import {
   ResponsiveContainer, CartesianGrid
 } from "recharts";
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
+import { logAdminActivity } from "../../../../lib/activityLogger";
 import { getInitialStaffUsers, StaffUser } from "../../../../lib/staffAuthService";
 import {
   getInitialWorkSessions, WorkSession, StaffWorkSummary,
@@ -218,6 +219,12 @@ export function WorkHoursView({ currentStaffId, currentSessionElapsed = 0 }: Wor
 
     setStaffUsers(updatedStaff);
     await saveFirestoreData("esn_staff_users", updatedStaff);
+    await logAdminActivity(
+      editingStaff ? "Updated Staff Profile" : "Added Staff Member",
+      "Users",
+      `${editingStaff ? "Updated" : "Added"} staff profile for ${staffForm.name} (${staffForm.role}).`,
+      "success"
+    );
     setShowAddStaffModal(false);
     setEditingStaff(null);
     setStaffForm({ name: "", email: "", role: "Program Coordinator", department: "Operations", weeklyTargetHours: 40 });
@@ -229,6 +236,7 @@ export function WorkHoursView({ currentStaffId, currentSessionElapsed = 0 }: Wor
     const updated = staffUsers.filter((u) => String(u.id) !== String(staffId));
     setStaffUsers(updated);
     await saveFirestoreData("esn_staff_users", updated);
+    await logAdminActivity("Removed Staff User", "Users", `Removed staff member ${name}.`, "warning");
     showToast(`Removed ${name} from staff list`);
     if (selectedStaff && String(selectedStaff.staffId) === String(staffId)) {
       setSelectedStaff(null);
@@ -264,6 +272,12 @@ export function WorkHoursView({ currentStaffId, currentSessionElapsed = 0 }: Wor
     const updatedSessions = [newSession, ...sessions];
     setSessions(updatedSessions);
     await saveFirestoreData("esn_staff_work_hours", updatedSessions);
+    await logAdminActivity(
+      "Logged Work Hours",
+      "System",
+      `Logged ${formatDuration(totalSeconds)} for ${targetStaff.name} on ${logHoursForm.date}.`,
+      "info"
+    );
 
     setShowLogHoursModal(false);
     showToast(`Logged ${formatDuration(totalSeconds)} for ${targetStaff.name}`);
@@ -282,6 +296,7 @@ export function WorkHoursView({ currentStaffId, currentSessionElapsed = 0 }: Wor
     const updated = sessions.filter((s) => s.id !== sessionId);
     setSessions(updated);
     await saveFirestoreData("esn_staff_work_hours", updated);
+    await logAdminActivity("Deleted Work Session", "System", "Deleted a timesheet work session entry.", "warning");
     showToast("Work session entry removed");
   };
 

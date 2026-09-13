@@ -46,6 +46,7 @@ const tabs = [
 ];
 
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
+import { logAdminActivity } from "../../../../lib/activityLogger";
 
 export function SettingsView() {
   const [activeTab, setActiveTab] = useState("general");
@@ -67,12 +68,16 @@ export function SettingsView() {
 
   const saveAll = async () => {
     await saveFirestoreData("esn_settings", settings);
+    await logAdminActivity("Updated Settings", "Settings", "Updated platform general settings and configurations.", "success");
     window.dispatchEvent(new Event("esn_settings_updated"));
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   };
 
-  const forceLogout = () => {
+  const forceLogout = async () => {
+    try {
+      await logAdminActivity("Staff Logged Out", "Auth", "Admin logged out of the session.", "info");
+    } catch {}
     localStorage.removeItem("esn_admin_user");
     window.location.href = "/admin";
   };
@@ -86,6 +91,7 @@ export function SettingsView() {
       const updated = { ...settings, maintenanceMode: false };
       setSettings(updated);
       await saveFirestoreData("esn_settings", updated);
+      await logAdminActivity("Disabled Maintenance Mode", "Settings", "Turned off maintenance mode for the public website.", "success");
       window.dispatchEvent(new Event("esn_settings_updated"));
     }
   };
@@ -94,6 +100,7 @@ export function SettingsView() {
     const updated = { ...settings, maintenanceMode: true };
     setSettings(updated);
     await saveFirestoreData("esn_settings", updated);
+    await logAdminActivity("Enabled Maintenance Mode", "Settings", "Activated maintenance mode for the public website.", "warning");
     window.dispatchEvent(new Event("esn_settings_updated"));
     setShowMaintenanceConfirm(false);
   };

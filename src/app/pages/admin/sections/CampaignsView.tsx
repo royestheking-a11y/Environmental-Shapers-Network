@@ -28,6 +28,7 @@ export interface Campaign {
 }
 
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
+import { logAdminActivity } from "../../../../lib/activityLogger";
 
 export function getInitialCampaigns(): Campaign[] {
   return [
@@ -98,8 +99,10 @@ export function CampaignsView() {
     };
     if (editId !== null) {
       save(campaigns.map((c) => c.id === editId ? { ...cleanForm, id: editId } : c));
+      logAdminActivity("Updated Campaign", "Campaigns", `Updated campaign "${cleanForm.title}" (Goal: $${cleanForm.goal.toLocaleString()}, Raised: $${cleanForm.raised.toLocaleString()}).`, "success");
     } else {
       save([{ ...cleanForm, id: Date.now() }, ...campaigns]);
+      logAdminActivity("Created Campaign", "Campaigns", `Launched campaign "${cleanForm.title}" with $${cleanForm.goal.toLocaleString()} goal.`, "success");
     }
     setShowForm(false);
     setEditId(null);
@@ -122,7 +125,9 @@ export function CampaignsView() {
   const confirmDelete = (id: number) => setDeleteConfirmId(id);
   const doDelete = () => {
     if (deleteConfirmId === null) return;
+    const doomed = campaigns.find((c) => c.id === deleteConfirmId);
     save(campaigns.filter((c) => c.id !== deleteConfirmId));
+    logAdminActivity("Deleted Campaign", "Campaigns", `Deleted campaign "${doomed?.title || deleteConfirmId}".`, "warning");
     setDeleteConfirmId(null);
     setDetail(null);
   };

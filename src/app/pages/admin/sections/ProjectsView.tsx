@@ -29,6 +29,7 @@ export interface Project {
 }
 
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
+import { logAdminActivity } from "../../../../lib/activityLogger";
 
 export function getInitialProjects(): Project[] {
   return [
@@ -93,8 +94,10 @@ export function ProjectsView() {
     if (!form.name || !form.country) return;
     if (editId !== null) {
       save(projects.map((p) => p.id === editId ? { ...form, id: editId } : p));
+      logAdminActivity("Updated Project", "Projects", `Saved updates to project "${form.name}" (${form.country}).`, "info");
     } else {
       save([{ ...form, id: Date.now() }, ...projects]);
+      logAdminActivity("Created Project", "Projects", `Created new project "${form.name}" in ${form.country}.`, "success");
     }
     setShowForm(false);
     setEditId(null);
@@ -110,7 +113,9 @@ export function ProjectsView() {
 
   const doDelete = () => {
     if (deleteConfirmId === null) return;
+    const doomed = projects.find((p) => p.id === deleteConfirmId);
     save(projects.filter((p) => p.id !== deleteConfirmId));
+    logAdminActivity("Deleted Project", "Projects", `Deleted project "${doomed?.name || deleteConfirmId}".`, "warning");
     setDeleteConfirmId(null);
   };
 

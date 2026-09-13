@@ -26,6 +26,7 @@ export interface ESNEvent {
 }
 
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
+import { logAdminActivity } from "../../../../lib/activityLogger";
 
 export function getInitialEvents(): ESNEvent[] {
   return [
@@ -113,8 +114,10 @@ export function EventsView() {
     if (!form.title || !form.date) return;
     if (editId !== null) {
       save(events.map((e) => e.id === editId ? { ...form, id: editId } : e));
+      logAdminActivity("Updated Event", "Events", `Saved updates to event "${form.title}" (${form.status || "upcoming"}).`, "info");
     } else {
       save([{ ...form, id: Date.now() }, ...events]);
+      logAdminActivity("Created Event", "Events", `Created event "${form.title}" (${form.status || "upcoming"}).`, "success");
     }
     setShowForm(false);
     setEditId(null);
@@ -131,7 +134,9 @@ export function EventsView() {
   const confirmDelete = (id: number) => setDeleteConfirmId(id);
   const doDelete = () => {
     if (deleteConfirmId === null) return;
+    const doomed = events.find((e) => e.id === deleteConfirmId);
     save(events.filter((e) => e.id !== deleteConfirmId));
+    logAdminActivity("Deleted Event", "Events", `Deleted event "${doomed?.title || deleteConfirmId}".`, "warning");
     setDeleteConfirmId(null);
     setDetail(null);
   };

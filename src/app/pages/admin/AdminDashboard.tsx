@@ -30,7 +30,7 @@ import ResearchAdminView from "./sections/ResearchAdminView";
 import YouthAdminView from "./sections/YouthAdminView";
 import AboutPageAdminView from "./sections/AboutPageAdminView";
 import { ImageUploadField } from "../../components/ui/ImageUploadField";
-import { ActivityLogItem, getInitialActivityLogs } from "../../../lib/activityLogger";
+import { ActivityLogItem, getInitialActivityLogs, sanitizeRealActivityLogs, logAdminActivity } from "../../../lib/activityLogger";
 import { AdminNotification, getInitialNotifications } from "../../../lib/notificationService";
 import {
   LayoutDashboard, TreePine, Globe2, Users, Heart, Megaphone, Calendar, BarChart3, FileText, Settings,
@@ -302,7 +302,39 @@ export default function AdminDashboard() {
   }, [donations, totalDonationsAmount]);
 
   const [pendingAppsCount, setPendingAppsCount] = useState(0);
-  const [activityLogs] = useFirestoreData<ActivityLogItem[]>("esn_activity_logs", getInitialActivityLogs());
+  const [rawActivityLogs, setRawActivityLogs] = useFirestoreData<ActivityLogItem[]>("esn_activity_logs", getInitialActivityLogs());
+  const [liveActivityLogs, setLiveActivityLogs] = useState<ActivityLogItem[]>(() => sanitizeRealActivityLogs(rawActivityLogs || []));
+
+  // Auto-clean any legacy mock activity logs from cache & database
+  useEffect(() => {
+    const cleaned = sanitizeRealActivityLogs(rawActivityLogs || []);
+    setLiveActivityLogs(cleaned);
+    if (rawActivityLogs && rawActivityLogs.length > cleaned.length) {
+      setRawActivityLogs(cleaned);
+      saveFirestoreData("esn_activity_logs", cleaned);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("esn_cache_esn_activity_logs", JSON.stringify(cleaned));
+      }
+    }
+  }, [rawActivityLogs]);
+
+  useEffect(() => {
+    const handleLog = (e: any) => {
+      if (e.detail) {
+        setLiveActivityLogs((prev) => [e.detail, ...prev.filter((p) => p.id !== e.detail.id)].slice(0, 50));
+      }
+    };
+    const handleCleared = () => {
+      setLiveActivityLogs([]);
+    };
+    window.addEventListener("esn_activity_logged", handleLog);
+    window.addEventListener("esn_activity_cleared", handleCleared);
+    return () => {
+      window.removeEventListener("esn_activity_logged", handleLog);
+      window.removeEventListener("esn_activity_cleared", handleCleared);
+    };
+  }, []);
+
   const [notifications, setNotifications] = useFirestoreData<AdminNotification[]>("esn_notifications", getInitialNotifications());
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifFilter, setNotifFilter] = useState<"all" | "unread">("all");
@@ -413,7 +445,10 @@ export default function AdminDashboard() {
     fetchPendingApps();
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await logAdminActivity("Staff Logged Out", "Auth", `User ${user?.name || "Admin"} (${user?.role || "Staff"}) logged out.`, "info", user);
+    } catch {}
     localStorage.removeItem("esn_admin_user");
     navigate("/admin");
   };
@@ -443,6 +478,7 @@ export default function AdminDashboard() {
       views: 0,
     };
     saveContent([item, ...cmsContent]);
+    logAdminActivity("Published Article", "CMS", `Published news/article "${item.title}".`, "success", user);
     setNewContent({ title: "", type: "News", status: "Published" } as any);
     setShowAddContent(false);
   };
@@ -453,7 +489,9 @@ export default function AdminDashboard() {
 
   const confirmDeleteContent = () => {
     if (cmsDeleteConfirmId === null) return;
+    const doomed = cmsContent.find((c: any) => c.id === cmsDeleteConfirmId);
     saveContent(cmsContent.filter((c: any) => c.id !== cmsDeleteConfirmId));
+    logAdminActivity("Deleted Article", "CMS", `Deleted article "${doomed?.title || cmsDeleteConfirmId}".`, "warning", user);
     setCmsDeleteConfirmId(null);
   };
 
@@ -473,11 +511,17 @@ export default function AdminDashboard() {
         : (editingContent.tags || []),
     };
     saveContent(cmsContent.map((c: any) => c.id === cleanItem.id ? cleanItem : c));
+    logAdminActivity("Updated Article", "CMS", `Updated article "${cleanItem.title}".`, "info", user);
     setEditingContent(null);
   };
 
   const toggleStatus = (id: number) => {
-    saveContent(cmsContent.map((c: any) => c.id === id ? { ...c, status: c.status === "Published" ? "Draft" : "Published" } : c));
+    const item = cmsContent.find((c: any) => c.id === id);
+    const newStatus = item?.status === "Published" ? "Draft" : "Published";
+    saveContent(cmsContent.map((c: any) => c.id === id ? { ...c, status: newStatus } : c));
+    if (item) {
+      logAdminActivity("Changed Article Status", "CMS", `Changed "${item.title}" status to ${newStatus}.`, "info", user);
+    }
   };
 
   if (!user) return null;
@@ -491,7 +535,7 @@ export default function AdminDashboard() {
             weeklyData={weeklyData}
             monthlyDonations={dynamicMonthlyDonations}
             recentDonations={liveRecentDonations}
-            recentActivity={activityLogs}
+            recentActivity={liveActivityLogs}
             pendingAppsCount={pendingAppsCount}
             totalMembersCount={(usersList || []).length}
             totalDonationsAmount={totalDonationsAmount}

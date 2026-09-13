@@ -12,6 +12,7 @@ import {
 } from "recharts";
 
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
+import { logAdminActivity } from "../../../../lib/activityLogger";
 
 export function getInitialDonations() {
   return [];
@@ -113,9 +114,18 @@ export function DonationsView() {
   const refresh = () => setDonations(getInitialDonations());
 
   const updateStatus = async (id: number, newStatus: string) => {
+    const item = (donations || []).find((d: any) => d && d.id === id);
     const updated = (donations || []).map((d: any) => (d && d.id === id ? { ...d, status: newStatus } : d));
     setDonations(updated);
     await saveFirestoreData("esn_donations", updated);
+    if (item) {
+      await logAdminActivity(
+        "Updated Donation Status",
+        "Donations",
+        `Changed donation from ${item.donor || item.name || "Donor"} ($${Number(item.amount || 0).toLocaleString()}) to ${newStatus}.`,
+        newStatus === "completed" ? "success" : "info"
+      );
+    }
   };
 
   const safeDonations = Array.isArray(donations) ? donations : [];
