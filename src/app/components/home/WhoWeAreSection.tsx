@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { Link } from "react-router";
 import { ArrowRight, Check } from "lucide-react";
-import { getInitialWhoWeAreFeatures } from "../../pages/admin/sections/WhoWeAreAdminView";
+import { getInitialWhoWeAreFeatures, getInitialWhoWeAreStory, WhoWeAreStory } from "../../pages/admin/sections/WhoWeAreAdminView";
 import { useFirestoreData } from "../../../lib/useFirestore";
 import { resolveIcon } from "../../pages/admin/sections/ProgramsView";
 
@@ -31,6 +31,8 @@ const proofPoints = [
 
 export function WhoWeAreSection() {
   const [featuresRaw] = useFirestoreData<any[]>("esn_whoweare_admin", getInitialWhoWeAreFeatures());
+  const [storyRaw] = useFirestoreData<WhoWeAreStory>("esn_whoweare_story", getInitialWhoWeAreStory());
+  const story = storyRaw || getInitialWhoWeAreStory();
 
   const features = (featuresRaw || defaultFeatures).map((f) => ({
     iconName: f.iconName,
@@ -43,9 +45,9 @@ export function WhoWeAreSection() {
       {/* Editorial label bar */}
       <div className="bg-[#F6FBF8] border-b border-[#4CAF50]/15 py-3.5 px-6">
         <div className="max-w-7xl mx-auto flex items-center gap-3">
-          <span className="text-[#4CAF50] text-xs font-black uppercase tracking-[0.3em]">Who We Are</span>
+          <span className="text-[#4CAF50] text-xs font-black uppercase tracking-[0.3em]">{story.tagline || "Who We Are"}</span>
           <div className="flex-1 h-px bg-[#4CAF50]/20" />
-          <span className="text-gray-400 text-xs font-medium">Est. 2019 · 80+ Countries</span>
+          <span className="text-gray-400 text-xs font-medium">{story.subtagline || "Est. 2019 · 80+ Countries"}</span>
         </div>
       </div>
 
@@ -69,16 +71,15 @@ export function WhoWeAreSection() {
                 fontWeight: 900,
               }}
             >
-              Shaping Change Through<br />
+              {story.title1 || "Shaping Change Through"}<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#4CAF50] to-[#0B5D3F]">
-                Science, Community & Courage
+                {story.title2 || "Science, Community & Courage"}
               </span>
             </h2>
 
             {/* Description */}
-            <p className="text-gray-600 text-lg leading-relaxed mb-8 font-light">
-              Environmental Shapers Network (ESN) is a globally active NGO bringing together environmental scientists, frontline communities, youth advocates, researchers, and policymakers across{" "}
-              <strong className="text-[#0B5D3F] font-semibold">80+ countries</strong>. We operate at the intersection of ecology, social justice, and systemic innovation.
+            <p className="text-gray-600 text-lg leading-relaxed mb-8 font-light whitespace-pre-line">
+              {story.description}
             </p>
 
             {/* Founders' Quote Card */}
@@ -90,11 +91,11 @@ export function WhoWeAreSection() {
                   <path d="M0 24V14.4C0 6.4 4.8 1.6 14.4 0l1.6 2.4C10.4 3.6 7.2 6.4 6.4 10.4H12V24H0zm20 0V14.4C20 6.4 24.8 1.6 34.4 0l1.6 2.4C30.4 3.6 27.2 6.4 26.4 10.4H32V24H20z" fill="#4CAF50" />
                 </svg>
                 <p className="text-white/90 text-base leading-relaxed font-medium italic mb-3">
-                  "When the floods came and scientists confirmed climate change as the cause, we realized that hope without action was just a comfortable lie. We had to build something real."
+                  "{story.quoteText.replace(/^"/, '').replace(/"$/, '')}"
                 </p>
                 <div className="flex items-center gap-2.5">
                   <div className="w-7 h-px bg-[#4CAF50]" />
-                  <span className="text-[#A5D6A7] text-xs font-bold">Imran Hossain & Abu Hanif · Co-Founders, ESN</span>
+                  <span className="text-[#A5D6A7] text-xs font-bold">{story.quoteAuthor}</span>
                 </div>
               </div>
             </div>

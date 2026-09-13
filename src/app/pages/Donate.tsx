@@ -213,7 +213,7 @@ export default function Donate() {
       {/* Hero */}
       <section className="relative py-20 overflow-hidden">
         <div className="absolute inset-0">
-          <img src="https://images.unsplash.com/photo-1622383563227-04401ab4e5ea?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1920" alt="" className="w-full h-full object-cover" />
+          <img src="https://images.unsplash.com/photo-1622383563227-04401ab4e5ea?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&auto=format&q=70&w=900" alt="" decoding="async" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-br from-[#0B5D3F]/92 to-[#173B63]/88" />
         </div>
         <div className="relative max-w-4xl mx-auto px-6 text-center">

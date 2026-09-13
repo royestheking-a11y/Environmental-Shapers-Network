@@ -18,15 +18,27 @@ const initialSettings = {
   maintenanceMode: false,
 };
 
+import { saveFirestoreData } from "../lib/useFirestore";
+import { Link } from "react-router";
+
 export function Root() {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith("/admin");
-  const [settings] = useFirestoreData<any>("esn_settings", initialSettings);
+  const [settings, setSettings] = useFirestoreData<any>("esn_settings", initialSettings);
 
   const isMaintenance = Boolean(settings?.maintenanceMode);
+  const storedAdmin = typeof window !== "undefined" ? localStorage.getItem("esn_admin_user") : null;
+  const hasAdminSession = Boolean(storedAdmin);
+  const isPreviewParam = new URLSearchParams(location.search).get("preview") === "true";
 
-  // Render maintenance page immediately if maintenance mode is enabled
-  if (isMaintenance && !isAdmin) {
+  const handleDisableMaintenance = async () => {
+    const updated = { ...settings, maintenanceMode: false };
+    setSettings(updated);
+    await saveFirestoreData("esn_settings", updated);
+  };
+
+  // Render maintenance page ONLY for non-admin visitors when maintenance mode is active
+  if (isMaintenance && !isAdmin && !hasAdminSession && !isPreviewParam) {
     return (
       <>
         <CustomCursor />
@@ -39,6 +51,25 @@ export function Root() {
     <>
       <CustomCursor />
       <div className="min-h-screen flex flex-col" style={{ cursor: "none" }}>
+        {isMaintenance && !isAdmin && (
+          <div className="bg-amber-500 text-slate-900 px-4 py-2 text-xs font-bold flex flex-wrap items-center justify-between gap-2 z-[99999] shadow-md">
+            <span className="flex items-center gap-1.5">
+              <span>⚠️</span>
+              <span>Maintenance Mode is Active (Public visitors see the maintenance page). You are viewing as Admin.</span>
+            </span>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleDisableMaintenance}
+                className="bg-slate-900 text-white px-3 py-1 rounded-md hover:bg-black transition-all"
+              >
+                Disable Maintenance Mode
+              </button>
+              <Link to="/admin" className="underline hover:text-white">
+                Admin Dashboard
+              </Link>
+            </div>
+          </div>
+        )}
         {!isAdmin && <ScrollProgress />}
         {!isAdmin && <Navbar />}
         <div className="flex-1 bg-[#F6FBF8]">

@@ -59,7 +59,7 @@ export function getInitialTestimonials(): Testimonial[] {
   ];
 }
 
-import { useFirestoreData } from "../../../../lib/useFirestore";
+import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 
 export default function TestimonialsView() {
   const [testimonials, setTestimonials, loading] = useFirestoreData<Testimonial[]>("esn_testimonials_admin", getInitialTestimonials());
@@ -72,9 +72,9 @@ export default function TestimonialsView() {
     name: "", role: "", avatar: "", quote: "", org: "", country: "", rating: 5
   });
 
-  const saveTestimonials = (newData: Testimonial[]) => {
+  const saveTestimonials = async (newData: Testimonial[]) => {
     setTestimonials(newData);
-    
+    await saveFirestoreData("esn_testimonials_admin", newData);
   };
 
   const handleSave = () => {

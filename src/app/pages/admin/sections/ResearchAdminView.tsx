@@ -23,7 +23,7 @@ export function getInitialResearchAreas(): ResearchArea[] {
   ];
 }
 
-import { useFirestoreData } from "../../../../lib/useFirestore";
+import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 
 export default function ResearchAdminView() {
   const [areas, setAreas, loading] = useFirestoreData<ResearchArea[]>("esn_research_admin", getInitialResearchAreas());
@@ -36,9 +36,9 @@ export default function ResearchAdminView() {
   });
   const [tagInput, setTagInput] = useState("");
 
-  const saveAreas = (newData: ResearchArea[]) => {
+  const saveAreas = async (newData: ResearchArea[]) => {
     setAreas(newData);
-    
+    await saveFirestoreData("esn_research_admin", newData);
   };
 
   const handleSave = () => {

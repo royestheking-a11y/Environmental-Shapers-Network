@@ -25,7 +25,7 @@ export function getInitialStats(): StatItem[] {
   ];
 }
 
-import { useFirestoreData } from "../../../../lib/useFirestore";
+import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 
 export default function StatsAdminView() {
   const [stats, setStats, loading] = useFirestoreData<StatItem[]>("esn_stats_admin", getInitialStats());
@@ -37,7 +37,7 @@ export default function StatsAdminView() {
     label: "", description: "", iconName: "TreePine", value: 0, suffix: "+", color: "text-[#0B5D3F]", bgColor: "bg-[#0B5D3F]/10"
   });
 
-  const saveStats = (newData: StatItem[]) => {
+  const saveStats = async (newData: StatItem[]) => {
     // Automatically recalculate and synchronize CO2 sequestered whenever Trees Planted changes
     const treeStat = newData.find(s => s.label.toLowerCase().includes("tree") || s.iconName === "TreePine");
     let synchronized = newData;
@@ -51,6 +51,7 @@ export default function StatsAdminView() {
       });
     }
     setStats(synchronized);
+    await saveFirestoreData("esn_stats_admin", synchronized);
   };
 
   const handleSave = () => {

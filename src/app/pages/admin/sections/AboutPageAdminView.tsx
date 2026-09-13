@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Plus, Edit3, Trash2, AlertCircle, Save, LayoutTemplate, Users, History, AlignLeft, Image as ImageIcon, Target, Globe2 } from "lucide-react";
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 import { resolveIcon } from "./ProgramsView";
+import { ImageUploadField } from "../../../components/ui/ImageUploadField";
 
 // Types
 export interface AboutHeroData {
@@ -154,6 +155,12 @@ export default function AboutPageAdminView() {
   const [presenceData, setPresenceData] = useFirestoreData<AboutGlobalPresenceData>("esn_about_global_presence", initialGlobalPresenceData);
 
   const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
+
+  const notifySave = (msg: string) => {
+    setSaveSuccess(msg);
+    setTimeout(() => setSaveSuccess(null), 3000);
+  };
 
   // Milestone editing state
   const [showAddMilestone, setShowAddMilestone] = useState(false);
@@ -169,29 +176,33 @@ export default function AboutPageAdminView() {
     setIsSaving(true);
     await saveFirestoreData("esn_about_hero", heroData);
     setIsSaving(false);
+    notifySave("Hero section updated and published live!");
   };
 
   const handleSaveStory = async () => {
     setIsSaving(true);
     await saveFirestoreData("esn_about_story", storyData);
     setIsSaving(false);
+    notifySave("Story & Quote updated and published live!");
   };
 
   const handleSaveVision = async () => {
     setIsSaving(true);
     await saveFirestoreData("esn_about_vision_mission", visionData);
     setIsSaving(false);
+    notifySave("Vision & Mission updated and published live!");
   };
 
   const handleSavePresence = async () => {
     setIsSaving(true);
     await saveFirestoreData("esn_about_global_presence", presenceData);
     setIsSaving(false);
+    notifySave("Global Presence updated and published live!");
   };
 
-  const handleSaveMilestone = () => {
+  const handleSaveMilestone = async () => {
     if (!milestoneFormData.title || !milestoneFormData.year) return;
-    let newMilestones;
+    let newMilestones: AboutMilestone[];
     if (editingMilestoneId !== null) {
       newMilestones = milestones.map(m => m.id === editingMilestoneId ? { ...m, ...milestoneFormData } as AboutMilestone : m);
     } else {
@@ -199,16 +210,21 @@ export default function AboutPageAdminView() {
       newMilestones = [...milestones, { ...milestoneFormData, id: newId } as AboutMilestone];
     }
     setMilestones(newMilestones);
+    await saveFirestoreData("esn_about_milestones", newMilestones);
     setShowAddMilestone(false);
+    notifySave("Milestone saved and published live!");
   };
 
-  const handleDeleteMilestone = (id: number) => {
-    setMilestones(milestones.filter(m => m.id !== id));
+  const handleDeleteMilestone = async (id: number) => {
+    const newMilestones = milestones.filter(m => m.id !== id);
+    setMilestones(newMilestones);
+    await saveFirestoreData("esn_about_milestones", newMilestones);
+    notifySave("Milestone deleted and updated live!");
   };
 
-  const handleSaveTeam = () => {
+  const handleSaveTeam = async () => {
     if (!teamFormData.name || !teamFormData.role) return;
-    let newTeam;
+    let newTeam: AboutTeamMember[];
     if (editingTeamId !== null) {
       newTeam = teamMembers.map(t => t.id === editingTeamId ? { ...t, ...teamFormData } as AboutTeamMember : t);
     } else {
@@ -216,11 +232,15 @@ export default function AboutPageAdminView() {
       newTeam = [...teamMembers, { ...teamFormData, id: newId } as AboutTeamMember];
     }
     setTeamMembers(newTeam);
+    await saveFirestoreData("esn_about_team", newTeam);
     setShowAddTeam(false);
+    setTeamFormData({ category: "Global", tags: [], img: "" });
   };
 
-  const handleDeleteTeam = (id: number) => {
-    setTeamMembers(teamMembers.filter(t => t.id !== id));
+  const handleDeleteTeam = async (id: number) => {
+    const newTeam = teamMembers.filter(t => t.id !== id);
+    setTeamMembers(newTeam);
+    await saveFirestoreData("esn_about_team", newTeam);
   };
 
   const tabs = [
@@ -238,6 +258,20 @@ export default function AboutPageAdminView() {
         <h3 className="text-gray-900 font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>About Page CMS</h3>
         <p className="text-sm text-gray-400">Manage all content for the About Page</p>
       </div>
+
+      <AnimatePresence>
+        {saveSuccess && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl text-sm font-semibold"
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            {saveSuccess}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-2">
         {tabs.map(tab => {
@@ -424,11 +458,16 @@ export default function AboutPageAdminView() {
                         <option value="Advisor">Advisor</option>
                       </select>
                     </div>
-                    <div>
-                      <label className="text-xs font-bold text-gray-600 mb-1.5 block">Image URL (Optional)</label>
-                      <input type="text" value={teamFormData.img || ""} onChange={e => setTeamFormData({ ...teamFormData, img: e.target.value })} className="w-full px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
+                    <div className="md:col-span-2">
+                      <ImageUploadField
+                        label="Team Member Photo"
+                        value={teamFormData.img || ""}
+                        onChange={(url) => setTeamFormData({ ...teamFormData, img: url })}
+                        folder="team"
+                        helpText="Upload a portrait photo or profile picture for this team member"
+                      />
                     </div>
-                    <div>
+                    <div className="md:col-span-2">
                       <label className="text-xs font-bold text-gray-600 mb-1.5 block">Tags (Comma separated)</label>
                       <input type="text" value={teamFormData.tags?.join(", ") || ""} onChange={e => setTeamFormData({ ...teamFormData, tags: e.target.value.split(",").map(t => t.trim()).filter(Boolean) })} placeholder="e.g. Climate, Science" className="w-full px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
                     </div>

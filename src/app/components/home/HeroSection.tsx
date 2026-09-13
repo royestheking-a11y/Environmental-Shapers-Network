@@ -124,7 +124,7 @@ export function HeroSection() {
     return () => clearInterval(t);
   }, [slides]);
 
-  const currentSlide = slides[slide];
+  const currentSlide = slides[slide] || slides[0] || defaultSlides[0];
 
   return (
     <section 

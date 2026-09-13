@@ -37,7 +37,7 @@ import {
   Bell, Search, LogOut, ChevronDown, Menu, X, TrendingUp, TrendingDown, Eye, Edit3, Trash2,
   Plus, Filter, Download, RefreshCw, Shield, Mail, Image, Database, Leaf, Target, Award,
   AlertCircle, CheckCircle2, Clock, MapPin, Star, Briefcase, MessageSquare, MonitorPlay, Focus,
-  Activity, Check, Sparkles,
+  Activity, Check, Sparkles, Newspaper, AlertTriangle,
 } from "lucide-react";
 import { AreaChart, Area, LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
@@ -49,7 +49,7 @@ interface AdminUser {
 
 const sidebarItems = [
   { icon: LayoutDashboard, label: "Dashboard", id: "dashboard" },
-  { icon: FileText, label: "Content", id: "cms" },
+  { icon: Newspaper, label: "News & Articles", id: "cms" },
   { icon: Focus, label: "About Page CMS", id: "about-page" },
   { icon: MonitorPlay, label: "Hero Section", id: "hero" },
   { icon: Focus, label: "Who We Are", id: "whoweare" },
@@ -177,6 +177,10 @@ const sectionAliases: Record<string, string> = {
   "careers": "opportunities",
   "volunteers": "opportunities",
   "content": "cms",
+  "news": "cms",
+  "articles": "cms",
+  "news-articles": "cms",
+  "blog": "cms",
   "about-page": "about-page",
   "hero-section": "hero",
   "who-we-are": "whoweare",
@@ -215,13 +219,14 @@ export default function AdminDashboard() {
   const [cmsContent, setCmsContent, loadingCms] = useFirestoreData<any[]>("esn_cms_content", getInitialContent());
   const [user, setUser] = useState<AdminUser | null>(null);
   const [showAddContent, setShowAddContent] = useState(false);
-  const [newContent, setNewContent] = useState({ title: "", type: "News", status: "Draft" });
+  const [newContent, setNewContent] = useState<any>({ title: "", type: "News", status: "Published" });
   const [editingContent, setEditingContent] = useState<any>(null);
   const [cmsDeleteConfirmId, setCmsDeleteConfirmId] = useState<number | null>(null);
   const [donations] = useFirestoreData<any[]>("esn_donations", getInitialDonations());
   const [usersList] = useFirestoreData<any[]>("esn_users_admin", getInitialUsers());
   const [projectsList] = useFirestoreData<Project[]>("esn_projects_admin", getInitialProjects());
   const [campaignsList] = useFirestoreData<Campaign[]>("esn_campaigns_admin", getInitialCampaigns());
+  const [siteSettings, setSiteSettings] = useFirestoreData<any>("esn_settings", { maintenanceMode: false });
 
   // Real dynamic metrics calculated live from Firestore collections
   const totalDonationsAmount = useMemo(() => {
@@ -423,14 +428,22 @@ export default function AdminDashboard() {
     const item = {
       id: Date.now(),
       title: newContent.title,
-      type: newContent.type,
-      status: newContent.status,
-      author: user?.name || "Admin",
-      date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+      type: newContent.type || "News",
+      status: newContent.status || "Published",
+      category: newContent.category || "Projects",
+      excerpt: newContent.excerpt || "",
+      content: newContent.content || newContent.excerpt || "",
+      image: newContent.image || "",
+      author: newContent.author || user?.name || "ESN Communications Team",
+      authorRole: newContent.authorRole || "ESN Media Office",
+      readTime: newContent.readTime || "4 min read",
+      date: newContent.date || new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
+      featured: Boolean(newContent.featured),
+      tags: typeof newContent.tags === "string" ? newContent.tags.split(",").map((t: string) => t.trim()).filter(Boolean) : (newContent.tags || []),
       views: 0,
     };
     saveContent([item, ...cmsContent]);
-    setNewContent({ title: "", type: "News", status: "Draft" });
+    setNewContent({ title: "", type: "News", status: "Published" } as any);
     setShowAddContent(false);
   };
 
@@ -445,12 +458,21 @@ export default function AdminDashboard() {
   };
 
   const startEditContent = (item: any) => {
-    setEditingContent({ ...item });
+    setEditingContent({
+      ...item,
+      tags: Array.isArray(item.tags) ? item.tags.join(", ") : (item.tags || ""),
+    });
   };
 
   const saveEditContent = () => {
     if (!editingContent) return;
-    saveContent(cmsContent.map((c: any) => c.id === editingContent.id ? editingContent : c));
+    const cleanItem = {
+      ...editingContent,
+      tags: typeof editingContent.tags === "string"
+        ? editingContent.tags.split(",").map((t: string) => t.trim()).filter(Boolean)
+        : (editingContent.tags || []),
+    };
+    saveContent(cmsContent.map((c: any) => c.id === cleanItem.id ? cleanItem : c));
     setEditingContent(null);
   };
 
@@ -865,6 +887,31 @@ export default function AdminDashboard() {
           </div>
         </header>
 
+        {siteSettings?.maintenanceMode && (
+          <div className="bg-amber-500 text-slate-950 px-4 sm:px-6 py-2.5 text-xs font-bold flex flex-wrap items-center justify-between gap-2 shadow-sm shrink-0 border-b border-amber-600/30">
+            <div className="flex items-center gap-2">
+              <AlertTriangle size={15} className="text-slate-950 shrink-0" />
+              <span>Maintenance Mode is currently ACTIVE on the website. Public visitors cannot browse pages.</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <a href="/?preview=true" target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors">
+                Preview Live Site
+              </a>
+              <button
+                onClick={async () => {
+                  const updated = { ...siteSettings, maintenanceMode: false };
+                  setSiteSettings(updated);
+                  await saveFirestoreData("esn_settings", updated);
+                  window.dispatchEvent(new Event("esn_settings_updated"));
+                }}
+                className="bg-slate-950 hover:bg-black text-white px-3 py-1 rounded-lg transition-all shadow-xs cursor-pointer"
+              >
+                Turn Off Maintenance Mode
+              </button>
+            </div>
+          </div>
+        )}
+
         <main className="flex-1 overflow-y-auto p-6">
           {renderContent()}
         </main>
@@ -1103,8 +1150,8 @@ function CMSView({ content, onDelete, onToggle, onShowAdd, showAdd, newContent, 
     <div className="flex flex-col gap-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h3 className="text-gray-900 font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Content Management</h3>
-          <p className="text-sm text-gray-400">{items.length} total articles & news items · Real-time live CMS</p>
+          <h3 className="text-gray-900 font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>News & Articles Studio</h3>
+          <p className="text-sm text-gray-400">{items.length} total articles & news items · Live publication to Homepage and Media Center</p>
         </div>
         <div className="flex items-center gap-3">
           {items.length === 0 && onRestoreDefaults && (
@@ -1116,7 +1163,7 @@ function CMSView({ content, onDelete, onToggle, onShowAdd, showAdd, newContent, 
             </button>
           )}
           <button onClick={onShowAdd} className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all shadow-md shadow-[#0B5D3F]/20">
-            <Plus size={16} /> New Content
+            <Plus size={16} /> Write Article / News
           </button>
         </div>
       </div>
@@ -1127,34 +1174,55 @@ function CMSView({ content, onDelete, onToggle, onShowAdd, showAdd, newContent, 
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="bg-white rounded-2xl p-6 border border-[#4CAF50]/30 overflow-hidden"
+            className="bg-white rounded-2xl p-6 border border-[#4CAF50]/30 overflow-hidden shadow-sm"
           >
-            <h4 className="font-bold text-gray-900 mb-5">Add New Content</h4>
+            <h4 className="font-bold text-gray-900 mb-5 text-lg">Write New Article / News Story</h4>
             <div className="grid sm:grid-cols-3 gap-4 mb-4">
               <div className="sm:col-span-1">
                 <label className="text-xs font-bold text-gray-600 mb-1.5 block">Type</label>
                 <select value={newContent.type || "News"} onChange={(e) => setNewContent({ ...newContent, type: e.target.value })} className="w-full px-3 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none">
-                  {["News", "Event", "Report", "Campaign", "Update", "Blog"].map((t) => <option key={t}>{t}</option>)}
+                  {["News", "Article", "Press Release", "Blog", "Report", "Story", "Update"].map((t) => <option key={t}>{t}</option>)}
                 </select>
               </div>
               <div className="sm:col-span-1">
                 <label className="text-xs font-bold text-gray-600 mb-1.5 block">Status</label>
-                <select value={newContent.status || "Draft"} onChange={(e) => setNewContent({ ...newContent, status: e.target.value })} className="w-full px-3 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none">
-                  <option>Draft</option>
+                <select value={newContent.status || "Published"} onChange={(e) => setNewContent({ ...newContent, status: e.target.value })} className="w-full px-3 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none">
                   <option>Published</option>
+                  <option>Draft</option>
                 </select>
               </div>
               <div className="sm:col-span-1">
                 <label className="text-xs font-bold text-gray-600 mb-1.5 block">Category</label>
-                <input type="text" value={newContent.category || ""} onChange={(e) => setNewContent({ ...newContent, category: e.target.value })} placeholder="e.g. Projects, Policy" className="w-full px-3 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] transition-colors" />
+                <input type="text" value={newContent.category || ""} onChange={(e) => setNewContent({ ...newContent, category: e.target.value })} placeholder="e.g. Projects, Policy, Research" className="w-full px-3 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] transition-colors" />
               </div>
               <div className="sm:col-span-3">
-                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Title *</label>
-                <input type="text" value={newContent.title || ""} onChange={(e) => setNewContent({ ...newContent, title: e.target.value })} placeholder="Content title..." className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] transition-colors" />
+                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Article Title *</label>
+                <input type="text" value={newContent.title || ""} onChange={(e) => setNewContent({ ...newContent, title: e.target.value })} placeholder="Catchy headline or article title..." className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] transition-colors" />
+              </div>
+              <div className="sm:col-span-1">
+                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Author Name</label>
+                <input type="text" value={newContent.author || ""} onChange={(e) => setNewContent({ ...newContent, author: e.target.value })} placeholder="e.g. ESN Communications Team" className="w-full px-3 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] transition-colors" />
+              </div>
+              <div className="sm:col-span-1">
+                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Author Role</label>
+                <input type="text" value={newContent.authorRole || ""} onChange={(e) => setNewContent({ ...newContent, authorRole: e.target.value })} placeholder="e.g. Climate Policy Lead" className="w-full px-3 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] transition-colors" />
+              </div>
+              <div className="sm:col-span-1">
+                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Read Time</label>
+                <input type="text" value={newContent.readTime || "4 min read"} onChange={(e) => setNewContent({ ...newContent, readTime: e.target.value })} placeholder="e.g. 4 min read" className="w-full px-3 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] transition-colors" />
               </div>
               <div className="sm:col-span-3">
-                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Excerpt</label>
-                <textarea value={newContent.excerpt || ""} onChange={(e) => setNewContent({ ...newContent, excerpt: e.target.value })} placeholder="Short description..." className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] transition-colors resize-none h-20" />
+                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Summary / Excerpt (Short preview)</label>
+                <textarea value={newContent.excerpt || ""} onChange={(e) => setNewContent({ ...newContent, excerpt: e.target.value })} placeholder="A compelling 1-2 sentence lead or overview that appears on news cards..." className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] transition-colors resize-none h-20" />
+              </div>
+              <div className="sm:col-span-3">
+                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Full Article Story & Content *</label>
+                <textarea
+                  value={newContent.content || ""}
+                  onChange={(e) => setNewContent({ ...newContent, content: e.target.value })}
+                  placeholder="Write the full story or article here. Separate paragraphs with blank lines. You can write your complete news report, updates, and quotes here..."
+                  className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] transition-colors h-48"
+                />
               </div>
               <div className="sm:col-span-3">
                 <ImageUploadField
@@ -1162,18 +1230,22 @@ function CMSView({ content, onDelete, onToggle, onShowAdd, showAdd, newContent, 
                   value={newContent.image || ""}
                   onChange={(url) => setNewContent({ ...newContent, image: url })}
                   folder="cms"
-                  helpText="Upload a featured image for this article"
+                  helpText="Upload a featured cover image or banner for this story"
                 />
+              </div>
+              <div className="sm:col-span-3">
+                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Tags (Comma separated)</label>
+                <input type="text" value={newContent.tags || ""} onChange={(e) => setNewContent({ ...newContent, tags: e.target.value })} placeholder="e.g. Mangroves, Bangladesh, COP31, Climate" className="w-full px-3 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] transition-colors" />
               </div>
               <div className="sm:col-span-3 flex items-center pt-2">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={newContent.featured || false} onChange={(e) => setNewContent({ ...newContent, featured: e.target.checked })} className="w-4 h-4 rounded text-[#0B5D3F] focus:ring-[#0B5D3F]" />
-                  <span className="text-sm font-bold text-gray-700">Mark as Featured Article</span>
+                  <span className="text-sm font-bold text-gray-700">Feature this story on the Homepage</span>
                 </label>
               </div>
             </div>
             <div className="flex gap-3">
-              <button onClick={() => { onAdd(); setNewContent({ title: "", type: "News", status: "Draft", image: "", excerpt: "", category: "", featured: false }); }} className="bg-[#0B5D3F] text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#0a5237] transition-all">Save Content</button>
+              <button onClick={() => { onAdd(); }} className="bg-[#0B5D3F] text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#0a5237] transition-all">Publish Story</button>
               <button onClick={onCancelAdd} className="px-6 py-2.5 rounded-xl text-sm font-semibold text-gray-500 hover:bg-gray-100 transition-all">Cancel</button>
             </div>
           </motion.div>
@@ -1186,21 +1258,21 @@ function CMSView({ content, onDelete, onToggle, onShowAdd, showAdd, newContent, 
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="bg-white rounded-2xl p-6 border border-[#173B63]/30 overflow-hidden"
+            className="bg-white rounded-2xl p-6 border border-[#173B63]/30 overflow-hidden shadow-sm"
           >
-            <h4 className="font-bold text-gray-900 mb-5">Edit Content</h4>
+            <h4 className="font-bold text-gray-900 mb-5 text-lg">Edit Article / Story</h4>
             <div className="grid sm:grid-cols-3 gap-4 mb-4">
               <div>
                 <label className="text-xs font-bold text-gray-600 mb-1.5 block">Type</label>
                 <select value={editingContent.type || "News"} onChange={(e) => setEditingContent({ ...editingContent, type: e.target.value })} className="w-full px-3 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none">
-                  {["News", "Event", "Report", "Campaign", "Update", "Blog"].map((t) => <option key={t}>{t}</option>)}
+                  {["News", "Article", "Press Release", "Blog", "Report", "Story", "Update"].map((t) => <option key={t}>{t}</option>)}
                 </select>
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-600 mb-1.5 block">Status</label>
-                <select value={editingContent.status || "Draft"} onChange={(e) => setEditingContent({ ...editingContent, status: e.target.value })} className="w-full px-3 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none">
-                  <option>Draft</option>
+                <select value={editingContent.status || "Published"} onChange={(e) => setEditingContent({ ...editingContent, status: e.target.value })} className="w-full px-3 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none">
                   <option>Published</option>
+                  <option>Draft</option>
                 </select>
               </div>
               <div>
@@ -1208,12 +1280,33 @@ function CMSView({ content, onDelete, onToggle, onShowAdd, showAdd, newContent, 
                 <input type="text" value={editingContent.category || ""} onChange={(e) => setEditingContent({ ...editingContent, category: e.target.value })} className="w-full px-3 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none" />
               </div>
               <div className="sm:col-span-3">
-                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Title *</label>
+                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Article Title *</label>
                 <input type="text" value={editingContent.title || ""} onChange={(e) => setEditingContent({ ...editingContent, title: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#173B63] transition-colors" />
               </div>
+              <div className="sm:col-span-1">
+                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Author Name</label>
+                <input type="text" value={editingContent.author || ""} onChange={(e) => setEditingContent({ ...editingContent, author: e.target.value })} className="w-full px-3 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none" />
+              </div>
+              <div className="sm:col-span-1">
+                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Author Role</label>
+                <input type="text" value={editingContent.authorRole || ""} onChange={(e) => setEditingContent({ ...editingContent, authorRole: e.target.value })} className="w-full px-3 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none" />
+              </div>
+              <div className="sm:col-span-1">
+                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Read Time</label>
+                <input type="text" value={editingContent.readTime || "4 min read"} onChange={(e) => setEditingContent({ ...editingContent, readTime: e.target.value })} className="w-full px-3 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none" />
+              </div>
               <div className="sm:col-span-3">
-                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Excerpt</label>
-                <textarea value={editingContent.excerpt || ""} onChange={(e) => setEditingContent({ ...editingContent, excerpt: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#173B63] transition-colors resize-none h-20" />
+                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Summary / Excerpt</label>
+                <textarea value={editingContent.excerpt || ""} onChange={(e) => setEditingContent({ ...editingContent, excerpt: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#173B63] transition-colors resize-none h-20" />
+              </div>
+              <div className="sm:col-span-3">
+                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Full Article Story & Content</label>
+                <textarea
+                  value={typeof editingContent.content === "string" ? editingContent.content : (Array.isArray(editingContent.content) ? editingContent.content.map((b: any) => b.text || "").filter(Boolean).join("\n\n") : "")}
+                  onChange={(e) => setEditingContent({ ...editingContent, content: e.target.value })}
+                  placeholder="Write the full story or article here. Separate paragraphs with blank lines..."
+                  className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#173B63] transition-colors h-48"
+                />
               </div>
               <div className="sm:col-span-3">
                 <ImageUploadField
@@ -1224,10 +1317,20 @@ function CMSView({ content, onDelete, onToggle, onShowAdd, showAdd, newContent, 
                   helpText="Upload or change the featured image"
                 />
               </div>
+              <div className="sm:col-span-3">
+                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Tags (Comma separated)</label>
+                <input
+                  type="text"
+                  value={editingContent.tags || ""}
+                  onChange={(e) => setEditingContent({ ...editingContent, tags: e.target.value })}
+                  placeholder="e.g. Mangroves, Climate, Policy"
+                  className="w-full px-3 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none"
+                />
+              </div>
               <div className="sm:col-span-3 flex items-center pt-2">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={editingContent.featured || false} onChange={(e) => setEditingContent({ ...editingContent, featured: e.target.checked })} className="w-4 h-4 rounded text-[#0B5D3F] focus:ring-[#0B5D3F]" />
-                  <span className="text-sm font-bold text-gray-700">Mark as Featured Article</span>
+                  <span className="text-sm font-bold text-gray-700">Feature this story on the Homepage</span>
                 </label>
               </div>
             </div>

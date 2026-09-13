@@ -77,15 +77,49 @@ export function SettingsView() {
     window.location.href = "/admin";
   };
 
-  const Toggle = ({ k }: { k: string }) => (
-    <button
-      type="button"
-      onClick={() => update(k, !(settings as any)[k])}
-      className={`w-12 h-6 rounded-full transition-all duration-300 relative shrink-0 ${(settings as any)[k] ? "bg-[#4CAF50]" : "bg-gray-200"}`}
-    >
-      <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all duration-300 shadow-sm ${(settings as any)[k] ? "left-6" : "left-0.5"}`} />
-    </button>
-  );
+  const [showMaintenanceConfirm, setShowMaintenanceConfirm] = useState(false);
+
+  const handleToggleMaintenance = async () => {
+    if (!settings.maintenanceMode) {
+      setShowMaintenanceConfirm(true);
+    } else {
+      const updated = { ...settings, maintenanceMode: false };
+      setSettings(updated);
+      await saveFirestoreData("esn_settings", updated);
+      window.dispatchEvent(new Event("esn_settings_updated"));
+    }
+  };
+
+  const confirmEnableMaintenance = async () => {
+    const updated = { ...settings, maintenanceMode: true };
+    setSettings(updated);
+    await saveFirestoreData("esn_settings", updated);
+    window.dispatchEvent(new Event("esn_settings_updated"));
+    setShowMaintenanceConfirm(false);
+  };
+
+  const Toggle = ({ k }: { k: string }) => {
+    if (k === "maintenanceMode") {
+      return (
+        <button
+          type="button"
+          onClick={handleToggleMaintenance}
+          className={`w-12 h-6 rounded-full transition-all duration-300 relative shrink-0 ${settings?.maintenanceMode ? "bg-amber-500" : "bg-gray-200"}`}
+        >
+          <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all duration-300 shadow-sm ${settings?.maintenanceMode ? "left-6" : "left-0.5"}`} />
+        </button>
+      );
+    }
+    return (
+      <button
+        type="button"
+        onClick={() => update(k, !(settings as any)[k])}
+        className={`w-12 h-6 rounded-full transition-all duration-300 relative shrink-0 ${(settings as any)[k] ? "bg-[#4CAF50]" : "bg-gray-200"}`}
+      >
+        <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all duration-300 shadow-sm ${(settings as any)[k] ? "left-6" : "left-0.5"}`} />
+      </button>
+    );
+  };
 
   const Field = ({ label, k, type = "text", placeholder = "" }: { label: string; k: string; type?: string; placeholder?: string }) => (
     <div>
@@ -375,6 +409,43 @@ export function SettingsView() {
           )}
         </motion.div>
       </div>
+
+      {/* Maintenance Mode Confirmation Modal */}
+      {showMaintenanceConfirm && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-amber-200"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mb-4">
+              <AlertTriangle size={24} />
+            </div>
+            <h3 className="text-xl font-black text-gray-900 mb-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              Enable Maintenance Mode?
+            </h3>
+            <p className="text-sm text-gray-600 leading-relaxed mb-6">
+              Taking the platform offline will display the <strong>Scheduled Maintenance</strong> page to all public visitors. You will still be able to preview and browse the live site because you are logged in as an Admin.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                type="button"
+                onClick={() => setShowMaintenanceConfirm(false)}
+                className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-bold text-xs hover:bg-gray-50 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmEnableMaintenance}
+                className="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition-all shadow-md"
+              >
+                Yes, Enable Maintenance Mode
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

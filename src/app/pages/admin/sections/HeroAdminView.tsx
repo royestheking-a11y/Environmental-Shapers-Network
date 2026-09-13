@@ -34,7 +34,7 @@ export function getInitialHeroSlides(): HeroSlide[] {
   ];
 }
 
-import { useFirestoreData } from "../../../../lib/useFirestore";
+import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 
 export default function HeroAdminView() {
   const [slides, setSlides, loading] = useFirestoreData<HeroSlide[]>("esn_hero_admin", getInitialHeroSlides());
@@ -44,9 +44,9 @@ export default function HeroAdminView() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const [formData, setFormData] = useState<Partial<HeroSlide>>({ tag: "", heading: "", sub: "" });
 
-  const saveSlides = (newData: HeroSlide[]) => {
+  const saveSlides = async (newData: HeroSlide[]) => {
     setSlides(newData);
-    
+    await saveFirestoreData("esn_hero_admin", newData);
   };
 
   const handleSave = () => {

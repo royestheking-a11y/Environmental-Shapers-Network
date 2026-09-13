@@ -26,7 +26,7 @@ export function getInitialThematicAreas(): ThematicArea[] {
   ];
 }
 
-import { useFirestoreData } from "../../../../lib/useFirestore";
+import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 
 export default function ThematicAreasView() {
   const [areas, setAreas, loading] = useFirestoreData<ThematicArea[]>("esn_thematic_areas_admin", getInitialThematicAreas());
@@ -39,9 +39,9 @@ export default function ThematicAreasView() {
     icon: "Target", slug: "", title: "", desc: "", tag: ""
   });
 
-  const saveAreas = (newData: ThematicArea[]) => {
+  const saveAreas = async (newData: ThematicArea[]) => {
     setAreas(newData);
-    
+    await saveFirestoreData("esn_thematic_areas_admin", newData);
   };
 
   const handleSave = () => {

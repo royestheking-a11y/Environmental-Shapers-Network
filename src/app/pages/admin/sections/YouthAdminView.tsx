@@ -37,7 +37,7 @@ export function getInitialYouthStats(): YouthStat[] {
   ];
 }
 
-import { useFirestoreData } from "../../../../lib/useFirestore";
+import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 
 export default function YouthAdminView() {
   const [initiatives, setInitiatives, loading] = useFirestoreData<YouthInitiative[]>("esn_youth_initiatives_admin", getInitialYouthInitiatives());
@@ -51,12 +51,14 @@ export default function YouthAdminView() {
   const [initForm, setInitForm] = useState<Partial<YouthInitiative>>({ num: "", title: "", desc: "", impact: "" });
   const [statForm, setStatForm] = useState<Partial<YouthStat>>({ value: "", label: "", sub: "" });
 
-  const saveInitiatives = (newData: YouthInitiative[]) => {
+  const saveInitiatives = async (newData: YouthInitiative[]) => {
     setInitiatives(newData);
+    await saveFirestoreData("esn_youth_initiatives_admin", newData);
   };
 
-  const saveStats = (newData: YouthStat[]) => {
+  const saveStats = async (newData: YouthStat[]) => {
     setStats(newData);
+    await saveFirestoreData("esn_youth_stats", newData);
   };
 
   const handleSaveInit = () => {

@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router";
 import { motion } from "motion/react";
 import { Calendar, Clock, ChevronRight, ArrowLeft, ArrowRight, Share2, BookOpen, Tag, User, Check, Copy } from "lucide-react";
 import { ImageWithFallback } from "../components/ui/ImageWithFallback";
+import { useFirestoreData } from "../../lib/useFirestore";
 
 const articles = [
   {
@@ -92,37 +93,71 @@ const categoryColors: Record<string, string> = {
 
 type ContentBlock = { type: string; text?: string; attribution?: string; items?: string[] };
 
-function ContentRenderer({ blocks }: { blocks: ContentBlock[] }) {
-  return (
-    <div className="flex flex-col gap-5">
-      {blocks.map((b, i) => {
-        if (b.type === "p") return <p key={i} className="text-gray-600 leading-[1.85] text-base">{b.text}</p>;
-        if (b.type === "h2") return <h2 key={i} style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: "1.4rem" }} className="text-gray-900 mt-4 mb-1">{b.text}</h2>;
-        if (b.type === "quote") return (
-          <blockquote key={i} className="border-l-4 border-[#4CAF50] pl-6 py-2 my-2 bg-[#0B5D3F]/4 rounded-r-xl">
-            <p className="text-gray-800 italic text-lg leading-relaxed mb-2">"{b.text}"</p>
-            <cite className="text-[#0B5D3F] text-sm font-semibold not-italic">— {b.attribution}</cite>
-          </blockquote>
-        );
-        if (b.type === "ul") return (
-          <ul key={i} className="flex flex-col gap-2.5 pl-0">
-            {b.items?.map((item, j) => (
-              <li key={j} className="flex items-start gap-3 text-gray-600 text-sm leading-relaxed">
-                <div className="w-5 h-5 rounded-full bg-[#4CAF50]/15 flex items-center justify-center shrink-0 mt-0.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#4CAF50]" />
-                </div>
-                {item}
-              </li>
-            ))}
-          </ul>
-        );
-        return null;
-      })}
-    </div>
-  );
-}
+function ContentRenderer({ content }: { content: any }) {
+  if (!content) return null;
 
-import { useFirestoreData } from "../../lib/useFirestore";
+  // If content is a plain string or markdown text
+  if (typeof content === "string") {
+    const paragraphs = content.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
+    return (
+      <div className="flex flex-col gap-5">
+        {paragraphs.map((p, i) => {
+          if (p.startsWith("## ")) {
+            return (
+              <h2 key={i} style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: "1.4rem" }} className="text-gray-900 mt-4 mb-1">
+                {p.replace(/^##\s+/, "")}
+              </h2>
+            );
+          }
+          if (p.startsWith("> ")) {
+            return (
+              <blockquote key={i} className="border-l-4 border-[#4CAF50] pl-6 py-2 my-2 bg-[#0B5D3F]/4 rounded-r-xl">
+                <p className="text-gray-800 italic text-lg leading-relaxed mb-2">"{p.replace(/^>\s+/, "")}"</p>
+              </blockquote>
+            );
+          }
+          return <p key={i} className="text-gray-600 leading-[1.85] text-base">{p}</p>;
+        })}
+      </div>
+    );
+  }
+
+  // If content is an array of ContentBlocks
+  if (Array.isArray(content)) {
+    return (
+      <div className="flex flex-col gap-5">
+        {content.map((b, i) => {
+          if (typeof b === "string") {
+            return <p key={i} className="text-gray-600 leading-[1.85] text-base">{b}</p>;
+          }
+          if (b.type === "p") return <p key={i} className="text-gray-600 leading-[1.85] text-base">{b.text}</p>;
+          if (b.type === "h2") return <h2 key={i} style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: "1.4rem" }} className="text-gray-900 mt-4 mb-1">{b.text}</h2>;
+          if (b.type === "quote") return (
+            <blockquote key={i} className="border-l-4 border-[#4CAF50] pl-6 py-2 my-2 bg-[#0B5D3F]/4 rounded-r-xl">
+              <p className="text-gray-800 italic text-lg leading-relaxed mb-2">"{b.text}"</p>
+              {b.attribution && <cite className="text-[#0B5D3F] text-sm font-semibold not-italic">— {b.attribution}</cite>}
+            </blockquote>
+          );
+          if (b.type === "ul") return (
+            <ul key={i} className="flex flex-col gap-2.5 pl-0">
+              {b.items?.map((item: string, j: number) => (
+                <li key={j} className="flex items-start gap-3 text-gray-600 text-sm leading-relaxed">
+                  <div className="w-5 h-5 rounded-full bg-[#4CAF50]/15 flex items-center justify-center shrink-0 mt-0.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#4CAF50]" />
+                  </div>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          );
+          return null;
+        })}
+      </div>
+    );
+  }
+
+  return null;
+}
 
 export default function NewsArticle() {
   const { id } = useParams<{ id: string }>();
@@ -182,13 +217,18 @@ export default function NewsArticle() {
           {/* Main */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="lg:col-span-3">
             <p className="text-lg text-gray-700 leading-relaxed mb-8 pb-8 border-b border-gray-100 font-medium">{article.excerpt}</p>
-            <ContentRenderer blocks={article.content as ContentBlock[]} />
+            <ContentRenderer content={article.content} />
 
             {/* Tags */}
             <div className="mt-10 pt-8 border-t border-gray-100">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider mr-1">Tags:</span>
-                {article.tags.map(t => (
+                {(Array.isArray(article.tags)
+                  ? article.tags
+                  : typeof article.tags === "string"
+                  ? (article.tags as string).split(",").map((t: string) => t.trim()).filter(Boolean)
+                  : []
+                ).map((t: string) => (
                   <span key={t} className="flex items-center gap-1 text-xs bg-gray-50 text-gray-600 border border-gray-200 px-3 py-1.5 rounded-full hover:border-[#4CAF50]/40 transition-colors cursor-pointer">
                     <Tag size={10} /> {t}
                   </span>

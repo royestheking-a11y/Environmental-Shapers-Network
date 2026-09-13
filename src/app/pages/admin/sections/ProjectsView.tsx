@@ -77,12 +77,6 @@ function downloadCSV(projects: Project[]) {
 export function ProjectsView() {
   const [projects, setProjects, loading] = useFirestoreData<Project[]>("esn_projects_admin", getInitialProjects());
   
-  useEffect(() => {
-    if (projects.length > 0 && projects.some(p => p.img.includes('unsplash'))) {
-      saveFirestoreData("esn_projects_admin", getInitialProjects());
-    }
-  }, [projects]);
-
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<"All" | ProjectStatus>("All");
   const [showForm, setShowForm] = useState(false);

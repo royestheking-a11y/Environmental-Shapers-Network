@@ -28,7 +28,7 @@ export function getInitialPartners(): Partner[] {
   ];
 }
 
-import { useFirestoreData } from "../../../../lib/useFirestore";
+import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 
 export default function PartnersView() {
   const [partners, setPartners, loading] = useFirestoreData<Partner[]>("esn_partners_admin", getInitialPartners());
@@ -41,9 +41,9 @@ export default function PartnersView() {
     name: ""
   });
 
-  const savePartners = (newData: Partner[]) => {
+  const savePartners = async (newData: Partner[]) => {
     setPartners(newData);
-    
+    await saveFirestoreData("esn_partners_admin", newData);
   };
 
   const handleSave = () => {
@@ -57,7 +57,7 @@ export default function PartnersView() {
       savePartners([...partners, { ...formData, id: newId } as Partner]);
     }
     setShowAdd(false);
-    setFormData({ name: "" });
+    setFormData({ name: "", logo: "" });
   };
 
   const startEdit = (p: Partner) => {
@@ -87,7 +87,7 @@ export default function PartnersView() {
           <h3 className="text-gray-900 font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Trusted Partners</h3>
           <p className="text-sm text-gray-400">Manage the list of partner organizations.</p>
         </div>
-        <button onClick={() => { setEditingId(null); setFormData({ name: "" }); setShowAdd(true); }} className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all">
+        <button onClick={() => { setEditingId(null); setFormData({ name: "", logo: "" }); setShowAdd(true); }} className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all">
           <Plus size={16} /> Add Partner
         </button>
       </div>

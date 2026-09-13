@@ -37,7 +37,7 @@ const statusConfig: Record<CampaignStatus, { label: string; color: string }> = {
   draft: { label: "Draft", color: "#D6A95A" },
 };
 
-import { useFirestoreData } from "../../../../lib/useFirestore";
+import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 
 export function NewsletterView() {
   const [activeTab, setActiveTab] = useState<"campaigns" | "subscribers" | "broadcast">("campaigns");
@@ -62,8 +62,9 @@ export function NewsletterView() {
   const [broadcastSending, setBroadcastSending] = useState(false);
   const [broadcastSuccess, setBroadcastSuccess] = useState(false);
 
-  const save = (list: NewsletterCampaign[]) => {
+  const save = async (list: NewsletterCampaign[]) => {
     setCampaigns(list);
+    await saveFirestoreData("esn_newsletters", list);
   };
 
   const handleSubmit = () => {
@@ -83,7 +84,7 @@ export function NewsletterView() {
     if (!broadcastForm.subject) return;
     setBroadcastSending(true);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       const newCamp: NewsletterCampaign = {
         id: Date.now(),
         subject: broadcastForm.subject,
@@ -94,7 +95,9 @@ export function NewsletterView() {
         clickRate: Math.floor(Math.random() * 10) + 12,
         date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       };
-      setCampaigns([newCamp, ...campaigns]);
+      const updatedList = [newCamp, ...campaigns];
+      setCampaigns(updatedList);
+      await saveFirestoreData("esn_newsletters", updatedList);
       setBroadcastSending(false);
       setBroadcastSuccess(true);
       setTimeout(() => {
@@ -111,9 +114,11 @@ export function NewsletterView() {
     setShowForm(true);
   };
 
-  const deleteSubscriber = (id: number) => {
+  const deleteSubscriber = async (id: number) => {
     if (window.confirm("Remove this email from the subscriber list?")) {
-      setSubsData(subsData.filter(s => s.id !== id));
+      const updated = subsData.filter(s => s.id !== id);
+      setSubsData(updated);
+      await saveFirestoreData("esn_subscribers", updated);
     }
   };
 

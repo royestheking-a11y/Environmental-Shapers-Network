@@ -112,8 +112,28 @@ export default function MediaCenter() {
   const [selectedImage, setSelectedImage] = useState<any | null>(null);
   const [activeCategory, setActiveCategory] = useState("All");
   const [dbMedia] = useFirestoreData<MediaItem[]>("esn_media", []);
+  const [cmsArticles] = useFirestoreData<any[]>("esn_cms_content", []);
 
   const categories = ["All", "Summits", "Field", "Youth", "Leadership"];
+
+  const allPressReleases = useMemo(() => {
+    if (cmsArticles && cmsArticles.length > 0) {
+      const liveItems = cmsArticles
+        .filter((a: any) => a.status === "Published" || !a.status)
+        .map((a: any) => ({
+          id: a.id,
+          title: a.title,
+          date: a.date || "2026",
+          category: a.category || "Announcement",
+          desc: a.excerpt || a.summary || "Official publication from Environmental Shapers Network.",
+          link: `/news/${a.id}`,
+        }));
+      if (liveItems.length > 0) {
+        return liveItems;
+      }
+    }
+    return pressReleases.map(pr => ({ ...pr, link: `/news/${pr.id}` }));
+  }, [cmsArticles]);
 
   const combinedMedia = useMemo(() => {
     const extraImages = (dbMedia || [])
@@ -347,21 +367,23 @@ export default function MediaCenter() {
             Latest Press Releases & Statements
           </h2>
           <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
-            {pressReleases.map((pr, i) => (
+            {allPressReleases.map((pr: any, i: number) => (
               <motion.div
                 key={pr.id}
                 initial={{ opacity: 0, x: -16 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.06 }}
-                className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 ${i < pressReleases.length - 1 ? "border-b border-gray-50" : ""} hover:bg-[#F6FBF8] transition-colors group`}
+                className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 ${i < allPressReleases.length - 1 ? "border-b border-gray-50" : ""} hover:bg-[#F6FBF8] transition-colors group`}
               >
                 <div className="flex items-start gap-4">
                   <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: (catColors[pr.category] || "#0B5D3F") + "15" }}>
                     <FileText size={18} style={{ color: catColors[pr.category] || "#0B5D3F" }} />
                   </div>
                   <div>
-                    <div className="font-bold text-base text-gray-900 group-hover:text-[#0B5D3F] transition-colors">{pr.title}</div>
+                    <Link to={pr.link || `/news/${pr.id}`} className="font-bold text-base text-gray-900 group-hover:text-[#0B5D3F] transition-colors">
+                      {pr.title}
+                    </Link>
                     <p className="text-xs text-gray-500 mt-1 line-clamp-1">{pr.desc}</p>
                     <div className="flex items-center gap-3 text-xs text-gray-400 mt-2">
                       <span className="font-bold px-2 py-0.5 rounded text-[11px]" style={{ backgroundColor: (catColors[pr.category] || "#0B5D3F") + "15", color: catColors[pr.category] || "#0B5D3F" }}>
@@ -375,8 +397,14 @@ export default function MediaCenter() {
 
                 <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
                   <Link
-                    to="/contact"
+                    to={pr.link || `/news/${pr.id}`}
                     className="flex items-center gap-1.5 text-xs font-semibold text-[#0B5D3F] bg-[#0B5D3F]/8 px-4 py-2 rounded-xl hover:bg-[#0B5D3F] hover:text-white transition-all"
+                  >
+                    Read Story <ArrowRight size={12} />
+                  </Link>
+                  <Link
+                    to="/contact"
+                    className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 bg-gray-50 px-3 py-2 rounded-xl hover:bg-gray-100 transition-all"
                   >
                     <Mail size={12} /> Press Contact
                   </Link>

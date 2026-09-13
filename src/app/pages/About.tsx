@@ -522,7 +522,7 @@ export default function About() {
 {/* ── Impact Statistics ─────────────────────────────────────────────────── */}
       <section className="py-24 bg-gradient-to-br from-[#0B5D3F] to-[#173B63] relative overflow-hidden">
         <div className="absolute inset-0 opacity-5">
-          <img src="https://images.unsplash.com/photo-1683221704109-acdeb0883037?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1920" alt="" className="w-full h-full object-cover" />
+          <img src="https://images.unsplash.com/photo-1683221704109-acdeb0883037?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&auto=format&q=60&w=800" alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
         </div>
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#4CAF50]/10 rounded-full blur-3xl" />
 
@@ -581,11 +581,18 @@ export default function About() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="bg-[#F6FBF8] rounded-3xl p-8 border border-[#4CAF50]/10 hover:shadow-xl hover:shadow-[#0B5D3F]/5 transition-all group"
+                className="bg-[#F6FBF8] rounded-3xl p-8 border border-[#4CAF50]/10 hover:shadow-xl hover:shadow-[#0B5D3F]/5 transition-all group flex flex-col sm:flex-row gap-6 items-start"
               >
-                <h4 className="font-black text-gray-900 mb-1 text-xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{member.name}</h4>
-                <p className="text-[#0B5D3F] text-sm font-semibold mb-3">{member.role}</p>
-                <p className="text-gray-500 text-sm leading-relaxed">{member.bio}</p>
+                {member.img && (
+                  <div className="w-20 h-20 rounded-2xl overflow-hidden shrink-0 shadow-md">
+                    <ImageWithFallback src={member.img} alt={member.name} className="w-full h-full object-cover" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-black text-gray-900 mb-1 text-xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{member.name}</h4>
+                  <p className="text-[#0B5D3F] text-sm font-semibold mb-3">{member.role}</p>
+                  <p className="text-gray-500 text-sm leading-relaxed">{member.bio}</p>
+                </div>
               </motion.div>
             ))}
           </div>
@@ -666,11 +673,44 @@ export default function About() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="bg-[#F6FBF8] rounded-3xl p-8 border border-[#4CAF50]/10 hover:shadow-xl hover:shadow-[#0B5D3F]/5 transition-all group"
+                className="bg-white rounded-3xl overflow-hidden border border-gray-100 hover:shadow-2xl hover:shadow-gray-100 hover:-translate-y-1 transition-all duration-300 group"
               >
-                <h4 className="font-black text-gray-900 mb-1 text-xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{member.name}</h4>
-                <p className="text-[#0B5D3F] text-sm font-semibold mb-3">{member.role}</p>
-                <p className="text-gray-500 text-sm leading-relaxed">{member.bio}</p>
+                {/* Image */}
+                <div className="relative h-56 overflow-hidden bg-gradient-to-br from-[#0B5D3F]/10 to-[#173B63]/10">
+                  {member.img ? (
+                    <ImageWithFallback
+                      src={member.img}
+                      alt={member.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-[#F6FBF8]">
+                      <div className="w-20 h-20 rounded-full bg-[#0B5D3F]/10 text-[#0B5D3F] flex items-center justify-center font-black text-2xl">
+                        {member.name.slice(0, 2).toUpperCase()}
+                      </div>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B5D3F]/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  {/* Country badge */}
+                  <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-white/90 backdrop-blur-sm text-[#0B5D3F] text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
+                    <MapPin size={10} />
+                    {member.country || "Bangladesh"}
+                  </div>
+                </div>
+                {/* Info */}
+                <div className="p-6">
+                  <h4 className="font-black text-gray-900 mb-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{member.name}</h4>
+                  <p className="text-[#0B5D3F] text-sm font-semibold mb-3">{member.role}</p>
+                  <p className="text-gray-500 text-xs leading-relaxed mb-4">{member.bio}</p>
+                  {/* Tags */}
+                  {member.tags && member.tags.length > 0 && (
+                    <div className="flex gap-2 flex-wrap">
+                      {member.tags.map((tag) => (
+                        <span key={tag} className="text-xs font-bold bg-[#4CAF50]/10 text-[#0B5D3F] px-3 py-1 rounded-full border border-[#4CAF50]/20">{tag}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </motion.div>
             ))}
           </div>
@@ -807,7 +847,7 @@ export default function About() {
       <section className="relative py-28 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-[#071a0f] via-[#0B5D3F] to-[#173B63]" />
         <div className="absolute inset-0 opacity-10">
-          <img src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1920" alt="" className="w-full h-full object-cover" />
+          <img src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&auto=format&q=60&w=800" alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
         </div>
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#4CAF50]/10 rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#D6A95A]/10 rounded-full blur-3xl" />

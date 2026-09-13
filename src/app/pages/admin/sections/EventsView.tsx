@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { ImageUploadField } from "../../../components/ui/ImageUploadField";
 
-type EventStatus = "upcoming" | "ongoing" | "completed" | "cancelled";
+type EventStatus = "upcoming" | "ongoing" | "completed" | "cancelled" | "postponed";
 
 export interface ESNEvent {
   id: number;
@@ -41,6 +41,7 @@ export function getInitialEvents(): ESNEvent[] {
 const statusConfig: Record<EventStatus, { label: string; color: string; bg: string }> = {
   upcoming: { label: "Upcoming", color: "#173B63", bg: "#173B63" },
   ongoing: { label: "Live Now", color: "#4CAF50", bg: "#4CAF50" },
+  postponed: { label: "Postponed", color: "#F59E0B", bg: "#F59E0B" },
   completed: { label: "Completed", color: "#6b7280", bg: "#6b7280" },
   cancelled: { label: "Cancelled", color: "#ef4444", bg: "#ef4444" },
 };
@@ -234,8 +235,10 @@ export function EventsView() {
                 </div>
                 <div>
                   <label className="text-xs font-bold text-gray-600 mb-1.5 block">Status</label>
-                  <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as EventStatus })} className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none">
-                    {["upcoming", "ongoing", "completed", "cancelled"].map((s) => <option key={s}>{s}</option>)}
+                  <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as EventStatus })} className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none capitalize">
+                    {["upcoming", "ongoing", "postponed", "completed", "cancelled"].map((s) => (
+                      <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                    ))}
                   </select>
                 </div>
                 <div className="sm:col-span-2">
@@ -313,7 +316,7 @@ export function EventsView() {
             <input type="text" placeholder="Search events..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] transition-colors" />
           </div>
           <div className="flex gap-2 flex-wrap">
-            {(["All", "upcoming", "ongoing", "completed", "cancelled"] as const).map((s) => (
+            {(["All", "upcoming", "ongoing", "postponed", "completed", "cancelled"] as const).map((s) => (
               <button key={s} onClick={() => setFilterStatus(s)} className={`px-3.5 py-2 rounded-xl text-xs font-semibold capitalize transition-all ${filterStatus === s ? "bg-[#0B5D3F] text-white" : "bg-[#F6FBF8] text-gray-500 hover:bg-[#0B5D3F]/10"}`}>
                 {s}
               </button>

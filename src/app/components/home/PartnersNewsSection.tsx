@@ -111,32 +111,32 @@ export function PartnersNewsSection() {
               <div className="bg-[#F6FBF8] rounded-3xl overflow-hidden border border-gray-100 hover:shadow-xl hover:shadow-[#0B5D3F]/8 transition-all duration-400">
                 <div className="relative h-72 overflow-hidden">
                   <ImageWithFallback
-                    src={news[0].image}
-                    alt={news[0].title}
+                    src={featuredNews?.image || fallbackNews[0].image}
+                    alt={featuredNews?.title || "Featured Story"}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-600"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   <div className="absolute top-5 left-5">
                     <span
                       className="text-white text-xs font-bold px-3 py-1.5 rounded-full"
-                      style={{ backgroundColor: categoryColors[news[0].category] }}
+                      style={{ backgroundColor: categoryColors[featuredNews?.category || "Projects"] || "#0B5D3F" }}
                     >
-                      {news[0].category}
+                      {featuredNews?.category || "Featured"}
                     </span>
                   </div>
                   <div className="absolute bottom-5 left-5 right-5">
                     <h3 className="text-white mb-2 line-clamp-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "1.3rem" }}>
-                      {news[0].title}
+                      {featuredNews?.title}
                     </h3>
                     <div className="flex items-center gap-4 text-white/70 text-xs">
-                      <span className="flex items-center gap-1"><Calendar size={12} />{news[0].date}</span>
-                      <span className="flex items-center gap-1"><Clock size={12} />{news[0].readTime}</span>
+                      <span className="flex items-center gap-1"><Calendar size={12} />{featuredNews?.date}</span>
+                      <span className="flex items-center gap-1"><Clock size={12} />{featuredNews?.readTime || "4 min read"}</span>
                     </div>
                   </div>
                 </div>
                 <div className="p-6">
-                  <p className="text-gray-500 leading-relaxed mb-4">{news[0].excerpt}</p>
-                  <Link to="/news/1" className="inline-flex items-center gap-2 text-[#0B5D3F] font-semibold hover:gap-3 transition-all">
+                  <p className="text-gray-500 leading-relaxed mb-4">{featuredNews?.excerpt}</p>
+                  <Link to={`/news/${featuredNews?.id || 1}`} className="inline-flex items-center gap-2 text-[#0B5D3F] font-semibold hover:gap-3 transition-all">
                     Read Full Story <ArrowRight size={16} />
                   </Link>
                 </div>
@@ -145,7 +145,7 @@ export function PartnersNewsSection() {
 
             {/* Side Stories */}
             <div className="lg:col-span-2 flex flex-col gap-6">
-              {news.slice(1).map((item, i) => (
+              {regularNews.map((item, i) => (
                 <motion.div
                   key={item.id}
                   initial={{ opacity: 0, x: 30 }}

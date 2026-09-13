@@ -72,11 +72,6 @@ function QRGrid({ size = 120 }: { size?: number }) {
 export function CampaignsView() {
   const [campaigns, setCampaigns, loading] = useFirestoreData<Campaign[]>("esn_campaigns_admin", getInitialCampaigns());
   
-  useEffect(() => {
-    if (campaigns.length > 0 && campaigns.some(c => c.image.includes('unsplash'))) {
-      saveFirestoreData("esn_campaigns_admin", getInitialCampaigns());
-    }
-  }, [campaigns]);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<"All" | CampaignStatus>("All");
   const [showForm, setShowForm] = useState(false);
@@ -94,10 +89,17 @@ export function CampaignsView() {
 
   const handleSubmit = () => {
     if (!form.title) return;
+    const cleanForm: Omit<Campaign, "id"> = {
+      ...form,
+      goal: Number(form.goal || 0),
+      raised: Number(form.raised || 0),
+      volunteers: Number(form.volunteers || 0),
+      sdgs: Array.isArray(form.sdgs) ? form.sdgs : String(form.sdgs || "").split(",").map(s => s.trim()).filter(Boolean),
+    };
     if (editId !== null) {
-      save(campaigns.map((c) => c.id === editId ? { ...form, id: editId } : c));
+      save(campaigns.map((c) => c.id === editId ? { ...cleanForm, id: editId } : c));
     } else {
-      save([{ ...form, id: Date.now() }, ...campaigns]);
+      save([{ ...cleanForm, id: Date.now() }, ...campaigns]);
     }
     setShowForm(false);
     setEditId(null);
@@ -106,7 +108,13 @@ export function CampaignsView() {
 
   const startEdit = (c: Campaign) => {
     const { id, ...rest } = c;
-    setForm(rest);
+    setForm({
+      ...rest,
+      goal: Number(rest.goal || 0),
+      raised: Number(rest.raised || 0),
+      volunteers: Number(rest.volunteers || 0),
+      sdgs: rest.sdgs || [],
+    });
     setEditId(id);
     setShowForm(true);
   };
@@ -192,10 +200,12 @@ export function CampaignsView() {
                 {[
                   { label: "Category", key: "category", type: "select", opts: ["Forest Restoration", "Marine Conservation", "Climate Advocacy", "Renewable Energy", "Water Security", "Biodiversity", "Innovation", "Community"] },
                   { label: "Status", key: "status", type: "select", opts: ["draft", "active", "paused", "completed"] },
-                  { label: "Fundraising Goal ($)", key: "goal", type: "number" },
-                  { label: "Campaign Lead", key: "lead", type: "text" },
-                  { label: "Start Date", key: "startDate", type: "text" },
-                  { label: "End Date", key: "endDate", type: "text" },
+                  { label: "Fundraising Goal ($)", key: "goal", type: "number", placeholder: "e.g. 1000000" },
+                  { label: "Amount Raised ($)", key: "raised", type: "number", placeholder: "e.g. 847000" },
+                  { label: "Volunteers Mobilized", key: "volunteers", type: "number", placeholder: "e.g. 4200" },
+                  { label: "Campaign Lead", key: "lead", type: "text", placeholder: "e.g. Rizwan Ahmed" },
+                  { label: "Start Date", key: "startDate", type: "text", placeholder: "e.g. Jan 1, 2026" },
+                  { label: "End Date", key: "endDate", type: "text", placeholder: "e.g. Dec 31, 2030" },
                 ].map((f) => (
                   <div key={f.key}>
                     <label className="text-xs font-bold text-gray-600 mb-1.5 block">{f.label}</label>
@@ -204,10 +214,43 @@ export function CampaignsView() {
                         {f.opts!.map((o) => <option key={o} value={o}>{o}</option>)}
                       </select>
                     ) : (
-                      <input type={f.type} value={(form as any)[f.key]} onChange={(e) => setForm({ ...form, [f.key]: f.type === "number" ? Number(e.target.value) : e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] transition-colors" />
+                      <input type={f.type} placeholder={(f as any).placeholder} value={(form as any)[f.key] ?? ""} onChange={(e) => setForm({ ...form, [f.key]: f.type === "number" ? Number(e.target.value) : e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] transition-colors" />
                     )}
                   </div>
                 ))}
+
+                {/* Live Fundraising Progress Preview */}
+                <div className="sm:col-span-2 bg-[#F6FBF8] p-4 rounded-2xl border border-gray-100">
+                  <div className="flex justify-between items-center text-xs font-bold mb-1.5">
+                    <span className="text-gray-600 flex items-center gap-1.5">
+                      <TrendingUp size={14} className="text-[#4CAF50]" /> Live Fundraising Progress
+                    </span>
+                    <span className="text-[#0B5D3F] font-black text-sm">
+                      {form.goal > 0 ? Math.min(Math.round(((form.raised || 0) / form.goal) * 100), 100) : 0}%
+                    </span>
+                  </div>
+                  <div className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden mb-2">
+                    <div
+                      className="h-full bg-gradient-to-r from-[#0B5D3F] to-[#4CAF50] rounded-full transition-all duration-300"
+                      style={{ width: `${form.goal > 0 ? Math.min(Math.round(((form.raised || 0) / form.goal) * 100), 100) : 0}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-[11px] text-gray-500">
+                    <span>${Number(form.raised || 0).toLocaleString()} raised</span>
+                    <span>Goal: ${Number(form.goal || 0).toLocaleString()}</span>
+                  </div>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="text-xs font-bold text-gray-600 mb-1.5 block">SDGs (Comma separated)</label>
+                  <input
+                    type="text"
+                    value={Array.isArray(form.sdgs) ? form.sdgs.join(", ") : form.sdgs || ""}
+                    onChange={(e) => setForm({ ...form, sdgs: e.target.value.split(",").map(s => s.trim()).filter(Boolean) })}
+                    placeholder="e.g. SDG 13, SDG 15"
+                    className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] transition-colors"
+                  />
+                </div>
                 <div className="sm:col-span-2">
                   <ImageUploadField
                     label="Campaign Banner / Poster Image"

@@ -20,7 +20,7 @@ export function getInitialMissionValues(): MissionValue[] {
   ];
 }
 
-import { useFirestoreData } from "../../../../lib/useFirestore";
+import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 
 export default function MissionAdminView() {
   const [values, setValues, loading] = useFirestoreData<MissionValue[]>("esn_mission_admin", getInitialMissionValues());
@@ -30,8 +30,9 @@ export default function MissionAdminView() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const [formData, setFormData] = useState<Partial<MissionValue>>({ title: "", description: "", iconName: "Sprout", color: "#0B5D3F" });
 
-  const saveValues = (newData: MissionValue[]) => {
+  const saveValues = async (newData: MissionValue[]) => {
     setValues(newData);
+    await saveFirestoreData("esn_mission_admin", newData);
   };
 
   const handleSave = () => {

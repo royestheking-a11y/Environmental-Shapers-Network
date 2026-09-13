@@ -18,10 +18,85 @@
     </head>
 
     <body>
-      
-      <div id="root"></div>
+      <div id="root">
+        <!-- Instant Branded Preloader: Prevents blank white screen while JavaScript initializes -->
+        <style>
+          .esn-initial-loader {
+            position: fixed;
+            inset: 0;
+            background: #0A1A0E;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: white;
+            z-index: 999999;
+          }
+          .esn-sprout-icon {
+            width: 54px;
+            height: 54px;
+            margin-bottom: 20px;
+            animation: esnPulse 1.8s ease-in-out infinite;
+          }
+          .esn-loader-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            color: #ffffff;
+            margin-bottom: 6px;
+            text-align: center;
+          }
+          .esn-loader-sub {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.6);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 28px;
+            font-weight: 600;
+          }
+          .esn-progress-bar {
+            width: 140px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 999px;
+            overflow: hidden;
+            position: relative;
+          }
+          .esn-progress-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 45%;
+            background: linear-gradient(90deg, #4CAF50, #81C784);
+            border-radius: 999px;
+            animation: esnSlide 1.4s ease-in-out infinite;
+          }
+          @keyframes esnPulse {
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.1); opacity: 1; filter: drop-shadow(0 0 16px rgba(76, 175, 80, 0.6)); }
+          }
+          @keyframes esnSlide {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(350%); }
+          }
+        </style>
+        <div class="esn-initial-loader">
+          <svg class="esn-sprout-icon" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2C6 2 2 8 2 14s4 8 10 8 10-6 10-8S18 2 12 2z" fill="#0B5D3F" fill-opacity="0.3"></path>
+            <path d="M7 20h10"></path>
+            <path d="M10 20c0-4 1.5-6.5 4-8.5"></path>
+            <path d="M9.5 9.5c1.5-1.5 3-2 5.5-2 0 2.5-.5 4-2 5.5"></path>
+          </svg>
+          <div class="esn-loader-title">Environmental Shapers Network</div>
+          <div class="esn-loader-sub">Shaping Minds · Protecting Earth</div>
+          <div class="esn-progress-bar">
+            <div class="esn-progress-fill"></div>
+          </div>
+        </div>
+      </div>
       <script type="module" src="/src/main.tsx"></script>
-      
     </body>
   </html>
   

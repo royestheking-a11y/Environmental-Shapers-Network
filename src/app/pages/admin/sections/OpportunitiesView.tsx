@@ -5,7 +5,7 @@ import {
   AlertTriangle, RefreshCw
 } from "lucide-react";
 
-import { useFirestoreData } from "../../../../lib/useFirestore";
+import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 
 const defaultJobs = [
   { id: 1, title: "Program Manager — Forest Restoration", dept: "Programs", location: "Dhaka, Bangladesh", type: "Full-time", deadline: "Aug 30, 2026", salary: "$45K–$60K", desc: "Lead our flagship forest restoration programs across South Asia, managing a team of 12 field staff and 200+ community volunteers.", requirements: "5+ years program management, NGO/environmental sector experience, Fluent in Bangla + English, PMP or equivalent preferred" },
@@ -29,7 +29,7 @@ export function OpportunitiesView() {
   const [editingItem, setEditingItem] = useState<any>(null);
   const [search, setSearch] = useState("");
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
     const data: any = Object.fromEntries(formData.entries());
@@ -42,6 +42,7 @@ export function OpportunitiesView() {
         updatedJobs.unshift({ id: Date.now(), status: "Active", ...data });
       }
       setJobs(updatedJobs);
+      await saveFirestoreData("esn_career_jobs", updatedJobs);
     } else {
       let updatedRoles = [...roles];
       if (editingItem) {
@@ -50,32 +51,43 @@ export function OpportunitiesView() {
         updatedRoles.unshift({ id: Date.now(), status: "Active", ...data });
       }
       setRoles(updatedRoles);
+      await saveFirestoreData("esn_volunteer_roles", updatedRoles);
     }
     setShowModal(false);
     setEditingItem(null);
   };
 
-  const toggleStatus = (id: number) => {
+  const toggleStatus = async (id: number) => {
     if (activeTab === "careers") {
-      setJobs(jobs.map(j => j.id === id ? { ...j, status: j.status === "Closed" ? "Active" : "Closed" } : j));
+      const updated = jobs.map(j => j.id === id ? { ...j, status: j.status === "Closed" ? "Active" : "Closed" } : j);
+      setJobs(updated);
+      await saveFirestoreData("esn_career_jobs", updated);
     } else {
-      setRoles(roles.map(r => r.id === id ? { ...r, status: r.status === "Closed" ? "Active" : "Closed" } : r));
+      const updated = roles.map(r => r.id === id ? { ...r, status: r.status === "Closed" ? "Active" : "Closed" } : r);
+      setRoles(updated);
+      await saveFirestoreData("esn_volunteer_roles", updated);
     }
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: number) => {
     if (window.confirm("Are you sure you want to delete this posting?")) {
       if (activeTab === "careers") {
-        setJobs(jobs.filter(j => j.id !== id));
+        const updated = jobs.filter(j => j.id !== id);
+        setJobs(updated);
+        await saveFirestoreData("esn_career_jobs", updated);
       } else {
-        setRoles(roles.filter(r => r.id !== id));
+        const updated = roles.filter(r => r.id !== id);
+        setRoles(updated);
+        await saveFirestoreData("esn_volunteer_roles", updated);
       }
     }
   };
 
-  const refresh = () => {
+  const refresh = async () => {
     setJobs(defaultJobs);
     setRoles(defaultRoles);
+    await saveFirestoreData("esn_career_jobs", defaultJobs);
+    await saveFirestoreData("esn_volunteer_roles", defaultRoles);
   };
 
   const currentList = activeTab === "careers" ? jobs : roles;

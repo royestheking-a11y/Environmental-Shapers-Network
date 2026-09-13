@@ -41,49 +41,127 @@ function getLocalCache<T>(key: string, defaultValue: T): T {
   return defaultValue;
 }
 
+function broadcastUpdate(key: string, value: any): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.dispatchEvent(new CustomEvent("esn_data_update", { detail: { key, value } }));
+  } catch {}
+}
+
+const memoryCache = new Map<string, any>();
+const inflightRequests = new Map<string, Promise<any>>();
+let firestoreDisabledUntil = 0;
+
 function setLocalCache<T>(key: string, value: T): void {
   if (typeof window === "undefined") return;
   try {
     const cleanValue = sanitizeData(value);
+    memoryCache.set(key, cleanValue);
     localStorage.setItem(`esn_cache_${key}`, JSON.stringify(cleanValue));
+    broadcastUpdate(key, cleanValue);
   } catch (e) {
     console.error("LocalCache write error for", key, e);
   }
 }
 
 export function useFirestoreData<T>(key: string, defaultValue: T): [T, (val: T | ((prev: T) => T)) => void, boolean] {
-  const [data, setData] = useState<T>(() => getLocalCache(key, defaultValue));
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<T>(() => {
+    if (memoryCache.has(key)) return memoryCache.get(key);
+    const cached = getLocalCache(key, defaultValue);
+    memoryCache.set(key, cached);
+    return cached;
+  });
+  const [loading, setLoading] = useState<boolean>(() => !memoryCache.has(key));
 
   useEffect(() => {
     let isMounted = true;
+
+    // Listen for intra-tab updates from Admin saves
+    const handleCustomUpdate = (e: Event) => {
+      const ce = e as CustomEvent<{ key: string; value: T }>;
+      if (ce.detail && ce.detail.key === key && isMounted) {
+        memoryCache.set(key, ce.detail.value);
+        setData(ce.detail.value);
+        setLoading(false);
+      }
+    };
+
+    // Listen for cross-tab updates from Admin saves in another tab
+    const handleStorageUpdate = (e: StorageEvent) => {
+      if (e.key === `esn_cache_${key}` && e.newValue && isMounted) {
+        try {
+          const parsed = JSON.parse(e.newValue) as T;
+          const clean = sanitizeData(parsed);
+          memoryCache.set(key, clean);
+          setData(clean);
+          setLoading(false);
+        } catch {}
+      }
+    };
+
+    window.addEventListener("esn_data_update", handleCustomUpdate);
+    window.addEventListener("storage", handleStorageUpdate);
+
+    // Skip Firestore if recently timed out or failed with permission error
+    const now = Date.now();
+    if (now < firestoreDisabledUntil) {
+      setLoading(false);
+      return () => {
+        isMounted = false;
+        window.removeEventListener("esn_data_update", handleCustomUpdate);
+        window.removeEventListener("storage", handleStorageUpdate);
+      };
+    }
+
     const loadData = async () => {
       try {
-        const docRef = doc(db, "site_data", key);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists() && isMounted) {
+        // Deduplicate in-flight requests for the same key across components
+        let req = inflightRequests.get(key);
+        if (!req) {
+          const docRef = doc(db, "site_data", key);
+          const fetchPromise = getDoc(docRef);
+          // 1500ms timeout so cloud Firestore network delays never freeze the UI
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Firestore timeout")), 1500)
+          );
+          req = Promise.race([fetchPromise, timeoutPromise]);
+          inflightRequests.set(key, req);
+        }
+
+        const docSnap: any = await req;
+        inflightRequests.delete(key);
+
+        if (docSnap && docSnap.exists && docSnap.exists() && isMounted) {
           const rawVal = docSnap.data().value as T;
           const cleanVal = sanitizeData(rawVal);
+          memoryCache.set(key, cleanVal);
           setData(cleanVal);
           setLocalCache(key, cleanVal);
-          
+
           // Auto-migrate in Firestore if legacy domain was present
           if (JSON.stringify(rawVal) !== JSON.stringify(cleanVal)) {
+            const docRef = doc(db, "site_data", key);
             setDoc(docRef, { value: cleanVal }, { merge: true }).catch(() => {});
           }
-        } else if (isMounted) {
-          // Auto-seed the database if it's empty
-          await setDoc(docRef, { value: defaultValue }, { merge: true });
-          setLocalCache(key, defaultValue);
         }
-      } catch (e) {
-        console.error("Firestore read error for key", key, ":", e);
+      } catch (e: any) {
+        inflightRequests.delete(key);
+        // If Firestore timed out or failed with permission denied, pause remote checks for 60s
+        if (e?.message?.includes("timeout") || e?.code === "permission-denied") {
+          firestoreDisabledUntil = Date.now() + 60000;
+        }
       } finally {
         if (isMounted) setLoading(false);
       }
     };
+
     loadData();
-    return () => { isMounted = false; };
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener("esn_data_update", handleCustomUpdate);
+      window.removeEventListener("storage", handleStorageUpdate);
+    };
   }, [key]);
 
   const saveData = async (newDataOrFn: T | ((prev: T) => T)) => {
@@ -94,7 +172,7 @@ export function useFirestoreData<T>(key: string, defaultValue: T): [T, (val: T |
       // Asynchronously sync to Firestore
       const docRef = doc(db, "site_data", key);
       setDoc(docRef, { value: cleanResolved }, { merge: true }).catch((e) => {
-        console.error("Firestore write error for key", key, ":", e);
+        // Silent catch for offline or restricted Firestore
       });
       return cleanResolved;
     });
@@ -116,15 +194,19 @@ export async function fetchFirestoreData<T>(key: string, defaultValue: T): Promi
       }
       return cleanVal;
     } else {
-      await setDoc(docRef, { value: defaultValue }, { merge: true });
-      setLocalCache(key, defaultValue);
+      const localItem = typeof window !== "undefined" ? localStorage.getItem(`esn_cache_${key}`) : null;
+      if (localItem === null) {
+        await setDoc(docRef, { value: defaultValue }, { merge: true }).catch(() => {});
+        setLocalCache(key, defaultValue);
+      } else {
+        return getLocalCache(key, defaultValue);
+      }
     }
   } catch (e) {
-    console.error("Firestore read error for key", key, ":", e);
     // Return cached value if available on error
     return getLocalCache(key, defaultValue);
   }
-  return defaultValue;
+  return getLocalCache(key, defaultValue);
 }
 
 export async function saveFirestoreData<T>(key: string, newData: T): Promise<void> {
@@ -134,6 +216,6 @@ export async function saveFirestoreData<T>(key: string, newData: T): Promise<voi
     const docRef = doc(db, "site_data", key);
     await setDoc(docRef, { value: cleanData }, { merge: true });
   } catch (e) {
-    console.error("Firestore write error for key", key, ":", e);
+    // Silent catch
   }
 }

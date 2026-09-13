@@ -588,6 +588,7 @@ function EventsPage() {
   const displayEvents = eventsList && eventsList.length > 0
     ? eventsList.map((e) => ({
         type: e.type,
+        status: e.status,
         seats: `${e.registered}/${e.capacity} Seats`,
         title: e.title,
         date: `${e.date} · ${e.time}`,
@@ -615,13 +616,25 @@ function EventsPage() {
             </div>
           </div>
           <div className="grid md:grid-cols-2 gap-5">
-            {displayEvents.map((e, i) => (
+            {displayEvents.map((e: any, i) => (
               <motion.div key={e.title + i} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
                 className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all group">
                 <div className="flex items-start justify-between gap-3 mb-3">
-                  <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ backgroundColor: (typeColors[e.type] || "#0B5D3F") + "15", color: typeColors[e.type] || "#0B5D3F" }}>
-                    {e.type}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ backgroundColor: (typeColors[e.type] || "#0B5D3F") + "15", color: typeColors[e.type] || "#0B5D3F" }}>
+                      {e.type}
+                    </span>
+                    {e.status === "postponed" && (
+                      <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                        Postponed
+                      </span>
+                    )}
+                    {e.status === "cancelled" && (
+                      <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">
+                        Cancelled
+                      </span>
+                    )}
+                  </div>
                   <span className="text-xs font-semibold text-[#4CAF50] bg-[#4CAF50]/10 px-3 py-1 rounded-full">{e.seats}</span>
                 </div>
                 <div className="font-bold text-gray-900 mb-3 group-hover:text-[#0B5D3F] transition-colors">{e.title}</div>

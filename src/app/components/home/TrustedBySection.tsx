@@ -25,6 +25,7 @@ export function TrustedBySection() {
   const partners = partnersRaw && partnersRaw.length > 0 
     ? partnersRaw.map(p => ({
         name: p.name,
+        logo: p.logo,
         abbr: p.name.substring(0, 4).toUpperCase()
       }))
     : fallbackPartners;
@@ -61,8 +62,12 @@ export function TrustedBySection() {
                 key={i}
                 className="flex items-center gap-3 shrink-0 group"
               >
-                <div className="w-10 h-10 rounded-xl bg-[#0B5D3F]/8 flex items-center justify-center border border-[#0B5D3F]/10 group-hover:bg-[#0B5D3F]/15 transition-colors">
-                  <span className="text-[9px] font-black text-[#0B5D3F]">{p.abbr}</span>
+                <div className="w-10 h-10 rounded-xl bg-[#0B5D3F]/8 flex items-center justify-center border border-[#0B5D3F]/10 group-hover:bg-[#0B5D3F]/15 transition-colors overflow-hidden p-1">
+                  {(p as any).logo ? (
+                    <img src={(p as any).logo} alt={p.name} className="w-full h-full object-contain" />
+                  ) : (
+                    <span className="text-[9px] font-black text-[#0B5D3F]">{p.abbr}</span>
+                  )}
                 </div>
                 <span className="text-sm font-semibold text-gray-500 group-hover:text-[#0B5D3F] transition-colors whitespace-nowrap">
                   {p.name}

@@ -17,7 +17,7 @@ export function getInitialFAQs(): FAQ[] {
   ];
 }
 
-import { useFirestoreData } from "../../../../lib/useFirestore";
+import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 
 export default function FAQAdminView() {
   const [faqs, setFaqs, loading] = useFirestoreData<FAQ[]>("esn_faq_admin", getInitialFAQs());
@@ -27,9 +27,9 @@ export default function FAQAdminView() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const [formData, setFormData] = useState<Partial<FAQ>>({ question: "", answer: "" });
 
-  const saveFaqs = (newData: FAQ[]) => {
+  const saveFaqs = async (newData: FAQ[]) => {
     setFaqs(newData);
-    
+    await saveFirestoreData("esn_faq_admin", newData);
   };
 
   const handleSave = () => {

@@ -100,20 +100,15 @@ export function ProgramsView() {
   const [programs, setPrograms, loading] = useFirestoreData<ProgramData[]>("esn_programs", getInitialPrograms());
   const [editingId, setEditingId] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (programs.length > 0 && programs.some(p => p.image.includes('unsplash'))) {
-      saveFirestoreData("esn_programs", getInitialPrograms());
-    }
-  }, [programs]);
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<Omit<ProgramData, "id">>(blankProgram);
   const [editId, setEditId] = useState<number | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
 
-  const save = (list: ProgramData[]) => {
+  const save = async (list: ProgramData[]) => {
     setPrograms(list);
-    
+    await saveFirestoreData("esn_programs", list);
   };
 
   const handleSubmit = () => {
