@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Heart, TreePine, Users, Globe2, CheckCircle2, Shield, Leaf, ArrowRight,
   CreditCard, Building2, Smartphone, ChevronLeft, Lock, RefreshCw,
   Copy, Check, AlertCircle, Download, Star, Banknote, Wallet
 } from "lucide-react";
+import { getInitialCampaigns } from "./admin/sections/CampaignsView";
+import { getInitialProjects } from "./admin/sections/ProjectsView";
 
 
 const currencyConfigs = {
@@ -53,7 +56,7 @@ const currencyConfigs = {
 };
 
 
-import { fetchFirestoreData, saveFirestoreData } from "../../lib/useFirestore";
+import { fetchFirestoreData, saveFirestoreData, useFirestoreData } from "../../lib/useFirestore";
 
 type PayMethod = "bkash" | "nagad" | "bank" | "paypal" | "card" | null;
 
@@ -127,7 +130,18 @@ export default function Donate() {
   const [donated, setDonated] = useState(false);
   const [receipt, setReceipt] = useState<any>(null);
   const [copied, setCopied] = useState(false);
+  const [searchParams] = useSearchParams();
+  const campaignParam = searchParams.get("campaign") || searchParams.get("project");
+  const [campaignsList] = useFirestoreData<any[]>("esn_campaigns_admin", getInitialCampaigns());
+  const [projectsList] = useFirestoreData<any[]>("esn_projects", getInitialProjects());
+
   const [project, setProject] = useState("General Donation");
+
+  useEffect(() => {
+    if (campaignParam) {
+      setProject(campaignParam);
+    }
+  }, [campaignParam]);
 
   const amount = custom ? parseFloat(custom) || 0 : selected;
   const trees = Math.floor(amount / activeCurrency.treeCost);
@@ -298,11 +312,27 @@ export default function Donate() {
                     <div className="mb-8">
                       <label className="block text-sm font-bold text-gray-700 mb-2">Direct Your Donation</label>
                       <select value={project} onChange={(e) => setProject(e.target.value)} className="w-full px-4 py-3.5 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] font-medium transition-all">
-                        <option>General Donation</option>
-                        <option>Islamic Donation</option>
-                        <option>Festival Donation</option>
-                        <option>Emergency fund</option>
-                        <option>Medical Support fund</option>
+                        <optgroup label="General Funds">
+                          <option value="General Donation">General Donation</option>
+                          <option value="Emergency Fund">Emergency Fund</option>
+                          <option value="Islamic Donation">Islamic Donation (Zakat / Sadaqah)</option>
+                          <option value="Medical Support Fund">Medical Support Fund</option>
+                          <option value="Festival Donation">Festival Donation</option>
+                        </optgroup>
+                        {campaignsList && campaignsList.length > 0 && (
+                          <optgroup label="Active Campaigns">
+                            {campaignsList.map((c: any) => (
+                              <option key={c.id || c.title} value={c.title}>{c.title}</option>
+                            ))}
+                          </optgroup>
+                        )}
+                        {projectsList && projectsList.length > 0 && (
+                          <optgroup label="Special Projects">
+                            {projectsList.map((p: any) => (
+                              <option key={p.id || p.name} value={p.name}>{p.name}</option>
+                            ))}
+                          </optgroup>
+                        )}
                       </select>
                     </div>
 

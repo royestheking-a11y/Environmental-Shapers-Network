@@ -4,14 +4,14 @@ import {
   Heart, TrendingUp, TrendingDown, Download, Filter, Search,
   Eye, RefreshCw, CreditCard, ChevronDown, CheckCircle2,
   Clock, XCircle, DollarSign, Users, Calendar, ArrowUpRight,
-  TreePine, Droplets, Leaf, Globe2
+  TreePine, Droplets, Leaf, Globe2, Plus, Trash2, X
 } from "lucide-react";
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell, Legend
 } from "recharts";
 
-import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
+import { useFirestoreData, saveFirestoreData, fetchFirestoreData } from "../../../../lib/useFirestore";
 import { logAdminActivity } from "../../../../lib/activityLogger";
 
 export function getInitialDonations() {
@@ -110,8 +110,81 @@ export function DonationsView() {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
   const [selectedDonation, setSelectedDonation] = useState<any>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [addForm, setAddForm] = useState({
+    donor: "",
+    email: "",
+    amount: "",
+    project: "General Donation",
+    method: "Bank Transfer",
+    date: new Date().toISOString().slice(0, 10),
+    status: "completed",
+    recurring: false
+  });
 
-  const refresh = () => setDonations(getInitialDonations());
+  const refresh = async () => {
+    setIsRefreshing(true);
+    try {
+      const latest = await fetchFirestoreData<any[]>("esn_donations", []);
+      setDonations(latest);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  const deleteDonation = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this donation transaction?")) return;
+    const item = (donations || []).find((d: any) => d && d.id === id);
+    const updated = (donations || []).filter((d: any) => d && d.id !== id);
+    setDonations(updated);
+    await saveFirestoreData("esn_donations", updated);
+    if (item) {
+      await logAdminActivity(
+        "Deleted Donation Record",
+        "Donations",
+        `Removed donation record ${item.receipt || id} ($${Number(item.amount || 0).toLocaleString()}).`,
+        "warning"
+      );
+    }
+  };
+
+  const handleAddDonation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!addForm.donor || !addForm.amount) return;
+    const newDonation = {
+      id: Date.now(),
+      receipt: "RCP-" + Date.now().toString().slice(-8),
+      donor: addForm.donor,
+      email: addForm.email,
+      amount: Number(addForm.amount),
+      project: addForm.project,
+      method: addForm.method,
+      date: new Date(addForm.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+      status: addForm.status,
+      recurring: addForm.recurring
+    };
+    const updated = [newDonation, ...(donations || [])];
+    setDonations(updated);
+    await saveFirestoreData("esn_donations", updated);
+    await logAdminActivity(
+      "Recorded Manual Donation",
+      "Donations",
+      `Admin recorded donation of $${Number(newDonation.amount).toLocaleString()} from ${newDonation.donor} (${newDonation.project}).`,
+      "success"
+    );
+    setShowAddModal(false);
+    setAddForm({
+      donor: "",
+      email: "",
+      amount: "",
+      project: "General Donation",
+      method: "Bank Transfer",
+      date: new Date().toISOString().slice(0, 10),
+      status: "completed",
+      recurring: false
+    });
+  };
 
   const updateStatus = async (id: number, newStatus: string) => {
     const item = (donations || []).find((d: any) => d && d.id === id);
@@ -232,14 +305,21 @@ export function DonationsView() {
         </div>
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center gap-2 text-xs sm:text-sm text-white bg-[#0B5D3F] px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl hover:bg-[#0a5237] transition-all font-semibold cursor-pointer shadow-sm"
+          >
+            <Plus size={15} /> Record Donation
+          </button>
+          <button
             onClick={refresh}
+            disabled={isRefreshing}
             className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 border border-gray-200 bg-white px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
           >
-            <RefreshCw size={14} /> Refresh
+            <RefreshCw size={14} className={isRefreshing ? "animate-spin text-[#0B5D3F]" : ""} /> {isRefreshing ? "Refreshing..." : "Refresh"}
           </button>
           <button
             onClick={() => exportToCSV(safeDonations)}
-            className="flex items-center gap-2 text-xs sm:text-sm text-white bg-[#0B5D3F] px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl hover:bg-[#0a5237] transition-all font-semibold cursor-pointer"
+            className="flex items-center gap-2 text-xs sm:text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl transition-all font-semibold cursor-pointer"
           >
             <Download size={14} /> Export CSV
           </button>
@@ -460,6 +540,13 @@ export function DonationsView() {
                         >
                           <Eye size={15} />
                         </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); deleteDonation(d.id); }}
+                          className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all"
+                          title="Delete Record"
+                        >
+                          <Trash2 size={15} />
+                        </button>
                       </div>
                     </td>
                   </motion.tr>
@@ -551,6 +638,140 @@ export function DonationsView() {
                   <Download size={16} /> Download Receipt
                 </button>
               )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Manual Donation Entry Modal */}
+      <AnimatePresence>
+        {showAddModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+            onClick={() => setShowAddModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="bg-white rounded-3xl p-7 max-w-lg w-full shadow-2xl relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+                <div>
+                  <h4 className="font-black text-gray-900 text-lg" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Record Manual Donation</h4>
+                  <p className="text-xs text-gray-400">Log an offline, wire transfer, or direct contribution</p>
+                </div>
+                <button onClick={() => setShowAddModal(false)} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500">
+                  <X size={16} />
+                </button>
+              </div>
+
+              <form onSubmit={handleAddDonation} className="flex flex-col gap-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="col-span-2">
+                    <label className="text-xs font-bold text-gray-700 mb-1 block">Donor Name *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. EcoFoundation Germany"
+                      value={addForm.donor}
+                      onChange={(e) => setAddForm({ ...addForm, donor: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#0B5D3F]"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-700 mb-1 block">Amount ($ USD) *</label>
+                    <input
+                      type="number"
+                      required
+                      min="1"
+                      step="any"
+                      placeholder="500"
+                      value={addForm.amount}
+                      onChange={(e) => setAddForm({ ...addForm, amount: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#0B5D3F]"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-700 mb-1 block">Donor Email</label>
+                    <input
+                      type="email"
+                      placeholder="donor@example.com"
+                      value={addForm.email}
+                      onChange={(e) => setAddForm({ ...addForm, email: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#0B5D3F]"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-700 mb-1 block">Payment Method</label>
+                    <select
+                      value={addForm.method}
+                      onChange={(e) => setAddForm({ ...addForm, method: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#0B5D3F]"
+                    >
+                      <option>Bank Transfer</option>
+                      <option>Wire / SWIFT</option>
+                      <option>Cash / Cheque</option>
+                      <option>bKash</option>
+                      <option>Nagad</option>
+                      <option>PayPal</option>
+                      <option>Grant / Foundation</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-700 mb-1 block">Date</label>
+                    <input
+                      type="date"
+                      value={addForm.date}
+                      onChange={(e) => setAddForm({ ...addForm, date: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#0B5D3F]"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="text-xs font-bold text-gray-700 mb-1 block">Campaign / Project Destination</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Clean Ocean Initiative 2026 or General Fund"
+                      value={addForm.project}
+                      onChange={(e) => setAddForm({ ...addForm, project: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#0B5D3F]"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 pt-2">
+                  <input
+                    type="checkbox"
+                    id="recDon"
+                    checked={addForm.recurring}
+                    onChange={(e) => setAddForm({ ...addForm, recurring: e.target.checked })}
+                    className="rounded text-[#0B5D3F] focus:ring-0"
+                  />
+                  <label htmlFor="recDon" className="text-xs text-gray-600 font-medium cursor-pointer">
+                    Mark as Monthly Recurring Donation
+                  </label>
+                </div>
+
+                <div className="flex gap-3 pt-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddModal(false)}
+                    className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-semibold text-sm hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 py-2.5 rounded-xl bg-[#0B5D3F] text-white font-semibold text-sm hover:bg-[#0a5237]"
+                  >
+                    Save Donation
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </motion.div>
         )}

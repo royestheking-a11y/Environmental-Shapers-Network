@@ -81,12 +81,48 @@ export function DataBackupView() {
   const runBackup = async () => {
     setRunning(true);
     
-    // Fetch live data from all collections
+    // Fetch live data from all collections across the entire system
     const collections = [
-      "esn_projects", "esn_campaigns", "esn_donations", "esn_newsletters",
-      "esn_subscribers", "esn_apps_volunteer", "esn_apps_career",
-      "esn_apps_representative", "esn_apps_member", "esn_apps_partner",
-      "esn_career_jobs", "esn_volunteer_roles", "esn_settings", "esn_stats"
+      "esn_projects",
+      "esn_campaigns_admin",
+      "esn_donations",
+      "esn_newsletters",
+      "esn_subscribers",
+      "esn_programs",
+      "esn_events",
+      "esn_cms_content",
+      "esn_about_team",
+      "esn_about_hero",
+      "esn_about_story",
+      "esn_about_milestones",
+      "esn_about_vision_mission",
+      "esn_about_global_presence",
+      "esn_whoweare_admin",
+      "esn_whoweare_story",
+      "esn_hero_admin",
+      "esn_stats_admin",
+      "esn_mission_admin",
+      "esn_thematic_areas_admin",
+      "esn_research_admin",
+      "esn_youth_initiatives_admin",
+      "esn_youth_stats",
+      "esn_partners_admin",
+      "esn_testimonials_admin",
+      "esn_faq_admin",
+      "esn_users_admin",
+      "esn_roles_admin",
+      "esn_staff_work_hours",
+      "esn_media",
+      "esn_messages",
+      "esn_career_jobs",
+      "esn_volunteer_roles",
+      "esn_apps_volunteer",
+      "esn_apps_career",
+      "esn_apps_representative",
+      "esn_apps_member",
+      "esn_apps_partner",
+      "esn_settings",
+      "esn_activity_logs"
     ];
 
     const snapshot: Record<string, any> = {

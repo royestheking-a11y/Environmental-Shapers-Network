@@ -1,32 +1,32 @@
+import { useState } from "react";
 import { useLocation, Link } from "react-router";
-import { motion } from "motion/react";
-import { ChevronRight, Users, Shield, FileText, Award, Star, Download, ExternalLink, CheckCircle2, ArrowRight, Globe2, Linkedin, Mail } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import {
+  ChevronRight, Users, Shield, FileText, Award, Star, Download, ExternalLink,
+  CheckCircle2, ArrowRight, Globe2, Linkedin, Mail, MapPin, Sparkles, ArrowUpRight, X
+} from "lucide-react";
+import { useFirestoreData } from "../../lib/useFirestore";
+import { ImageWithFallback } from "../components/ui/ImageWithFallback";
+import { initialTeamMembers, AboutTeamMember } from "./admin/sections/AboutPageAdminView";
 
 function PageHero({ title, sub, image }: { title: string; sub: string; image: string }) {
   return (
-    <section className="relative h-72 flex items-end overflow-hidden">
-      <img src={image} alt={title} className="absolute inset-0 w-full h-full object-cover" />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#0a1a0e]/90 via-[#0a1a0e]/50 to-transparent" />
-      <div className="relative z-10 max-w-6xl mx-auto px-6 pb-10 w-full">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-          <h1 className="text-white mb-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 800 }}>{title}</h1>
-          <p className="text-white/70 max-w-xl">{sub}</p>
+    <section className="relative py-28 bg-gradient-to-br from-[#0B5D3F] via-[#0E4733] to-[#173B63] overflow-hidden text-white">
+      <div className="absolute inset-0">
+        <img src={image} alt="" className="w-full h-full object-cover opacity-20" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0B5D3F]/90 to-[#173B63]/90" />
+      </div>
+      <div className="relative z-10 max-w-6xl mx-auto px-6">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <h1 className="text-white mb-4 text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            {title}
+          </h1>
+          <p className="text-white/80 text-base sm:text-lg max-w-xl leading-relaxed">{sub}</p>
         </motion.div>
       </div>
     </section>
   );
 }
-
-const teamMembers = [
-  { name: "Dr. Rizwan Ahmed", role: "Executive Director", region: "Global", bio: "20+ years in environmental policy and international development. Former UNEP senior advisor.", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=200" },
-  { name: "Dr. Priya Nair", role: "Director of Programs", region: "Asia-Pacific", bio: "Led flagship restoration programs across 18 countries. PhD in Environmental Science from IIT.", img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=200" },
-  { name: "Carlos Mendoza", role: "Director of Campaigns", region: "Latin America", bio: "Co-founded 3 environmental NGOs. Spearheaded ESN's Amazon Reforestation initiative.", img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=200" },
-  { name: "Amara Osei-Bonsu", role: "Director of Partnerships", region: "Africa", bio: "Built ESN's corporate partnership program from 12 to 80+ global partners.", img: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=200" },
-  { name: "Dr. Sarah Chen", role: "Head of Research", region: "Global", bio: "Published 45+ peer-reviewed papers on climate resilience and nature-based solutions.", img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=200" },
-  { name: "Fatima Al-Hassan", role: "Director of Finance", region: "MENA", bio: "CFA with 15 years experience in development finance and climate fund management.", img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=200" },
-  { name: "James Whitfield", role: "Head of Communications", region: "Europe", bio: "Former BBC journalist turned environmental communicator with global media reach.", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=200" },
-  { name: "Mei Lin Zhang", role: "Youth Programs Director", region: "East Asia", bio: "Founded the ESN YEL Fellowship. Youth climate negotiator at COP26, 27, 28.", img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=200" },
-];
 
 const boardMembers = [
   { name: "Prof. Anika Stern", role: "Board Chair", org: "University of Copenhagen", country: "Denmark" },
@@ -37,7 +37,7 @@ const boardMembers = [
   { name: "Ms. Isabel Cruz", role: "Board Member", org: "Amazon Watch", country: "Brazil" },
 ];
 
-const reports = [
+const initialReports = [
   { year: "2025", title: "Annual Impact Report 2025", pages: 84, size: "12.4 MB", highlights: ["2.1M trees planted", "150K MT CO₂ reduced", "$18M mobilized"] },
   { year: "2024", title: "Annual Impact Report 2024", pages: 76, size: "10.8 MB", highlights: ["1.6M trees planted", "124K MT CO₂ reduced", "$14M mobilized"] },
   { year: "2023", title: "Annual Impact Report 2023", pages: 68, size: "9.2 MB", highlights: ["1.1M trees planted", "98K MT CO₂ reduced", "$11M mobilized"] },
@@ -66,54 +66,308 @@ function Breadcrumb({ current }: { current: string }) {
 }
 
 function OurTeamPage() {
+  const [teamData] = useFirestoreData<AboutTeamMember[]>("esn_about_team", initialTeamMembers);
+  const [selectedMember, setSelectedMember] = useState<AboutTeamMember | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string>("All");
+
+  const categories = ["All", "Executive", "Leadership", "Advisors", "Country Leads", "Bangladesh"];
+
+  const filteredMembers = (teamData || initialTeamMembers).filter((m) => {
+    if (activeCategory === "All") return true;
+    if (activeCategory === "Bangladesh") return m.country?.toLowerCase().includes("bangladesh") || m.category?.toLowerCase().includes("bd");
+    if (activeCategory === "Advisors") return m.category?.toLowerCase().includes("advisor");
+    if (activeCategory === "Executive") return m.category?.toLowerCase().includes("exec") || m.category?.toLowerCase().includes("founder");
+    if (activeCategory === "Leadership") return m.category?.toLowerCase().includes("lead") || !m.category;
+    if (activeCategory === "Country Leads") return m.role?.toLowerCase().includes("director") || m.role?.toLowerCase().includes("lead");
+    return true;
+  });
+
   return (
     <div className="bg-[#F6FBF8] min-h-screen">
-      <PageHero title="Our Team" sub="Meet the passionate people driving environmental change across the globe." image="https://images.unsplash.com/photo-1522071820081-009f0129c71c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400" />
-      <div className="max-w-6xl mx-auto px-6 py-16">
+      <PageHero
+        title="Our Global Team"
+        sub="Meet the scientists, strategists, and grassroots leaders driving environmental action across 80+ nations."
+        image="https://images.unsplash.com/photo-1522071820081-009f0129c71c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400"
+      />
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
         <Breadcrumb current="Our Team" />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-10">
-          {[["120+", "Staff & Consultants"], ["80+", "Country Representatives"], ["300+", "Scientific Advisors"], ["48K+", "Volunteer Network"]].map(([v, l]) => (
-            <div key={l} className="bg-white rounded-2xl p-5 text-center border border-gray-100">
+
+        {/* Top metrics */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-12">
+          {[["120+", "Staff & Officers"], ["80+", "Country Secretariats"], ["300+", "Scientific Advisors"], ["48K+", "Youth Network"]].map(([v, l]) => (
+            <div key={l} className="bg-white rounded-2xl p-5 text-center border border-gray-100 shadow-sm">
               <div className="text-2xl font-black text-[#0B5D3F]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{v}</div>
               <div className="text-xs text-gray-500 mt-1">{l}</div>
             </div>
           ))}
         </div>
-        <div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider mb-2">Leadership</div>
-        <h2 className="text-gray-900 mb-10" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.5rem, 2.5vw, 2rem)", fontWeight: 800 }}>Global Leadership Team</h2>
-        <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {teamMembers.map((m, i) => (
-            <motion.div key={m.name} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.07 }}
-              className="bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-xl transition-all group flex flex-col h-full">
-              <div className="p-6 flex-1 flex flex-col">
-                <div className="font-bold text-gray-900 mb-1 text-lg">{m.name}</div>
-                <div className="text-sm text-[#4CAF50] font-semibold mb-2">{m.role}</div>
-                <div className="text-xs text-gray-400 mb-4 flex items-center gap-1"><Globe2 size={11} /> {m.region}</div>
-                <p className="text-sm text-gray-500 leading-relaxed mb-6 flex-1">{m.bio}</p>
-                <div className="flex gap-2">
-                  <div className="w-8 h-8 rounded-full bg-gray-50 hover:bg-[#0B5D3F] hover:text-white transition-colors cursor-pointer flex items-center justify-center border border-gray-100 text-gray-400"><Linkedin size={14} /></div>
-                  <div className="w-8 h-8 rounded-full bg-gray-50 hover:bg-[#0B5D3F] hover:text-white transition-colors cursor-pointer flex items-center justify-center border border-gray-100 text-gray-400"><Mail size={14} /></div>
+
+        {/* Category Filters */}
+        <div className="flex items-center justify-between flex-wrap gap-4 mb-8">
+          <div>
+            <div className="text-[#4CAF50] text-xs font-bold uppercase tracking-wider mb-1">ESN Directory</div>
+            <h2 className="text-gray-900 font-extrabold text-2xl sm:text-3xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              Global Leadership & Staff
+            </h2>
+          </div>
+          <div className="flex items-center gap-1.5 flex-wrap bg-white p-1.5 rounded-2xl border border-gray-200/80 shadow-sm">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                  activeCategory === cat
+                    ? "bg-[#0B5D3F] text-white shadow-sm"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Team Grid */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-7">
+          {filteredMembers.map((member, i) => (
+            <motion.div
+              key={member.name + i}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.05 }}
+              onClick={() => setSelectedMember(member)}
+              className="bg-white rounded-3xl overflow-hidden border border-gray-100 hover:border-[#0B5D3F]/30 hover:shadow-2xl hover:shadow-[#0B5D3F]/10 hover:-translate-y-1.5 transition-all duration-300 group flex flex-col h-full cursor-pointer"
+            >
+              {/* Profile Showcase Portrait */}
+              <div className="relative aspect-[4/5] w-full overflow-hidden bg-gradient-to-br from-[#0B5D3F]/10 via-[#F6FBF8] to-[#173B63]/10">
+                {member.img ? (
+                  <ImageWithFallback
+                    src={member.img}
+                    alt={member.name}
+                    className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out ${
+                      member.imagePosition === "center"
+                        ? "object-center"
+                        : member.imagePosition === "bottom"
+                        ? "object-bottom"
+                        : "object-top"
+                    }`}
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-[#0B5D3F]/15 via-[#F6FBF8] to-[#173B63]/10 p-6">
+                    <div className="w-24 h-24 rounded-full bg-white shadow-md border border-[#0B5D3F]/20 flex items-center justify-center text-[#0B5D3F] font-black text-3xl tracking-wider">
+                      {member.name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()}
+                    </div>
+                    <span className="mt-3 text-xs font-bold text-[#0B5D3F]/70 tracking-widest uppercase">ESN Leader</span>
+                  </div>
+                )}
+
+                {/* Gradient Vignette */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-90 group-hover:opacity-95 transition-opacity pointer-events-none" />
+
+                {/* Category badge */}
+                <div className="absolute top-3.5 right-3.5 flex items-center gap-1.5 bg-white/95 backdrop-blur-md text-[#0B5D3F] text-[11px] font-extrabold px-3 py-1.5 rounded-full shadow-md border border-white/40">
+                  <Sparkles size={11} className="text-[#4CAF50]" />
+                  <span>{member.category || "Leader"}</span>
+                </div>
+
+                {/* Country / Location pill */}
+                <div className="absolute bottom-3.5 left-3.5 flex items-center gap-1.5 bg-black/55 backdrop-blur-md text-white text-xs font-medium px-3 py-1.5 rounded-full border border-white/20 shadow-md">
+                  <MapPin size={11} className="text-[#4CAF50]" />
+                  <span>{member.country || "Global"}</span>
+                </div>
+              </div>
+
+              {/* Info Block */}
+              <div className="p-6 flex-1 flex flex-col justify-between">
+                <div>
+                  <h4 className="font-black text-gray-900 text-xl mb-1 group-hover:text-[#0B5D3F] transition-colors" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    {member.name}
+                  </h4>
+                  <p className="text-[#0B5D3F] text-sm font-bold mb-3 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#4CAF50]" />
+                    {member.role}
+                  </p>
+                  <p className="text-gray-500 text-xs sm:text-sm leading-relaxed mb-4 line-clamp-3">
+                    {member.bio}
+                  </p>
+
+                  {/* Tags */}
+                  {member.tags && member.tags.length > 0 && (
+                    <div className="flex gap-1.5 flex-wrap mb-4">
+                      {member.tags.map((tag) => (
+                        <span key={tag} className="text-[11px] font-bold bg-[#0B5D3F]/8 text-[#0B5D3F] px-2.5 py-0.5 rounded-full border border-[#0B5D3F]/12">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Action Link */}
+                <div className="pt-3.5 border-t border-gray-100 flex items-center justify-between text-xs font-bold text-[#0B5D3F] group-hover:text-[#4CAF50] transition-colors mt-auto">
+                  <span>View Full Profile Showcase</span>
+                  <div className="w-7 h-7 rounded-full bg-[#0B5D3F]/8 flex items-center justify-center group-hover:bg-[#0B5D3F] group-hover:text-white transition-all">
+                    <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                  </div>
                 </div>
               </div>
             </motion.div>
           ))}
         </div>
-        <div className="mt-16 bg-gradient-to-r from-[#0B5D3F] to-[#173B63] rounded-3xl p-10 text-white text-center">
+
+        {/* Join CTA */}
+        <div className="mt-16 bg-gradient-to-r from-[#0B5D3F] to-[#173B63] rounded-3xl p-10 text-white text-center shadow-lg">
           <Users size={36} className="text-[#4CAF50] mx-auto mb-4" />
-          <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "1.8rem", fontWeight: 800 }} className="mb-3">Join Our Team</h3>
-          <p className="text-white/70 mb-6 max-w-md mx-auto">We're looking for passionate people to help shape the future of environmental action.</p>
-          <Link to="/careers" className="inline-flex items-center gap-2 bg-[#4CAF50] text-white px-6 py-3 rounded-full font-semibold hover:bg-[#43a047] transition-all">View Open Positions <ArrowRight size={15} /></Link>
+          <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "1.8rem", fontWeight: 800 }} className="mb-3">Join Our Global Network</h3>
+          <p className="text-white/70 mb-6 max-w-md mx-auto">We're looking for passionate advocates, scientists, and organizers to lead environmental change.</p>
+          <div className="flex items-center justify-center gap-4 flex-wrap">
+            <Link to="/volunteer" className="inline-flex items-center gap-2 bg-[#4CAF50] text-white px-6 py-3 rounded-full font-semibold hover:bg-[#43a047] transition-all">
+              Volunteer With Us <ArrowRight size={15} />
+            </Link>
+            <Link to="/contact" className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white px-6 py-3 rounded-full font-semibold hover:bg-white/20 transition-all">
+              Contact Secretariats
+            </Link>
+          </div>
         </div>
       </div>
+
+      {/* Profile Showcase Modal */}
+      <AnimatePresence>
+        {selectedMember && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 20 }}
+              transition={{ type: "spring", duration: 0.5 }}
+              className="bg-white rounded-3xl overflow-hidden max-w-2xl w-full shadow-2xl max-h-[92vh] flex flex-col relative border border-gray-100"
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setSelectedMember(null)}
+                className="absolute top-4 right-4 z-20 w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-md transition-colors"
+                aria-label="Close modal"
+              >
+                <X size={18} />
+              </button>
+
+              <div className="overflow-y-auto">
+                {/* Header with cover image */}
+                <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full bg-gradient-to-br from-[#0B5D3F] via-[#0E4733] to-[#173B63] overflow-hidden">
+                  {selectedMember.img ? (
+                    <ImageWithFallback
+                      src={selectedMember.img}
+                      alt={selectedMember.name}
+                      className={`w-full h-full object-cover ${
+                        selectedMember.imagePosition === "center"
+                          ? "object-center"
+                          : selectedMember.imagePosition === "bottom"
+                          ? "object-bottom"
+                          : "object-top"
+                      }`}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-white">
+                      <div className="w-24 h-24 rounded-full bg-white/10 border-2 border-white/30 flex items-center justify-center text-4xl font-black">
+                        {selectedMember.name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()}
+                      </div>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
+
+                  <div className="absolute bottom-5 left-6 right-6 text-white">
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      <span className="bg-[#4CAF50] text-white text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow">
+                        {selectedMember.category || "Leadership"}
+                      </span>
+                      <span className="flex items-center gap-1 bg-black/40 backdrop-blur-md text-white text-xs px-3 py-1 rounded-full border border-white/20">
+                        <MapPin size={11} className="text-[#4CAF50]" />
+                        {selectedMember.country || "Global"}
+                      </span>
+                    </div>
+                    <h3 className="text-2xl sm:text-3xl font-black" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                      {selectedMember.name}
+                    </h3>
+                    <p className="text-[#A5D6A7] font-semibold text-sm sm:text-base">{selectedMember.role}</p>
+                  </div>
+                </div>
+
+                {/* Body */}
+                <div className="p-6 sm:p-8 space-y-6">
+                  <div>
+                    <h4 className="text-xs font-bold text-[#0B5D3F] uppercase tracking-wider mb-2">Biography & Mission</h4>
+                    <p className="text-gray-600 text-sm sm:text-base leading-relaxed whitespace-pre-line">
+                      {selectedMember.bio}
+                    </p>
+                  </div>
+
+                  {/* Focus Tags */}
+                  {selectedMember.tags && selectedMember.tags.length > 0 && (
+                    <div>
+                      <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2.5">Key Areas of Focus</h4>
+                      <div className="flex gap-2 flex-wrap">
+                        {selectedMember.tags.map((tag) => (
+                          <span key={tag} className="text-xs font-bold bg-[#F6FBF8] text-[#0B5D3F] px-3 py-1.5 rounded-xl border border-[#0B5D3F]/15">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Connect Links */}
+                  <div className="pt-4 border-t border-gray-100 flex items-center justify-between flex-wrap gap-3">
+                    <div className="flex items-center gap-2">
+                      {selectedMember.linkedin && (
+                        <a
+                          href={selectedMember.linkedin}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 font-semibold text-xs transition-colors"
+                        >
+                          <Linkedin size={14} /> LinkedIn
+                        </a>
+                      )}
+                      {selectedMember.email && (
+                        <a
+                          href={`mailto:${selectedMember.email}`}
+                          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 font-semibold text-xs transition-colors"
+                        >
+                          <Mail size={14} /> Email
+                        </a>
+                      )}
+                    </div>
+                    <Link
+                      to="/contact"
+                      onClick={() => setSelectedMember(null)}
+                      className="inline-flex items-center gap-1.5 bg-[#0B5D3F] text-white px-5 py-2 rounded-xl text-xs font-bold hover:bg-[#0a5237] transition-all shadow-sm"
+                    >
+                      Connect with Leadership <ArrowRight size={13} />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
 function BoardPage() {
+  const [teamData] = useFirestoreData<AboutTeamMember[]>("esn_about_team", initialTeamMembers);
   const principles = ["Independence & Impartiality", "Accountability & Transparency", "Strategic Oversight", "Fiduciary Responsibility", "Stakeholder Representation", "Long-term Sustainability"];
+
+  // Filter advisory council and founders from dynamic team collection
+  const advisors = (teamData || initialTeamMembers).filter(
+    (m) => m.category === "Advisor" || m.role.toLowerCase().includes("advisor")
+  );
+
   return (
     <div className="bg-[#F6FBF8] min-h-screen">
-      <PageHero title="Board & Governance" sub="Our governance structure ensures accountability, transparency, and strategic excellence." image="https://images.unsplash.com/photo-1553484771-047a44eee27b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400" />
+      <PageHero title="Board & Governance" sub="Our governance structure ensures accountability, transparency, and strategic excellence across every initiative." image="https://images.unsplash.com/photo-1553484771-047a44eee27b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400" />
       <div className="max-w-6xl mx-auto px-6 py-16">
         <Breadcrumb current="Board & Governance" />
         <div className="grid md:grid-cols-2 gap-10 mb-14">
@@ -135,9 +389,11 @@ function BoardPage() {
             </div>
           </div>
         </div>
+
+        {/* Board of Directors */}
         <div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider mb-2">Leadership</div>
         <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 2vw, 1.8rem)", fontWeight: 800 }} className="text-gray-900 mb-8">Board of Directors</h2>
-        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5 mb-12">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5 mb-14">
           {boardMembers.map((b, i) => (
             <motion.div key={b.name} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
               className="bg-white rounded-2xl p-6 border border-gray-100 hover:border-[#4CAF50]/30 hover:shadow-md transition-all">
@@ -151,6 +407,33 @@ function BoardPage() {
             </motion.div>
           ))}
         </div>
+
+        {/* Advisory Council from Firestore */}
+        {advisors.length > 0 && (
+          <div className="mb-14">
+            <div className="text-[#0B5D3F] text-sm font-bold uppercase tracking-wider mb-2">Advisory Body</div>
+            <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "1.5rem", fontWeight: 800 }} className="text-gray-900 mb-6">Scientific & Policy Advisory Council</h3>
+            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5">
+              {advisors.map((adv, i) => (
+                <div key={adv.name + i} className="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-md transition-all flex items-start gap-4">
+                  {adv.img ? (
+                    <img src={adv.img} alt={adv.name} className="w-14 h-14 rounded-xl object-cover object-top shrink-0 border border-gray-100" />
+                  ) : (
+                    <div className="w-14 h-14 rounded-xl bg-[#0B5D3F]/10 text-[#0B5D3F] font-black flex items-center justify-center shrink-0">
+                      {adv.name.slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-gray-900 text-sm truncate">{adv.name}</div>
+                    <div className="text-xs text-[#4CAF50] font-semibold truncate">{adv.role}</div>
+                    <div className="text-xs text-gray-400 mt-1 flex items-center gap-1"><MapPin size={10} /> {adv.country || "Global"}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="bg-white rounded-2xl p-8 border border-gray-100">
           <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700 }} className="text-gray-900 mb-4">Board Committees</h3>
           <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -170,38 +453,60 @@ function BoardPage() {
 }
 
 function ReportsPage() {
+  const [cmsContent] = useFirestoreData<any[]>("esn_cms_content", []);
+
+  // Extract dynamic reports published in CMS
+  const dynamicReports = (cmsContent || [])
+    .filter((item: any) => item.type === "Report" && (item.status === "Published" || !item.status))
+    .map((item: any) => ({
+      year: item.date?.split(" ")?.pop() || "2026",
+      title: item.title,
+      pages: item.pages || 45,
+      size: item.size || "8.5 MB",
+      highlights: item.category ? [item.category, "Open Access", "Peer-Reviewed"] : ["Environmental Impact", "Audited Report"],
+      url: item.fileUrl || null
+    }));
+
+  const allReports = [...dynamicReports, ...initialReports];
+
   return (
     <div className="bg-[#F6FBF8] min-h-screen">
-      <PageHero title="Annual Reports" sub="Transparent reporting on our environmental impact, finances, and organizational performance." image="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400" />
+      <PageHero title="Annual Reports & Publications" sub="Transparent reporting on our environmental impact, finances, and organizational performance." image="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400" />
       <div className="max-w-6xl mx-auto px-6 py-16">
         <Breadcrumb current="Annual Reports" />
         <div className="grid md:grid-cols-3 gap-5 mb-12">
           {[["100%", "Independently Audited"], ["4-Star", "Charity Navigator Rating"], ["A+", "Transparency Grade"]].map(([v, l]) => (
-            <div key={l} className="bg-white rounded-2xl p-6 text-center border border-gray-100">
+            <div key={l} className="bg-white rounded-2xl p-6 text-center border border-gray-100 shadow-sm">
               <div className="text-3xl font-black text-[#0B5D3F] mb-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{v}</div>
               <div className="text-sm text-gray-500">{l}</div>
             </div>
           ))}
         </div>
-        <div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider mb-2">Reports</div>
+        <div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider mb-2">Reports & Audits</div>
         <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 2vw, 1.8rem)", fontWeight: 800 }} className="text-gray-900 mb-8">Download Our Reports</h2>
         <div className="flex flex-col gap-5">
-          {reports.map((r, i) => (
-            <motion.div key={r.year} initial={{ opacity: 0, x: -16 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+          {allReports.map((r, i) => (
+            <motion.div key={r.title + i} initial={{ opacity: 0, x: -16 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
               className="bg-white rounded-2xl p-6 border border-gray-100 hover:border-[#4CAF50]/30 hover:shadow-md transition-all flex flex-col sm:flex-row gap-5 items-start sm:items-center">
               <div className="w-14 h-14 rounded-2xl bg-[#0B5D3F] flex items-center justify-center text-white font-black text-sm shrink-0" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{r.year}</div>
               <div className="flex-1">
                 <div className="font-bold text-gray-900 mb-2">{r.title}</div>
                 <div className="flex flex-wrap gap-2 mb-2">
-                  {r.highlights.map((h) => <span key={h} className="text-xs bg-[#4CAF50]/10 text-[#0B5D3F] px-2.5 py-1 rounded-full font-medium">{h}</span>)}
+                  {r.highlights.map((h: string) => <span key={h} className="text-xs bg-[#4CAF50]/10 text-[#0B5D3F] px-2.5 py-1 rounded-full font-medium">{h}</span>)}
                 </div>
                 <div className="text-xs text-gray-400">{r.pages} pages · {r.size}</div>
               </div>
               <div className="flex gap-2">
-                <button className="flex items-center gap-1.5 bg-[#0B5D3F] text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#0a5237] transition-all">
+                <button
+                  onClick={() => alert(`Downloading ${r.title} (PDF)`)}
+                  className="flex items-center gap-1.5 bg-[#0B5D3F] text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#0a5237] transition-all"
+                >
                   <Download size={14} /> Download PDF
                 </button>
-                <button className="flex items-center gap-1.5 border border-gray-200 text-gray-600 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-all">
+                <button
+                  onClick={() => alert(`Opening ${r.title} in online reader`)}
+                  className="flex items-center gap-1.5 border border-gray-200 text-gray-600 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-all"
+                >
                   <ExternalLink size={14} /> View Online
                 </button>
               </div>

@@ -43,6 +43,8 @@ export interface AboutTeamMember {
   tags: string[];
   category: "Advisor" | "BD" | "Global" | "Founder";
   imagePosition?: "top" | "center" | "bottom";
+  linkedin?: string;
+  email?: string;
 }
 
 export interface VisionMissionItem {
@@ -493,6 +495,14 @@ export default function AboutPageAdminView() {
                     <div className="md:col-span-2">
                       <label className="text-xs font-bold text-gray-600 mb-1.5 block">Tags (Comma separated)</label>
                       <input type="text" value={teamFormData.tags?.join(", ") || ""} onChange={e => setTeamFormData({ ...teamFormData, tags: e.target.value.split(",").map(t => t.trim()).filter(Boolean) })} placeholder="e.g. Climate, Science" className="w-full px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-600 mb-1.5 block">LinkedIn URL</label>
+                      <input type="url" value={teamFormData.linkedin || ""} onChange={e => setTeamFormData({ ...teamFormData, linkedin: e.target.value })} placeholder="https://linkedin.com/in/..." className="w-full px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-600 mb-1.5 block">Email Address</label>
+                      <input type="email" value={teamFormData.email || ""} onChange={e => setTeamFormData({ ...teamFormData, email: e.target.value })} placeholder="name@esnglobal.org" className="w-full px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
                     </div>
                     <div className="md:col-span-2">
                       <label className="text-xs font-bold text-gray-600 mb-1.5 block">Bio</label>
