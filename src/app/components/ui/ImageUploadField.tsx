@@ -92,28 +92,47 @@ export function ImageUploadField({
       <div className="flex flex-col sm:flex-row items-start gap-3">
         {/* Preview Thumbnail */}
         {value ? (
-          <div className={`relative group rounded-xl overflow-hidden border-2 border-gray-200 bg-gray-50 shrink-0 w-full sm:w-auto ${aspectClass}`}>
-            <ImageWithFallback
-              src={value}
-              alt="Preview"
-              className="w-full h-full object-cover rounded-lg"
-            />
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+          <div className="flex flex-col gap-1.5 shrink-0 w-full sm:w-auto">
+            <div className={`relative group rounded-xl overflow-hidden border-2 border-[#0B5D3F]/20 bg-gray-50 ${aspectClass}`}>
+              <ImageWithFallback
+                src={value}
+                alt="Preview"
+                className="w-full h-full object-cover rounded-lg"
+              />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-1.5 bg-white/90 hover:bg-white text-gray-800 rounded-lg text-xs font-semibold shadow flex items-center gap-1 transition-all"
+                  title="Change Image"
+                >
+                  <Upload size={12} /> Change
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onChange("")}
+                  className="p-1.5 bg-red-500/90 hover:bg-red-600 text-white rounded-lg text-xs font-semibold shadow transition-all"
+                  title="Remove Image"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            </div>
+            {/* Direct Visible Controls */}
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="p-1.5 bg-white/90 hover:bg-white text-gray-800 rounded-lg text-xs font-semibold shadow flex items-center gap-1 transition-all"
-                title="Change Image"
+                className="text-[11px] px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-semibold flex items-center gap-1 transition-all"
               >
-                <Upload size={12} /> Change
+                <Upload size={11} /> Change
               </button>
               <button
                 type="button"
                 onClick={() => onChange("")}
-                className="p-1.5 bg-red-500/90 hover:bg-red-600 text-white rounded-lg text-xs font-semibold shadow transition-all"
-                title="Remove Image"
+                className="text-[11px] px-2.5 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg font-semibold flex items-center gap-1 transition-all"
               >
-                <X size={12} />
+                <X size={11} /> Remove Image
               </button>
             </div>
           </div>

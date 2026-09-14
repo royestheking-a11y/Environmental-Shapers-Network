@@ -19,9 +19,10 @@
 
     <body>
       <div id="root">
-        <!-- Instant Branded Preloader: Prevents blank white screen while JavaScript initializes -->
+      <div id="root">
+        <!-- Instant Growing Plant Preloader: Pure growing plant animation from small to big -->
         <style>
-          .esn-initial-loader {
+          .esn-plant-preloader {
             position: fixed;
             inset: 0;
             background: #0A1A0E;
@@ -29,70 +30,139 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            color: white;
             z-index: 999999;
-          }
-          .esn-sprout-icon {
-            width: 54px;
-            height: 54px;
-            margin-bottom: 20px;
-            animation: esnPulse 1.8s ease-in-out infinite;
-          }
-          .esn-loader-title {
-            font-size: 1.15rem;
-            font-weight: 800;
-            letter-spacing: 0.04em;
-            color: #ffffff;
-            margin-bottom: 6px;
-            text-align: center;
-          }
-          .esn-loader-sub {
-            font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.6);
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            margin-bottom: 28px;
-            font-weight: 600;
-          }
-          .esn-progress-bar {
-            width: 140px;
-            height: 3px;
-            background: rgba(255, 255, 255, 0.12);
-            border-radius: 999px;
             overflow: hidden;
-            position: relative;
           }
-          .esn-progress-fill {
+          .esn-ambient-glow {
             position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 45%;
-            background: linear-gradient(90deg, #4CAF50, #81C784);
-            border-radius: 999px;
-            animation: esnSlide 1.4s ease-in-out infinite;
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(76, 175, 80, 0.3) 0%, rgba(11, 93, 63, 0.08) 55%, transparent 75%);
+            filter: blur(28px);
+            animation: esnGlowPulse 3s ease-in-out infinite alternate;
+            pointer-events: none;
           }
-          @keyframes esnPulse {
-            0%, 100% { transform: scale(1); opacity: 0.9; }
-            50% { transform: scale(1.1); opacity: 1; filter: drop-shadow(0 0 16px rgba(76, 175, 80, 0.6)); }
+          .esn-growing-plant {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: esnPlantScaleUp 2.8s cubic-bezier(0.34, 1.3, 0.64, 1) infinite;
+            transform-origin: 50% 88%;
           }
-          @keyframes esnSlide {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(350%); }
+          @keyframes esnPlantScaleUp {
+            0% {
+              transform: scale(0.2);
+              opacity: 0.2;
+            }
+            30% {
+              transform: scale(0.65);
+              opacity: 0.85;
+            }
+            60% {
+              transform: scale(1.18);
+              opacity: 1;
+            }
+            80% {
+              transform: scale(1);
+              opacity: 1;
+            }
+            100% {
+              transform: scale(0.2);
+              opacity: 0.2;
+            }
+          }
+          @keyframes esnGlowPulse {
+            0% { transform: scale(0.85); opacity: 0.35; }
+            100% { transform: scale(1.35); opacity: 0.8; }
+          }
+          .esn-stem {
+            stroke-dasharray: 65;
+            stroke-dashoffset: 65;
+            animation: esnStemGrow 2.8s ease-in-out infinite;
+          }
+          @keyframes esnStemGrow {
+            0% { stroke-dashoffset: 65; opacity: 0.3; }
+            40%, 85% { stroke-dashoffset: 0; opacity: 1; }
+            100% { stroke-dashoffset: 65; opacity: 0.3; }
+          }
+          .esn-leaf-left {
+            transform-origin: 60px 65px;
+            animation: esnLeafLeftGrow 2.8s ease-in-out infinite;
+          }
+          @keyframes esnLeafLeftGrow {
+            0%, 20% { transform: scale(0) rotate(-35deg); opacity: 0; }
+            50%, 85% { transform: scale(1) rotate(-10deg); opacity: 1; }
+            100% { transform: scale(0) rotate(-35deg); opacity: 0; }
+          }
+          .esn-leaf-right {
+            transform-origin: 60px 48px;
+            animation: esnLeafRightGrow 2.8s ease-in-out infinite;
+          }
+          @keyframes esnLeafRightGrow {
+            0%, 35% { transform: scale(0) rotate(35deg); opacity: 0; }
+            65%, 85% { transform: scale(1) rotate(12deg); opacity: 1; }
+            100% { transform: scale(0) rotate(35deg); opacity: 0; }
+          }
+          .esn-bud {
+            transform-origin: 60px 38px;
+            animation: esnBudPulse 2.8s ease-in-out infinite;
+          }
+          @keyframes esnBudPulse {
+            0%, 35% { transform: scale(0); opacity: 0; }
+            60%, 85% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0); opacity: 0; }
           }
         </style>
-        <div class="esn-initial-loader">
-          <svg class="esn-sprout-icon" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2C6 2 2 8 2 14s4 8 10 8 10-6 10-8S18 2 12 2z" fill="#0B5D3F" fill-opacity="0.3"></path>
-            <path d="M7 20h10"></path>
-            <path d="M10 20c0-4 1.5-6.5 4-8.5"></path>
-            <path d="M9.5 9.5c1.5-1.5 3-2 5.5-2 0 2.5-.5 4-2 5.5"></path>
-          </svg>
-          <div class="esn-loader-title">Environmental Shapers Network</div>
-          <div class="esn-loader-sub">Shaping Minds · Protecting Earth</div>
-          <div class="esn-progress-bar">
-            <div class="esn-progress-fill"></div>
+        <div class="esn-plant-preloader">
+          <div class="esn-ambient-glow"></div>
+          <div class="esn-growing-plant">
+            <svg viewBox="0 0 120 120" width="130" height="130" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="60" cy="102" rx="32" ry="7" fill="#2D5A27" opacity="0.3"></ellipse>
+              <path d="M32 102 C 45 96, 75 96, 88 102 C 75 106, 45 106, 32 102 Z" fill="#1B4332"></path>
+              <circle cx="52" cy="101" r="1.5" fill="#40916C" opacity="0.8"></circle>
+              <circle cx="68" cy="100" r="1.2" fill="#52B788" opacity="0.9"></circle>
+              <circle cx="60" cy="103" r="1.8" fill="#74C69D" opacity="0.8"></circle>
+
+              <!-- Sprouting Main Stem -->
+              <path class="esn-stem" d="M60 100 C 60 85, 60 65, 60 40" stroke="url(#esnStemGrad)" stroke-width="4.5" stroke-linecap="round"></path>
+
+              <!-- Left Leaf Unfurling -->
+              <g class="esn-leaf-left">
+                <path d="M60 65 C 45 60, 32 48, 36 34 C 48 35, 58 48, 60 65 Z" fill="url(#esnLeafLeftGrad)" stroke="#1B4332" stroke-width="1.2" stroke-linejoin="round"></path>
+                <path d="M60 65 C 50 54, 42 44, 38 36" stroke="#74C69D" stroke-width="1.2" stroke-linecap="round" opacity="0.85"></path>
+              </g>
+
+              <!-- Right Leaf Unfurling -->
+              <g class="esn-leaf-right">
+                <path d="M60 48 C 76 44, 88 32, 84 18 C 72 20, 62 33, 60 48 Z" fill="url(#esnLeafRightGrad)" stroke="#1B4332" stroke-width="1.2" stroke-linejoin="round"></path>
+                <path d="M60 48 C 70 38, 78 28, 82 20" stroke="#95D5B2" stroke-width="1.2" stroke-linecap="round" opacity="0.85"></path>
+              </g>
+
+              <!-- Top Tender Sprout Bud -->
+              <circle class="esn-bud" cx="60" cy="38" r="3.5" fill="#95D5B2"></circle>
+
+              <defs>
+                <linearGradient id="esnStemGrad" x1="60" y1="100" x2="60" y2="40" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stop-color="#1B4332"></stop>
+                  <stop offset="60%" stop-color="#2D6A4F"></stop>
+                  <stop offset="100%" stop-color="#52B788"></stop>
+                </linearGradient>
+                <linearGradient id="esnLeafLeftGrad" x1="36" y1="34" x2="60" y2="65" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stop-color="#52B788"></stop>
+                  <stop offset="50%" stop-color="#2D6A4F"></stop>
+                  <stop offset="100%" stop-color="#1B4332"></stop>
+                </linearGradient>
+                <linearGradient id="esnLeafRightGrad" x1="84" y1="18" x2="60" y2="48" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stop-color="#74C69D"></stop>
+                  <stop offset="60%" stop-color="#40916C"></stop>
+                  <stop offset="100%" stop-color="#1B4332"></stop>
+                </linearGradient>
+              </defs>
+            </svg>
           </div>
         </div>
       </div>

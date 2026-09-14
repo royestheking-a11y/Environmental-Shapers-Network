@@ -8,7 +8,7 @@ const rightImages = [
   "/canada journey.jpeg",
 ];
 
-import { getInitialHeroSlides } from "../../pages/admin/sections/HeroAdminView";
+import { getInitialHeroSlides, DEFAULT_HERO_IMAGES } from "../../pages/admin/sections/HeroAdminView";
 import { useFirestoreData } from "../../../lib/useFirestore";
 
 const defaultSlides = [
@@ -218,15 +218,22 @@ export function HeroSection() {
         ))}
       </AnimatePresence>
 
-      {/* Full BG image */}
-      <div className="absolute inset-0">
-        <img
-          src="/Commonwealth Secretariat at COP27.jpeg"
-          alt="Forest"
-          className="w-full h-full object-cover opacity-50"
-          fetchPriority="high"
-          decoding="async"
-        />
+      {/* Full BG image with dynamic slide crossfade */}
+      <div className="absolute inset-0 overflow-hidden">
+        <AnimatePresence mode="sync">
+          <motion.img
+            key={currentSlide?.image || currentSlide?.id || slide}
+            src={currentSlide?.image || DEFAULT_HERO_IMAGES[currentSlide?.id] || "/Commonwealth Secretariat at COP27.jpeg"}
+            alt="Hero Background"
+            initial={{ opacity: 0, scale: 1.05 }}
+            animate={{ opacity: 0.5, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.2, ease: "easeInOut" }}
+            className="absolute inset-0 w-full h-full object-cover"
+            fetchPriority="high"
+            decoding="async"
+          />
+        </AnimatePresence>
         <div className="absolute inset-0 bg-gradient-to-r from-[#0a1a0e]/95 via-[#0a1a0e]/75 to-[#0a1a0e]/30" />
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a1a0e]/60 via-transparent to-[#0a1a0e]/80" />
       </div>
