@@ -33,7 +33,7 @@ export default function FAQAdminView() {
   };
 
   const handleSave = () => {
-    if (!formData.question || !formData.answer) return;
+    if (!formData.question?.trim() || !formData.answer?.trim()) return;
     if (editingId !== null) {
       saveFaqs(faqs.map(f => f.id === editingId ? { ...f, ...formData } as FAQ : f));
       setEditingId(null);
@@ -42,6 +42,8 @@ export default function FAQAdminView() {
       saveFaqs([...faqs, { ...formData, id: newId } as FAQ]);
     }
     setShowAdd(false);
+    setFormData({ question: "", answer: "" });
+    setEditingId(null);
   };
 
   const handleDelete = (id: number) => {
@@ -122,7 +124,7 @@ export default function FAQAdminView() {
                 </div>
               </div>
               <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-white">
-                <button onClick={() => setShowAdd(false)} className="px-5 py-2.5 rounded-xl font-medium text-gray-600 hover:bg-gray-50 transition-colors">Cancel</button>
+                <button onClick={() => { setShowAdd(false); setFormData({ question: "", answer: "" }); setEditingId(null); }} className="px-5 py-2.5 rounded-xl font-medium text-gray-600 hover:bg-gray-50 transition-colors">Cancel</button>
                 <button onClick={handleSave} className="px-5 py-2.5 rounded-xl font-medium bg-[#0B5D3F] text-white hover:bg-[#0a5237] transition-colors">Save FAQ</button>
               </div>
             </motion.div>

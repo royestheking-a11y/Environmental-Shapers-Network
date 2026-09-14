@@ -62,13 +62,16 @@ export default function YouthAdminView() {
   };
 
   const handleSaveInit = () => {
-    if (!initForm.title || !initForm.desc) return;
+    if (!initForm.title?.trim() || !initForm.desc?.trim()) return;
+    const currentNum = editingId ? (initiatives.find(i => i.id === editingId)?.num || "01") : String(initiatives.length + 1).padStart(2, '0');
+    const finalNum = initForm.num?.trim() || currentNum;
+    const dataToSave = { ...initForm, num: finalNum };
     if (editingId !== null) {
-      saveInitiatives(initiatives.map(i => i.id === editingId ? { ...i, ...initForm } as YouthInitiative : i));
+      saveInitiatives(initiatives.map(i => i.id === editingId ? { ...i, ...dataToSave } as YouthInitiative : i));
       setEditingId(null);
     } else {
       const newId = initiatives.length > 0 ? Math.max(...initiatives.map(i => i.id)) + 1 : 1;
-      saveInitiatives([...initiatives, { ...initForm, id: newId } as YouthInitiative]);
+      saveInitiatives([...initiatives, { ...dataToSave, id: newId } as YouthInitiative]);
     }
     setShowAdd(false);
     setInitForm({ num: "", title: "", desc: "", impact: "" });
@@ -91,12 +94,14 @@ export default function YouthAdminView() {
     setInitForm(i);
     setEditingId(i.id);
     setShowAdd(true);
+    setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
   };
 
   const startEditStat = (s: YouthStat) => {
     setStatForm(s);
     setEditingId(s.id);
     setShowAdd(true);
+    setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
   };
 
   const confirmDelete = () => {
@@ -117,7 +122,7 @@ export default function YouthAdminView() {
           <h3 className="text-gray-900 font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Youth Development</h3>
           <p className="text-sm text-gray-400">Manage youth initiatives and statistics.</p>
         </div>
-        <button onClick={() => { setEditingId(null); setShowAdd(true); }} className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all">
+        <button onClick={() => { setEditingId(null); setShowAdd(true); setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50); }} className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all">
           <Plus size={16} /> Add {activeTab === "initiatives" ? "Initiative" : "Stat"}
         </button>
       </div>

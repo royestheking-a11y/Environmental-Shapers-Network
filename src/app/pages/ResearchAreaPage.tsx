@@ -186,10 +186,11 @@ function StatCard({ value, label, i }: { value: string; label: string; i: number
 }
 
 import { useFirestoreData } from "../../lib/useFirestore";
+import { getInitialResearchAreas } from "./admin/sections/ResearchAdminView";
 
 export default function ResearchAreaPage() {
   const { area } = useParams<{ area: string }>();
-  const [adminAreas] = useFirestoreData<any[]>("esn_research_admin", []);
+  const [adminAreas] = useFirestoreData<any[]>("esn_research_admin", getInitialResearchAreas());
   
   const staticData = area ? researchData[area] : null;
   const adminMatch = adminAreas.find((a: any) => a.slug === area || a.id === area);

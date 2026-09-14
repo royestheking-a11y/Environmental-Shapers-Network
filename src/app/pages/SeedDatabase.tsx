@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { saveFirestoreData } from "../../lib/useFirestore";
 
 // Import all getters
-import { getInitialMissionValues } from "./admin/sections/MissionAdminView";
+import { getInitialMissionValues, getInitialMissionSection } from "./admin/sections/MissionAdminView";
 import { getInitialStats } from "./admin/sections/StatsAdminView";
 import { getInitialThematicAreas } from "./admin/sections/ThematicAreasView";
 import { getInitialTestimonials } from "./admin/sections/TestimonialsView";
@@ -11,10 +11,18 @@ import { getInitialFAQs } from "./admin/sections/FAQAdminView";
 import { getInitialYouthInitiatives, getInitialYouthStats } from "./admin/sections/YouthAdminView";
 import { getInitialResearchAreas } from "./admin/sections/ResearchAdminView";
 import { getInitialPartners } from "./admin/sections/PartnersView";
-import { getInitialWhoWeAreFeatures } from "./admin/sections/WhoWeAreAdminView";
+import { getInitialWhoWeAreFeatures, getInitialWhoWeAreStory } from "./admin/sections/WhoWeAreAdminView";
 import { getInitialCampaigns } from "./admin/sections/CampaignsView";
 import { getInitialPrograms } from "./admin/sections/ProgramsView";
 import { getInitialProjects } from "./admin/sections/ProjectsView";
+import {
+  initialHeroData,
+  initialStoryData,
+  initialMilestones,
+  initialTeamMembers,
+  initialVisionMissionData,
+  initialGlobalPresenceData
+} from "./admin/sections/AboutPageAdminView";
 
 export default function SeedDatabase() {
   const [status, setStatus] = useState("Seeding database... Please wait.");
@@ -23,6 +31,7 @@ export default function SeedDatabase() {
     async function seed() {
       try {
         await saveFirestoreData("esn_mission_admin", getInitialMissionValues());
+        await saveFirestoreData("esn_mission_section_admin", getInitialMissionSection());
         await saveFirestoreData("esn_stats_admin", getInitialStats());
         await saveFirestoreData("esn_thematic_areas_admin", getInitialThematicAreas());
         await saveFirestoreData("esn_testimonials_admin", getInitialTestimonials());
@@ -33,9 +42,16 @@ export default function SeedDatabase() {
         await saveFirestoreData("esn_research_admin", getInitialResearchAreas());
         await saveFirestoreData("esn_partners_admin", getInitialPartners());
         await saveFirestoreData("esn_whoweare_admin", getInitialWhoWeAreFeatures());
+        await saveFirestoreData("esn_whoweare_story", getInitialWhoWeAreStory());
         await saveFirestoreData("esn_campaigns_admin", getInitialCampaigns());
         await saveFirestoreData("esn_programs", getInitialPrograms());
         await saveFirestoreData("esn_projects_admin", getInitialProjects());
+        await saveFirestoreData("esn_about_hero", initialHeroData);
+        await saveFirestoreData("esn_about_story", initialStoryData);
+        await saveFirestoreData("esn_about_milestones", initialMilestones);
+        await saveFirestoreData("esn_about_team", initialTeamMembers);
+        await saveFirestoreData("esn_about_vision_mission", initialVisionMissionData);
+        await saveFirestoreData("esn_about_global_presence", initialGlobalPresenceData);
 
         setStatus("Database seeded successfully! You can check your Firebase Console now.");
       } catch (e) {

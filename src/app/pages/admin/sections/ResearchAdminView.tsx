@@ -42,13 +42,16 @@ export default function ResearchAdminView() {
   };
 
   const handleSave = () => {
-    if (!formData.title || !formData.desc) return;
+    if (!formData.title?.trim() || !formData.desc?.trim()) return;
+    const finalSlug = (formData.slug?.trim() || formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')).trim();
+    const dataToSave = { ...formData, slug: finalSlug };
+
     if (editingId !== null) {
-      saveAreas(areas.map(a => a.id === editingId ? { ...a, ...formData } as ResearchArea : a));
+      saveAreas(areas.map(a => a.id === editingId ? { ...a, ...dataToSave } as ResearchArea : a));
       setEditingId(null);
     } else {
       const newId = areas.length > 0 ? Math.max(...areas.map(a => a.id)) + 1 : 1;
-      saveAreas([...areas, { ...formData, slug: formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'), id: newId } as ResearchArea]);
+      saveAreas([...areas, { ...dataToSave, id: newId } as ResearchArea]);
     }
     setShowAdd(false);
     setFormData({ slug: "", title: "", desc: "", iconName: "Leaf", tags: [] });
@@ -59,6 +62,7 @@ export default function ResearchAdminView() {
     setFormData(a);
     setEditingId(a.id);
     setShowAdd(true);
+    setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
   };
 
   const confirmDelete = () => {
@@ -94,7 +98,7 @@ export default function ResearchAdminView() {
           <h3 className="text-gray-900 font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Research & Knowledge</h3>
           <p className="text-sm text-gray-400">Manage research areas and capabilities.</p>
         </div>
-        <button onClick={() => { setEditingId(null); setFormData({ slug: "", title: "", desc: "", iconName: "Leaf", tags: [] }); setShowAdd(true); }} className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all">
+        <button onClick={() => { setEditingId(null); setFormData({ slug: "", title: "", desc: "", iconName: "Leaf", tags: [] }); setShowAdd(true); setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50); }} className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all">
           <Plus size={16} /> Add Area
         </button>
       </div>
@@ -107,6 +111,10 @@ export default function ResearchAdminView() {
               <div>
                 <label className="text-xs font-bold text-gray-600 mb-1.5 block">Title *</label>
                 <input type="text" value={formData.title || ""} onChange={e => setFormData({ ...formData, title: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-600 mb-1.5 block">URL Slug (auto-generated if blank)</label>
+                <input type="text" placeholder="e.g. climate-data-lab" value={formData.slug || ""} onChange={e => setFormData({ ...formData, slug: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
               </div>
               <div>
                 <label className="text-xs font-bold text-gray-600 mb-1.5 block">Lucide Icon Name *</label>
