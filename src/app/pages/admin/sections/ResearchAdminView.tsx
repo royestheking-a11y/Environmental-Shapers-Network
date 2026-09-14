@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Plus, Search, Edit3, Trash2, AlertCircle } from "lucide-react";
 import { resolveIcon } from "./ProgramsView";
+import { ImageUploadField } from "../../../components/ui/ImageUploadField";
 
 export interface ResearchArea {
   id: number;
@@ -10,16 +11,18 @@ export interface ResearchArea {
   title: string;
   desc: string;
   tags: string[];
+  image?: string;
+  color?: string;
 }
 
 export function getInitialResearchAreas(): ResearchArea[] {
   return [
-    { id: 1, slug: "ecosystem-health", iconName: "Leaf", title: "Ecosystem Health & Monitoring", desc: "Long-term ecological monitoring across 40+ biomes — tracking deforestation, soil degradation, species loss, and ecosystem recovery using satellite imagery and AI-powered analytics.", tags: ["Ecology", "Remote Sensing", "AI"] },
-    { id: 2, slug: "ocean-blue-carbon", iconName: "Waves", title: "Ocean & Blue Carbon Science", desc: "Quantifying marine ecosystem carbon sequestration potential, tracking ocean acidification, and developing blue carbon accounting frameworks for international climate finance mechanisms.", tags: ["Marine Science", "Carbon", "Climate Finance"] },
-    { id: 3, slug: "clean-energy-transition", iconName: "Sun", title: "Clean Energy Transition Research", desc: "Modelling just energy transition pathways for developing economies — assessing socioeconomic impacts, policy gaps, and community-level energy access solutions in the Global South.", tags: ["Energy Policy", "Just Transition", "SDG 7"] },
-    { id: 4, slug: "climate-data-lab", iconName: "Database", title: "Climate Data & Innovation Lab", desc: "Harnessing open data platforms, citizen science, and machine learning to track environmental change in real time — making climate intelligence universally accessible and actionable.", tags: ["Data Science", "Open Access", "Innovation"] },
-    { id: 5, slug: "social-environmental-justice", iconName: "Users", title: "Social & Environmental Justice Research", desc: "Studying the intersections of environmental degradation, gender inequality, indigenous rights, and climate vulnerability — generating evidence for rights-based environmental governance reforms.", tags: ["Social Science", "Gender", "Indigenous Rights"] },
-    { id: 6, slug: "urban-climate-resilience", iconName: "Building", title: "Urban Climate Resilience Studies", desc: "Analysing climate risks in rapidly urbanising cities, developing green infrastructure blueprints, and evaluating urban nature-based solutions for heat, flood, and air pollution resilience.", tags: ["Urban Planning", "Nature-Based", "Resilience"] }
+    { id: 1, slug: "ecosystem-health", iconName: "Leaf", title: "Ecosystem Health & Monitoring", desc: "Long-term ecological monitoring across 40+ biomes — tracking deforestation, soil degradation, species loss, and ecosystem recovery using satellite imagery and AI-powered analytics.", tags: ["Ecology", "Remote Sensing", "AI"], image: "https://images.unsplash.com/photo-1511497584788-876760111969?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1400" },
+    { id: 2, slug: "ocean-blue-carbon", iconName: "Waves", title: "Ocean & Blue Carbon Science", desc: "Quantifying marine ecosystem carbon sequestration potential, tracking ocean acidification, and developing blue carbon accounting frameworks for international climate finance mechanisms.", tags: ["Marine Science", "Carbon", "Climate Finance"], image: "https://images.unsplash.com/photo-1583212292454-1fe6229603b7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1400" },
+    { id: 3, slug: "clean-energy-transition", iconName: "Sun", title: "Clean Energy Transition Research", desc: "Modelling just energy transition pathways for developing economies — assessing socioeconomic impacts, policy gaps, and community-level energy access solutions in the Global South.", tags: ["Energy Policy", "Just Transition", "SDG 7"], image: "https://images.unsplash.com/photo-1509391366360-2e959784a276?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1400" },
+    { id: 4, slug: "climate-data-lab", iconName: "Database", title: "Climate Data & Innovation Lab", desc: "Harnessing open data platforms, citizen science, and machine learning to track environmental change in real time — making climate intelligence universally accessible and actionable.", tags: ["Data Science", "Open Access", "Innovation"], image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1400" },
+    { id: 5, slug: "social-environmental-justice", iconName: "Users", title: "Social & Environmental Justice Research", desc: "Studying the intersections of environmental degradation, gender inequality, indigenous rights, and climate vulnerability — generating evidence for rights-based environmental governance reforms.", tags: ["Social Science", "Gender", "Indigenous Rights"], image: "https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1400" },
+    { id: 6, slug: "urban-climate-resilience", iconName: "Building", title: "Urban Climate Resilience Studies", desc: "Analysing climate risks in rapidly urbanising cities, developing green infrastructure blueprints, and evaluating urban nature-based solutions for heat, flood, and air pollution resilience.", tags: ["Urban Planning", "Nature-Based", "Resilience"], image: "https://images.unsplash.com/photo-1477959858617-67f30bc75b82?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1400" }
   ];
 }
 
@@ -32,7 +35,7 @@ export default function ResearchAdminView() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const [formData, setFormData] = useState<Partial<ResearchArea>>({
-    slug: "", title: "", desc: "", iconName: "Leaf", tags: []
+    slug: "", title: "", desc: "", iconName: "Leaf", tags: [], image: ""
   });
   const [tagInput, setTagInput] = useState("");
 
@@ -135,6 +138,16 @@ export default function ResearchAdminView() {
                     </span>
                   ))}
                 </div>
+              </div>
+              <div className="md:col-span-2">
+                <ImageUploadField
+                  label="Research Area Hero / Banner Image"
+                  value={formData.image || ""}
+                  onChange={(url) => setFormData({ ...formData, image: url })}
+                  folder="research"
+                  aspectRatio="wide"
+                  helpText="Upload a featured cover image for this research area"
+                />
               </div>
             </div>
             <div className="flex gap-3 mt-4">

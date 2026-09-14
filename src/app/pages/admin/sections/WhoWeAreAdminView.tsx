@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Plus, Search, Edit3, Trash2, AlertCircle, Save, AlignLeft, LayoutGrid } from "lucide-react";
 import { resolveIcon } from "./ProgramsView";
+import { ImageUploadField } from "../../../components/ui/ImageUploadField";
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 
 export interface WhoWeAreFeature {
@@ -19,6 +20,7 @@ export interface WhoWeAreStory {
   description: string;
   quoteText: string;
   quoteAuthor: string;
+  image?: string;
 }
 
 export function getInitialWhoWeAreStory(): WhoWeAreStory {
@@ -30,6 +32,7 @@ export function getInitialWhoWeAreStory(): WhoWeAreStory {
     description: "Environmental Shapers Network (ESN) is a globally active NGO bringing together environmental scientists, frontline communities, youth advocates, researchers, and policymakers across 80+ countries. We operate at the intersection of ecology, social justice, and systemic innovation.",
     quoteText: "When the floods came and scientists confirmed climate change as the cause, we realized that hope without action was just a comfortable lie. We had to build something real.",
     quoteAuthor: "Imran Hossain & Abu Hanif · Co-Founders, ESN",
+    image: "/Representing Bangladesh's Coastal Communities on the Global Stage.jpeg",
   };
 }
 
@@ -235,6 +238,17 @@ export default function WhoWeAreAdminView() {
                 value={story?.quoteAuthor || ""}
                 onChange={e => setStory({ ...story, quoteAuthor: e.target.value })}
                 className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]"
+              />
+            </div>
+
+            <div>
+              <ImageUploadField
+                label="Featured Community / Story Showcase Image"
+                value={story?.image || ""}
+                onChange={(url) => setStory({ ...story, image: url })}
+                folder="whoweare"
+                aspectRatio="wide"
+                helpText="Upload the featured showcase photo displayed alongside the Who We Are feature cards on the homepage"
               />
             </div>
           </div>

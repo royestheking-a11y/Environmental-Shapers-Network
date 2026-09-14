@@ -133,7 +133,7 @@ export default function Donate() {
   const [searchParams] = useSearchParams();
   const campaignParam = searchParams.get("campaign") || searchParams.get("project");
   const [campaignsList] = useFirestoreData<any[]>("esn_campaigns_admin", getInitialCampaigns());
-  const [projectsList] = useFirestoreData<any[]>("esn_projects", getInitialProjects());
+  const [projectsList] = useFirestoreData<any[]>("esn_projects_admin", getInitialProjects());
 
   const [project, setProject] = useState("General Donation");
 

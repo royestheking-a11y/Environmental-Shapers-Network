@@ -1710,8 +1710,8 @@ function AnalyticsView({ weeklyData, monthlyDonations }: any) {
 
   // Live Firestore platform data
   const [donations] = useFirestoreData<any[]>("esn_donations", []);
-  const [projects] = useFirestoreData<any[]>("esn_projects", []);
-  const [campaigns] = useFirestoreData<any[]>("esn_campaigns", []);
+  const [projects] = useFirestoreData<any[]>("esn_projects_admin", []);
+  const [campaigns] = useFirestoreData<any[]>("esn_campaigns_admin", []);
   const [newsletters] = useFirestoreData<any[]>("esn_newsletters", []);
   const [subscribers] = useFirestoreData<any[]>("esn_subscribers", []);
   const [volApps] = useFirestoreData<any[]>("esn_apps_volunteer", []);

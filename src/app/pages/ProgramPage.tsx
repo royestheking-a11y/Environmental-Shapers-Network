@@ -2,6 +2,7 @@ import { useParams, Link, useLocation } from "react-router";
 import { motion, useInView } from "motion/react";
 import { useRef, useMemo } from "react";
 import { ArrowRight, Users, BookOpen, Calendar, ChevronRight, Globe2, CheckCircle2, MapPin, Star, TrendingUp, TreePine, Waves, Sun, ShieldAlert, Bug, GraduationCap, Microscope } from "lucide-react";
+import { ImageWithFallback } from "../components/ui/ImageWithFallback";
 import { useFirestoreData } from "../../lib/useFirestore";
 import { getInitialPrograms, resolveIcon, ProgramData } from "./admin/sections/ProgramsView";
 import { getInitialEvents, ESNEvent } from "./admin/sections/EventsView";
@@ -592,7 +593,8 @@ function EventsPage() {
         seats: `${e.registered}/${e.capacity} Seats`,
         title: e.title,
         date: `${e.date} · ${e.time}`,
-        location: `${e.location} (${e.mode})`
+        location: `${e.location} (${e.mode})`,
+        image: e.image,
       }))
     : d.upcoming;
 
@@ -619,6 +621,11 @@ function EventsPage() {
             {displayEvents.map((e: any, i) => (
               <motion.div key={e.title + i} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
                 className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all group">
+                {e.image && (
+                  <div className="h-40 rounded-xl overflow-hidden mb-4 border border-gray-100/80">
+                    <ImageWithFallback src={e.image} alt={e.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  </div>
+                )}
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ backgroundColor: (typeColors[e.type] || "#0B5D3F") + "15", color: typeColors[e.type] || "#0B5D3F" }}>

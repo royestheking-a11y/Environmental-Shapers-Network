@@ -32,7 +32,7 @@ export interface Role {
   permissions: string[];
 }
 
-function getInitialRoles(): Role[] {
+export function getInitialRoles(): Role[] {
   return [
     { id: 1, name: "Super Admin", description: "Full system access with all permissions", color: "#0B5D3F", userCount: 2, permissions: allPermissions.flatMap(g => g.items) },
     { id: 2, name: "Admin", description: "Full content and project management access", color: "#173B63", userCount: 5, permissions: allPermissions.flatMap(g => g.items).filter(p => !["Manage Roles", "Backup & Restore", "Manage Settings"].includes(p)) },

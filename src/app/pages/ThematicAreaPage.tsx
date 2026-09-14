@@ -385,7 +385,7 @@ export default function ThematicAreaPage() {
         description: adm.desc,
         icon: resolveIcon(adm.icon),
         color: base ? base.color : "#0B5D3F",
-        heroImage: base ? base.heroImage : "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1400",
+        heroImage: adm.image || (base ? base.heroImage : "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1400"),
         tag: adm.tag || (base ? base.tag : "Environmental Action"),
         stats: base ? base.stats : [
           { value: "50+", label: "Target Countries" },

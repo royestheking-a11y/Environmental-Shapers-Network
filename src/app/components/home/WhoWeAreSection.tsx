@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { Link } from "react-router";
 import { ArrowRight, Check } from "lucide-react";
+import { ImageWithFallback } from "../ui/ImageWithFallback";
 import { getInitialWhoWeAreFeatures, getInitialWhoWeAreStory, WhoWeAreStory } from "../../pages/admin/sections/WhoWeAreAdminView";
 import { useFirestoreData } from "../../../lib/useFirestore";
 import { resolveIcon } from "../../pages/admin/sections/ProgramsView";
@@ -140,9 +141,9 @@ export function WhoWeAreSection() {
           >
             {/* Main hero image */}
             <div className="rounded-3xl overflow-hidden shadow-2xl shadow-[#0B5D3F]/10 h-[260px] sm:h-[300px] relative group">
-              <img
-                src="/Representing Bangladesh's Coastal Communities on the Global Stage.jpeg"
-                alt="ESN community work"
+              <ImageWithFallback
+                src={story.image || "/Representing Bangladesh's Coastal Communities on the Global Stage.jpeg"}
+                alt={story.title1 || "ESN Community Action"}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
             </div>

@@ -83,12 +83,15 @@ export function DataBackupView() {
     
     // Fetch live data from all collections across the entire system
     const collections = [
+      "esn_projects_admin",
       "esn_projects",
       "esn_campaigns_admin",
+      "esn_campaigns",
       "esn_donations",
       "esn_newsletters",
       "esn_subscribers",
       "esn_programs",
+      "esn_programs_admin",
       "esn_events",
       "esn_cms_content",
       "esn_about_team",
@@ -111,7 +114,9 @@ export function DataBackupView() {
       "esn_testimonials_admin",
       "esn_faq_admin",
       "esn_users_admin",
+      "esn_roles",
       "esn_roles_admin",
+      "esn_staff_users",
       "esn_staff_work_hours",
       "esn_media",
       "esn_messages",
@@ -123,7 +128,8 @@ export function DataBackupView() {
       "esn_apps_member",
       "esn_apps_partner",
       "esn_settings",
-      "esn_activity_logs"
+      "esn_activity_logs",
+      "esn_notifications"
     ];
 
     const snapshot: Record<string, any> = {

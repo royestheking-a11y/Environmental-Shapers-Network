@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import {
   Settings, Palette, Bell, Lock, Mail, Shield,
-  Search, Code, Save, CheckCircle2, Upload, LogOut, AlertTriangle, Send
+  Search, Code, Save, CheckCircle2, Upload, LogOut, AlertTriangle, Send,
+  Database, Cloud, RefreshCw, HardDrive, Check
 } from "lucide-react";
 import { ImageUploadField } from "../../../components/ui/ImageUploadField";
 
@@ -39,13 +40,14 @@ function getSavedSettings() {
 
 const tabs = [
   { id: "general", label: "General", icon: Settings },
+  { id: "database", label: "Database & Cloud Sync", icon: Database },
   { id: "appearance", label: "Appearance & Styling", icon: Palette },
   { id: "notifications", label: "Notification Preferences", icon: Bell },
   { id: "security", label: "Security & Access", icon: Lock },
   { id: "integrations", label: "Integrations & APIs", icon: Code },
 ];
 
-import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
+import { useFirestoreData, saveFirestoreData, syncAllLocalToCloud, ESN_FIRESTORE_COLLECTIONS } from "../../../../lib/useFirestore";
 import { logAdminActivity } from "../../../../lib/activityLogger";
 
 export function SettingsView() {
@@ -63,15 +65,70 @@ export function SettingsView() {
   });
   const [saved, setSaved] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [syncWarning, setSyncWarning] = useState<string | null>(null);
+
+  const [syncingCloud, setSyncingCloud] = useState(false);
+  const [syncSummary, setSyncSummary] = useState<{ synced: string[]; errors: string[] } | null>(null);
+  const [testingConnection, setTestingConnection] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<string | null>(null);
+
+  const handleSyncAllToCloud = async () => {
+    setSyncingCloud(true);
+    setSyncSummary(null);
+    try {
+      const res = await syncAllLocalToCloud();
+      setSyncSummary(res);
+      await logAdminActivity("Database Cloud Sync", "System", `Synchronized ${res.synced.length} collections from local cache to Cloud Firestore.`, "success");
+    } catch (e: any) {
+      setSyncSummary({ synced: [], errors: [e?.message || "Sync failed"] });
+    } finally {
+      setSyncingCloud(false);
+    }
+  };
+
+  const handleTestConnection = async () => {
+    setTestingConnection(true);
+    try {
+      const testDoc = { ping: "ok", checkedAt: new Date().toISOString() };
+      const success = await saveFirestoreData("esn_test_connection", testDoc);
+      if (success) {
+        setConnectionStatus("✔ Connected! Cloud Firestore accepted read & write queries.");
+      } else {
+        setConnectionStatus("❌ Firestore connection failed or write permissions denied.");
+      }
+    } catch (e: any) {
+      setConnectionStatus(`❌ Error: ${e?.message || e}`);
+    } finally {
+      setTestingConnection(false);
+      setTimeout(() => setConnectionStatus(null), 6000);
+    }
+  };
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      setSyncWarning(
+        "Notice: Cloud Firestore access was denied (Permission Denied). Changes are currently saved in this browser only and will NOT sync to other devices until Firestore rules are updated in Firebase Console."
+      );
+    };
+    window.addEventListener("esn_firestore_permission_denied", handler);
+    return () => window.removeEventListener("esn_firestore_permission_denied", handler);
+  }, []);
 
   const update = (key: string, value: any) => setSettings((prev: any) => ({ ...prev, [key]: value }));
 
   const saveAll = async () => {
-    await saveFirestoreData("esn_settings", settings);
+    const synced = await saveFirestoreData("esn_settings", settings);
     await logAdminActivity("Updated Settings", "Settings", "Updated platform general settings and configurations.", "success");
     window.dispatchEvent(new Event("esn_settings_updated"));
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
+    if (!synced) {
+      setSyncWarning(
+        "Notice: Settings saved locally on this device, but Cloud Firestore rejected the sync (Permission Denied). Please update Firestore Security Rules in Firebase Console so changes reach all devices."
+      );
+    } else {
+      setSyncWarning(null);
+    }
   };
 
   const forceLogout = async () => {
@@ -90,19 +147,33 @@ export function SettingsView() {
     } else {
       const updated = { ...settings, maintenanceMode: false };
       setSettings(updated);
-      await saveFirestoreData("esn_settings", updated);
+      const synced = await saveFirestoreData("esn_settings", updated);
       await logAdminActivity("Disabled Maintenance Mode", "Settings", "Turned off maintenance mode for the public website.", "success");
       window.dispatchEvent(new Event("esn_settings_updated"));
+      if (!synced) {
+        setSyncWarning(
+          "Notice: Maintenance Mode was turned off on THIS device, but could not sync to Cloud Firestore (Permission Denied). Please update Firestore Security Rules in Firebase Console so all devices sync."
+        );
+      } else {
+        setSyncWarning(null);
+      }
     }
   };
 
   const confirmEnableMaintenance = async () => {
     const updated = { ...settings, maintenanceMode: true };
     setSettings(updated);
-    await saveFirestoreData("esn_settings", updated);
+    const synced = await saveFirestoreData("esn_settings", updated);
     await logAdminActivity("Enabled Maintenance Mode", "Settings", "Activated maintenance mode for the public website.", "warning");
     window.dispatchEvent(new Event("esn_settings_updated"));
     setShowMaintenanceConfirm(false);
+    if (!synced) {
+      setSyncWarning(
+        "Notice: Maintenance Mode was enabled on THIS device, but could not sync to Cloud Firestore (Permission Denied). Please update Firestore Security Rules in Firebase Console so it activates on other devices."
+      );
+    } else {
+      setSyncWarning(null);
+    }
   };
 
   const Toggle = ({ k }: { k: string }) => {
@@ -174,6 +245,35 @@ export function SettingsView() {
         </button>
       </div>
 
+      {syncWarning && (
+        <div className="bg-amber-50 border border-amber-300 rounded-2xl p-4 sm:p-5 text-amber-900 flex items-start gap-3 shadow-xs">
+          <AlertTriangle className="text-amber-600 shrink-0 mt-0.5" size={20} />
+          <div className="text-xs space-y-1.5 flex-1">
+            <div className="font-bold text-sm text-amber-950">Cloud Sync Notice (Firestore Permissions)</div>
+            <p className="leading-relaxed">{syncWarning}</p>
+            <div className="flex flex-wrap items-center gap-2 pt-1 font-medium">
+              <span>Fix steps: Open</span>
+              <a
+                href="https://console.firebase.google.com/project/environmental-shapers-network/firestore/rules"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline font-bold text-amber-950 hover:text-black"
+              >
+                Firebase Console Firestore Rules
+              </a>
+              <span>and paste the rules from the project's <code className="bg-amber-100 px-1 py-0.5 rounded font-mono">firestore.rules</code> file.</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setSyncWarning(null)}
+            className="text-amber-700 hover:text-black font-bold text-sm px-1.5 py-0.5"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row gap-6">
         <div className="md:w-56 shrink-0 flex md:flex-col gap-1.5 overflow-x-auto pb-2 md:pb-0">
           {tabs.map((t) => (
@@ -241,6 +341,111 @@ export function SettingsView() {
               </div>
               <div className="bg-[#F6FBF8] rounded-2xl p-5 border border-gray-100">
                 <SwitchRow label="Maintenance Mode" desc="Take the public website offline for scheduled updates. Admin dashboard remains accessible." k="maintenanceMode" />
+              </div>
+            </div>
+          )}
+
+          {activeTab === "database" && (
+            <div className="flex flex-col gap-6">
+              <div className="flex items-center justify-between pb-4 border-b border-gray-100 flex-wrap gap-4">
+                <div className="flex items-center gap-3">
+                  <Database size={20} className="text-[#0B5D3F]" />
+                  <div>
+                    <div className="font-bold text-gray-900">Database & Cloud Persistence</div>
+                    <div className="text-xs text-gray-400">Manage Cloud Firestore synchronization, cache migration, and connection health</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleTestConnection}
+                    disabled={testingConnection}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 text-gray-700 text-xs font-bold hover:bg-gray-50 transition-all disabled:opacity-50 cursor-pointer"
+                  >
+                    <RefreshCw size={13} className={testingConnection ? "animate-spin" : ""} />
+                    {testingConnection ? "Testing..." : "Test Connection"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSyncAllToCloud}
+                    disabled={syncingCloud}
+                    className="flex items-center gap-2 px-5 py-2 rounded-xl bg-[#0B5D3F] text-white text-xs font-bold hover:bg-[#0a5237] transition-all shadow-sm disabled:opacity-50 cursor-pointer"
+                  >
+                    <Cloud size={14} className={syncingCloud ? "animate-pulse" : ""} />
+                    {syncingCloud ? "Syncing All to Cloud..." : "Push Local Storage to Cloud"}
+                  </button>
+                </div>
+              </div>
+
+              {connectionStatus && (
+                <div className={`p-4 rounded-2xl text-xs font-bold border ${connectionStatus.startsWith("✔") ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-red-50 text-red-800 border-red-200"}`}>
+                  {connectionStatus}
+                </div>
+              )}
+
+              {syncSummary && (
+                <div className="bg-[#F6FBF8] border border-emerald-200 rounded-2xl p-5">
+                  <div className="flex items-center gap-2 text-emerald-800 font-bold text-sm mb-2">
+                    <CheckCircle2 size={16} /> Cloud Synchronization Completed
+                  </div>
+                  <div className="text-xs text-gray-600 mb-2">
+                    Successfully pushed <strong>{syncSummary.synced.length}</strong> collections from your browser's local cache directly into Cloud Firestore:
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-2 bg-white rounded-xl border border-emerald-100 font-mono text-[11px] text-gray-700">
+                    {syncSummary.synced.map((k) => (
+                      <span key={k} className="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-md border border-emerald-100">
+                        {k}
+                      </span>
+                    ))}
+                  </div>
+                  {syncSummary.errors.length > 0 && (
+                    <div className="mt-3 text-xs text-red-600">
+                      <strong>Errors encountered ({syncSummary.errors.length}):</strong> {syncSummary.errors.join(", ")}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Status Info Cards */}
+              <div className="grid sm:grid-cols-3 gap-4">
+                <div className="p-4 rounded-2xl bg-[#F6FBF8] border border-gray-100">
+                  <div className="text-xs text-gray-500 mb-1 font-medium">Database Service</div>
+                  <div className="text-sm font-bold text-gray-900 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Google Cloud Firestore
+                  </div>
+                  <div className="text-[11px] text-gray-400 font-mono mt-0.5">Project: environmental-shapers-network</div>
+                </div>
+                <div className="p-4 rounded-2xl bg-[#F6FBF8] border border-gray-100">
+                  <div className="text-xs text-gray-500 mb-1 font-medium">Target Collection</div>
+                  <div className="text-sm font-bold text-gray-900 font-mono">site_data</div>
+                  <div className="text-[11px] text-gray-400 mt-0.5">Global key-value documents</div>
+                </div>
+                <div className="p-4 rounded-2xl bg-[#F6FBF8] border border-gray-100">
+                  <div className="text-xs text-gray-500 mb-1 font-medium">Multi-Device Sync</div>
+                  <div className="text-sm font-bold text-emerald-700">Real-time (onSnapshot)</div>
+                  <div className="text-[11px] text-gray-400 mt-0.5">Auto cloud persistence active</div>
+                </div>
+              </div>
+
+              {/* Collections Inventory */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    Official Firestore Collections Inventory ({ESN_FIRESTORE_COLLECTIONS.length} Collections)
+                  </h4>
+                  <span className="text-[11px] text-gray-400 font-medium">All collections backed by Cloud Firestore</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 max-h-80 overflow-y-auto pr-1">
+                  {ESN_FIRESTORE_COLLECTIONS.map((c) => (
+                    <div key={c} className="p-2.5 rounded-xl border border-gray-100 bg-[#FAFCFA] flex items-center justify-between text-xs">
+                      <span className="font-mono text-gray-700 text-[11px] truncate max-w-[180px]" title={c}>{c}</span>
+                      <span className="flex items-center gap-1 text-emerald-700 font-bold text-[10px] bg-emerald-50 px-2 py-0.5 rounded-md shrink-0">
+                        <Check size={10} /> Cloud Sync
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}

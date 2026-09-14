@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import { motion } from "motion/react";
 import { ArrowRight, Leaf } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
+import { ImageWithFallback } from "../components/ui/ImageWithFallback";
 import { getInitialPrograms, resolveIcon, ProgramData } from "./admin/sections/ProgramsView";
 import { useFirestoreData } from "../../lib/useFirestore";
 
@@ -70,7 +71,7 @@ export default function AllPrograms() {
               <motion.div key={p.slug} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.07 }}
                 className="bg-white rounded-3xl overflow-hidden border border-gray-100 hover:shadow-xl transition-all hover:-translate-y-1 group flex flex-col">
                 <div className="h-48 overflow-hidden shrink-0">
-                  <img src={p.image} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                  <ImageWithFallback src={p.image} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                 </div>
                 <div className="p-6 flex flex-col flex-1">
                   <div className="flex items-center justify-between mb-3">

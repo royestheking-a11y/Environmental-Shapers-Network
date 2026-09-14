@@ -22,6 +22,8 @@ import { defaultJobs, defaultRoles } from "./admin/sections/OpportunitiesView";
 import { getInitialContent } from "./admin/AdminDashboard";
 import { getInitialActivityLogs } from "../../lib/activityLogger";
 import { getInitialWorkSessions } from "../../lib/workHoursService";
+import { getInitialRoles } from "./admin/sections/RolesView";
+import { getInitialStaffUsers } from "../../lib/staffAuthService";
 import {
   initialHeroData,
   initialStoryData,
@@ -61,6 +63,8 @@ export default function SeedDatabase() {
         await saveFirestoreData("esn_cms_content", getInitialContent());
         await saveFirestoreData("esn_activity_logs", getInitialActivityLogs());
         await saveFirestoreData("esn_staff_work_hours", getInitialWorkSessions());
+        await saveFirestoreData("esn_roles", getInitialRoles());
+        await saveFirestoreData("esn_staff_users", getInitialStaffUsers());
         await saveFirestoreData("esn_about_hero", initialHeroData);
         await saveFirestoreData("esn_about_story", initialStoryData);
         await saveFirestoreData("esn_about_milestones", initialMilestones);

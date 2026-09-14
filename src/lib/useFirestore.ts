@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, onSnapshot } from "firebase/firestore";
 import { db } from "./firebase";
 
 function sanitizeData<T>(val: T): T {
@@ -52,6 +52,67 @@ const memoryCache = new Map<string, any>();
 const inflightRequests = new Map<string, Promise<any>>();
 let firestoreDisabledUntil = 0;
 
+// Key aliases that should always remain mirrored in Firestore
+const KEY_ALIASES: Record<string, string> = {
+  esn_projects_admin: "esn_projects",
+  esn_projects: "esn_projects_admin",
+  esn_campaigns_admin: "esn_campaigns",
+  esn_campaigns: "esn_campaigns_admin",
+  esn_roles: "esn_roles_admin",
+  esn_roles_admin: "esn_roles",
+  esn_whoweare_admin: "esn_who_we_are_admin",
+  esn_who_we_are_admin: "esn_whoweare_admin",
+  esn_youth_stats: "esn_youth_stats_admin",
+  esn_youth_stats_admin: "esn_youth_stats",
+};
+
+export const ESN_FIRESTORE_COLLECTIONS = [
+  "esn_about_hero",
+  "esn_about_story",
+  "esn_about_milestones",
+  "esn_about_team",
+  "esn_about_vision_mission",
+  "esn_about_global_presence",
+  "esn_hero_admin",
+  "esn_whoweare_admin",
+  "esn_whoweare_story",
+  "esn_mission_admin",
+  "esn_mission_section_admin",
+  "esn_stats_admin",
+  "esn_thematic_areas_admin",
+  "esn_research_admin",
+  "esn_youth_initiatives_admin",
+  "esn_youth_stats",
+  "esn_programs",
+  "esn_projects_admin",
+  "esn_campaigns_admin",
+  "esn_partners_admin",
+  "esn_testimonials_admin",
+  "esn_faq_admin",
+  "esn_events",
+  "esn_donations",
+  "esn_cms_content",
+  "esn_career_jobs",
+  "esn_volunteer_roles",
+  "esn_apps_volunteer",
+  "esn_apps_career",
+  "esn_apps_representative",
+  "esn_apps_member",
+  "esn_apps_partner",
+  "esn_messages",
+  "esn_newsletters",
+  "esn_subscribers",
+  "esn_users_admin",
+  "esn_staff_users",
+  "esn_staff_work_hours",
+  "esn_roles",
+  "esn_media",
+  "esn_settings",
+  "esn_activity_logs",
+  "esn_notifications",
+  "esn_backups"
+];
+
 function setLocalCache<T>(key: string, value: T): void {
   if (typeof window === "undefined") return;
   try {
@@ -64,7 +125,7 @@ function setLocalCache<T>(key: string, value: T): void {
   }
 }
 
-export function useFirestoreData<T>(key: string, defaultValue: T): [T, (val: T | ((prev: T) => T)) => void, boolean] {
+export function useFirestoreData<T>(key: string, defaultValue: T): [T, (val: T | ((prev: T) => T)) => Promise<boolean>, boolean] {
   const [data, setData] = useState<T>(() => {
     if (memoryCache.has(key)) return memoryCache.get(key);
     const cached = getLocalCache(key, defaultValue);
@@ -86,7 +147,7 @@ export function useFirestoreData<T>(key: string, defaultValue: T): [T, (val: T |
       }
     };
 
-    // Listen for cross-tab updates from Admin saves in another tab
+    // Listen for cross-tab updates from Admin saves in another tab on the same device
     const handleStorageUpdate = (e: StorageEvent) => {
       if (e.key === `esn_cache_${key}` && e.newValue && isMounted) {
         try {
@@ -113,62 +174,62 @@ export function useFirestoreData<T>(key: string, defaultValue: T): [T, (val: T |
       };
     }
 
-    const loadData = async () => {
-      try {
-        // Deduplicate in-flight requests for the same key across components
-        let req = inflightRequests.get(key);
-        if (!req) {
-          const docRef = doc(db, "site_data", key);
-          let timerId: any;
-          const fetchPromise = getDoc(docRef);
-          // 8000ms timeout so cloud Firestore network delays never hang indefinitely
-          const timeoutPromise = new Promise((_, reject) => {
-            timerId = setTimeout(() => reject(new Error("Firestore timeout")), 8000);
-          });
-          req = Promise.race([fetchPromise, timeoutPromise]).finally(() => {
-            if (timerId) clearTimeout(timerId);
-          });
-          inflightRequests.set(key, req);
-        }
+    const docRef = doc(db, "site_data", key);
+    let unsubscribe: (() => void) | undefined;
 
-        const docSnap: any = await req;
-        inflightRequests.delete(key);
-
-        if (docSnap && docSnap.exists && docSnap.exists() && isMounted) {
-          const docData = docSnap.data();
-          const rawVal = docData?.value !== undefined ? docData.value : docData;
-          const cleanVal = sanitizeData(rawVal);
-          memoryCache.set(key, cleanVal);
-          setData(cleanVal);
-          setLocalCache(key, cleanVal);
-
-          // Auto-migrate in Firestore if legacy domain was present
-          if (JSON.stringify(rawVal) !== JSON.stringify(cleanVal)) {
-            const docRef = doc(db, "site_data", key);
-            setDoc(docRef, { value: cleanVal }, { merge: true }).catch(() => {});
+    // Real-time Firestore synchronization across all devices
+    try {
+      unsubscribe = onSnapshot(
+        docRef,
+        (docSnap) => {
+          if (docSnap.exists() && isMounted) {
+            const docData = docSnap.data();
+            const rawVal = docData?.value !== undefined ? docData.value : docData;
+            const cleanVal = sanitizeData(rawVal);
+            memoryCache.set(key, cleanVal);
+            setData(cleanVal);
+            setLocalCache(key, cleanVal);
+            setLoading(false);
+          } else if (isMounted) {
+            // Document does not exist in Firestore yet:
+            // Auto-persist the default / local cached content into the main database!
+            const fallbackVal = memoryCache.get(key) ?? getLocalCache(key, defaultValue);
+            if (fallbackVal !== undefined && fallbackVal !== null) {
+              const cleanVal = sanitizeData(fallbackVal);
+              setDoc(docRef, { value: cleanVal }, { merge: true }).catch(() => {});
+            }
+            setLoading(false);
+          }
+        },
+        (error) => {
+          if (error.code === "permission-denied") {
+            firestoreDisabledUntil = Date.now() + 30000;
+            if (typeof window !== "undefined") {
+              window.dispatchEvent(
+                new CustomEvent("esn_firestore_permission_denied", {
+                  detail: { key, error: error.message }
+                })
+              );
+            }
+          }
+          if (isMounted) {
+            setLoading(false);
           }
         }
-      } catch (e: any) {
-        inflightRequests.delete(key);
-        // Only throttle remote checks if security permissions explicitly denied
-        if (e?.code === "permission-denied") {
-          firestoreDisabledUntil = Date.now() + 30000;
-        }
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
-
-    loadData();
+      );
+    } catch {
+      if (isMounted) setLoading(false);
+    }
 
     return () => {
       isMounted = false;
+      if (unsubscribe) unsubscribe();
       window.removeEventListener("esn_data_update", handleCustomUpdate);
       window.removeEventListener("storage", handleStorageUpdate);
     };
   }, [key]);
 
-  const saveData = async (newDataOrFn: T | ((prev: T) => T)) => {
+  const saveData = async (newDataOrFn: T | ((prev: T) => T)): Promise<boolean> => {
     let cleanResolved: T;
     setData((prev) => {
       const resolved = typeof newDataOrFn === "function" ? (newDataOrFn as (prev: T) => T)(prev) : newDataOrFn;
@@ -176,14 +237,9 @@ export function useFirestoreData<T>(key: string, defaultValue: T): [T, (val: T |
       return cleanResolved;
     });
     if (cleanResolved! !== undefined) {
-      setLocalCache(key, cleanResolved!);
-      try {
-        const docRef = doc(db, "site_data", key);
-        await setDoc(docRef, { value: cleanResolved! }, { merge: true });
-      } catch (e) {
-        // Silent catch for offline or restricted Firestore
-      }
+      return await saveFirestoreData(key, cleanResolved!);
     }
+    return false;
   };
 
   return [data, saveData, loading];
@@ -208,23 +264,77 @@ export async function fetchFirestoreData<T>(key: string, defaultValue: T): Promi
         await setDoc(docRef, { value: defaultValue }, { merge: true }).catch(() => {});
         setLocalCache(key, defaultValue);
       } else {
-        return getLocalCache(key, defaultValue);
+        const cached = getLocalCache(key, defaultValue);
+        await setDoc(docRef, { value: cached }, { merge: true }).catch(() => {});
+        return cached;
       }
     }
-  } catch (e) {
-    // Return cached value if available on error
+  } catch (e: any) {
+    if (e?.code === "permission-denied") {
+      firestoreDisabledUntil = Date.now() + 30000;
+    }
     return getLocalCache(key, defaultValue);
   }
   return getLocalCache(key, defaultValue);
 }
 
-export async function saveFirestoreData<T>(key: string, newData: T): Promise<void> {
+export async function saveFirestoreData<T>(key: string, newData: T): Promise<boolean> {
   const cleanData = sanitizeData(newData);
   setLocalCache(key, cleanData);
   try {
     const docRef = doc(db, "site_data", key);
     await setDoc(docRef, { value: cleanData }, { merge: true });
-  } catch (e) {
-    // Silent catch
+
+    // Sync alias key if applicable (e.g. esn_projects <-> esn_projects_admin)
+    const aliasKey = KEY_ALIASES[key];
+    if (aliasKey) {
+      setLocalCache(aliasKey, cleanData);
+      const aliasRef = doc(db, "site_data", aliasKey);
+      await setDoc(aliasRef, { value: cleanData }, { merge: true }).catch(() => {});
+    }
+
+    return true;
+  } catch (e: any) {
+    console.warn(`[Firestore] Cloud sync error for key "${key}":`, e?.message || e);
+    if (e?.code === "permission-denied" && typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("esn_firestore_permission_denied", {
+          detail: { key, error: e.message }
+        })
+      );
+    }
+    return false;
   }
 }
+
+/**
+ * Push all browser local cache items (esn_cache_*) directly into Cloud Firestore.
+ * Useful when the user made local changes and wants to ensure 100% cloud sync.
+ */
+export async function syncAllLocalToCloud(): Promise<{ synced: string[]; errors: string[] }> {
+  const synced: string[] = [];
+  const errors: string[] = [];
+  if (typeof window === "undefined") return { synced, errors };
+
+  const allLocalKeys = Object.keys(localStorage).filter((k) => k.startsWith("esn_cache_"));
+  for (const fullKey of allLocalKeys) {
+    const key = fullKey.replace(/^esn_cache_/, "");
+    try {
+      const raw = localStorage.getItem(fullKey);
+      if (!raw) continue;
+      const parsed = JSON.parse(raw);
+      if (parsed === null || parsed === undefined) continue;
+      const success = await saveFirestoreData(key, parsed);
+      if (success) {
+        synced.push(key);
+      } else {
+        errors.push(key);
+      }
+    } catch (e: any) {
+      errors.push(`${key}: ${e?.message || e}`);
+    }
+  }
+  return { synced, errors };
+}
+
+

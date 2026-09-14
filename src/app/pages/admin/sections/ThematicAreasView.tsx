@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Plus, Search, Edit3, Trash2, AlertCircle } from "lucide-react";
 import { resolveIcon } from "./ProgramsView";
+import { ImageUploadField } from "../../../components/ui/ImageUploadField";
 
 export interface ThematicArea {
   id: number;
@@ -10,6 +11,7 @@ export interface ThematicArea {
   title: string;
   desc: string;
   tag: string;
+  image?: string;
 }
 
 export function getInitialThematicAreas(): ThematicArea[] {
@@ -36,7 +38,7 @@ export default function ThematicAreasView() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
 
   const [formData, setFormData] = useState<Partial<ThematicArea>>({
-    icon: "Target", slug: "", title: "", desc: "", tag: ""
+    icon: "Target", slug: "", title: "", desc: "", tag: "", image: ""
   });
 
   const saveAreas = async (newData: ThematicArea[]) => {
@@ -119,6 +121,16 @@ export default function ThematicAreasView() {
               <div className="sm:col-span-2">
                 <label className="text-xs font-bold text-gray-600 mb-1.5 block">Description</label>
                 <textarea value={formData.desc || ""} onChange={e => setFormData({ ...formData, desc: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] h-24 resize-none" />
+              </div>
+              <div className="sm:col-span-2">
+                <ImageUploadField
+                  label="Thematic Area Hero / Cover Image"
+                  value={formData.image || ""}
+                  onChange={(url) => setFormData({ ...formData, image: url })}
+                  folder="thematic"
+                  aspectRatio="wide"
+                  helpText="Upload a featured cover image for this thematic focus area"
+                />
               </div>
             </div>
             <div className="flex gap-3">
