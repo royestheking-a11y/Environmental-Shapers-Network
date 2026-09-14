@@ -230,7 +230,7 @@ export function HeroSection() {
             exit={{ opacity: 0 }}
             transition={{ duration: 1.2, ease: "easeInOut" }}
             className="absolute inset-0 w-full h-full object-cover"
-            fetchPriority="high"
+            {...{ fetchpriority: "high" }}
             decoding="async"
           />
         </AnimatePresence>
