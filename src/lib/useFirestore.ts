@@ -120,9 +120,9 @@ export function useFirestoreData<T>(key: string, defaultValue: T): [T, (val: T |
         if (!req) {
           const docRef = doc(db, "site_data", key);
           const fetchPromise = getDoc(docRef);
-          // 1500ms timeout so cloud Firestore network delays never freeze the UI
+          // 8000ms timeout so cloud Firestore network delays never hang indefinitely
           const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Firestore timeout")), 1500)
+            setTimeout(() => reject(new Error("Firestore timeout")), 8000)
           );
           req = Promise.race([fetchPromise, timeoutPromise]);
           inflightRequests.set(key, req);
@@ -147,9 +147,9 @@ export function useFirestoreData<T>(key: string, defaultValue: T): [T, (val: T |
         }
       } catch (e: any) {
         inflightRequests.delete(key);
-        // If Firestore timed out or failed with permission denied, pause remote checks for 60s
-        if (e?.message?.includes("timeout") || e?.code === "permission-denied") {
-          firestoreDisabledUntil = Date.now() + 60000;
+        // Only throttle remote checks if security permissions explicitly denied
+        if (e?.code === "permission-denied") {
+          firestoreDisabledUntil = Date.now() + 30000;
         }
       } finally {
         if (isMounted) setLoading(false);
@@ -166,17 +166,21 @@ export function useFirestoreData<T>(key: string, defaultValue: T): [T, (val: T |
   }, [key]);
 
   const saveData = async (newDataOrFn: T | ((prev: T) => T)) => {
+    let cleanResolved: T;
     setData((prev) => {
       const resolved = typeof newDataOrFn === "function" ? (newDataOrFn as (prev: T) => T)(prev) : newDataOrFn;
-      const cleanResolved = sanitizeData(resolved);
-      setLocalCache(key, cleanResolved);
-      // Asynchronously sync to Firestore
-      const docRef = doc(db, "site_data", key);
-      setDoc(docRef, { value: cleanResolved }, { merge: true }).catch((e) => {
-        // Silent catch for offline or restricted Firestore
-      });
+      cleanResolved = sanitizeData(resolved);
       return cleanResolved;
     });
+    if (cleanResolved! !== undefined) {
+      setLocalCache(key, cleanResolved!);
+      try {
+        const docRef = doc(db, "site_data", key);
+        await setDoc(docRef, { value: cleanResolved! }, { merge: true });
+      } catch (e) {
+        // Silent catch for offline or restricted Firestore
+      }
+    }
   };
 
   return [data, saveData, loading];

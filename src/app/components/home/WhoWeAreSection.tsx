@@ -34,7 +34,7 @@ export function WhoWeAreSection() {
   const [storyRaw] = useFirestoreData<WhoWeAreStory>("esn_whoweare_story", getInitialWhoWeAreStory());
   const story = storyRaw || getInitialWhoWeAreStory();
 
-  const features = (featuresRaw || defaultFeatures).map((f) => ({
+  const features = (featuresRaw && featuresRaw.length > 0 ? featuresRaw : defaultFeatures).map((f) => ({
     iconName: f.iconName,
     title: f.title,
     description: f.description,
