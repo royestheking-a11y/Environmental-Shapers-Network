@@ -7,9 +7,10 @@ import { useFirestoreData } from "../../../lib/useFirestore";
 
 export function CoreProgramsSection() {
   const [programsRaw] = useFirestoreData<ProgramData[]>("esn_programs", getInitialPrograms());
-  const programs = (programsRaw || []).filter(p => 
+  const matched = (programsRaw || []).filter(p => 
     ["Climate Adaptation & Resilience", "Environmental Research", "Youth Development"].includes(p.title)
   );
+  const programs = matched.length > 0 ? matched : (programsRaw || []).slice(0, 3);
 
   return (
     <section className="py-16 bg-[#F8FCF9] relative overflow-hidden">

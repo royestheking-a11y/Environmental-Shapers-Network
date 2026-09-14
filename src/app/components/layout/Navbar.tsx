@@ -17,12 +17,15 @@ const searchIndex = [
   { title: "Impact Dashboard", href: "/impact", desc: "Data, charts, and results" },
   { title: "Contact Us", href: "/contact", desc: "Get in touch with the team" },
   { title: "Donate", href: "/donate", desc: "Support our environmental mission" },
+  { title: "Campaigns", href: "/campaigns", desc: "Active & past fundraising campaigns" },
+  { title: "Events & Calendar", href: "/events", desc: "Upcoming global summits and forums" },
   { title: "Climate Change", href: "/thematic-areas/climate", desc: "Tackling global warming" },
   { title: "Forest Restoration", href: "/thematic-areas/forests", desc: "Reforestation programs" },
   { title: "Marine Conservation", href: "/thematic-areas/marine", desc: "Ocean protection projects" },
   { title: "Renewable Energy", href: "/thematic-areas/energy", desc: "Clean energy transitions" },
   { title: "Youth Programs", href: "/programs/youth", desc: "Empowering next generation" },
-  { title: "Events & Campaigns", href: "/contact", desc: "Join our movement" },
+  { title: "Research & Policy", href: "/research", desc: "Scientific briefs and publications" },
+  { title: "Media Center", href: "/media-center", desc: "Press releases and photography" },
 ];
 
 type NavItem = {

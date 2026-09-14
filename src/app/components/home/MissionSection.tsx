@@ -2,18 +2,16 @@ import { useRef } from "react";
 import { motion, useInView } from "motion/react";
 import { Check, ArrowRight, Sparkles, ShieldCheck } from "lucide-react";
 import { Link } from "react-router";
-
-const missionGoals = [
-  { text: "Restore 500 million hectares of degraded land globally", metric: "500M ha" },
-  { text: "Eliminate single-use plastics in 50+ partner nations", metric: "50+ Nations" },
-  { text: "Transition 100 communities to 100% renewable energy", metric: "100 Sites" },
-  { text: "Train 1 million environmental stewards by 2030", metric: "1M Stewards" },
-  { text: "Protect 30% of the world's oceans and forests", metric: "30x30 Target" },
-];
+import { useFirestoreData } from "../../../lib/useFirestore";
+import { getInitialMissionSection, MissionSectionData } from "../../pages/admin/sections/MissionAdminView";
 
 export function MissionSection() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
+
+  const [sectionDataRaw] = useFirestoreData<MissionSectionData>("esn_mission_section_admin", getInitialMissionSection());
+  const data = sectionDataRaw || getInitialMissionSection();
+  const goals = data.goals && data.goals.length > 0 ? data.goals : getInitialMissionSection().goals;
 
   return (
     <section 
@@ -66,11 +64,13 @@ export function MissionSection() {
                   className="relative z-10"
                 >
                   <div className="text-5xl sm:text-6xl md:text-7xl font-serif font-black tracking-tight text-[#6EE7B7] drop-shadow-[0_2px_15px_rgba(110,231,183,0.4)]">
-                    2050
+                    {data.targetYear || "2050"}
                   </div>
                   <div className="mt-2 text-sm sm:text-base font-medium text-emerald-100/90 tracking-wide">
-                    <span className="block font-bold text-white text-base sm:text-lg">Net-Zero</span>
-                    Carbon Goal
+                    <span className="block font-bold text-white text-base sm:text-lg">
+                      {data.targetSubtitle ? data.targetSubtitle.split(" ")[0] : "Net-Zero"}
+                    </span>
+                    {data.targetSubtitle ? data.targetSubtitle.split(" ").slice(1).join(" ") : "Carbon Goal"}
                   </div>
                 </motion.div>
 
@@ -97,19 +97,19 @@ export function MissionSection() {
 
               {/* Main Headline */}
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-white mb-6 leading-[1.18] tracking-tight">
-                A Greener World Is Possible
+                {data.headline || "A Greener World Is Possible"}
               </h2>
 
               {/* Subtext Paragraph */}
               <p className="text-emerald-100/80 text-base sm:text-lg leading-relaxed mb-8 max-w-2xl font-light">
-                We believe that with the right science, the right partnerships, and the right political will, a net-zero carbon future is achievable by 2050.
+                {data.subtext || "We believe that with the right science, the right partnerships, and the right political will, a net-zero carbon future is achievable by 2050."}
               </p>
 
-              {/* 5-Item Checklist with round check icons */}
+              {/* Dynamic Checklist with round check icons */}
               <div className="space-y-4 mb-10">
-                {missionGoals.map((item, index) => (
+                {goals.map((item, index) => (
                   <motion.div
-                    key={index}
+                    key={item.id || index}
                     initial={{ opacity: 0, x: 20 }}
                     animate={inView ? { opacity: 1, x: 0 } : {}}
                     transition={{ duration: 0.5, delay: 0.35 + index * 0.08 }}
@@ -118,9 +118,16 @@ export function MissionSection() {
                     <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border border-[#52C794] flex items-center justify-center text-[#52C794] group-hover:bg-[#52C794] group-hover:text-[#0A261B] transition-all duration-300 shrink-0 shadow-[0_0_10px_rgba(82,199,148,0.2)]">
                       <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
                     </div>
-                    <span className="text-white/90 text-sm sm:text-base font-normal group-hover:text-white transition-colors">
-                      {item.text}
-                    </span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-white/90 text-sm sm:text-base font-normal group-hover:text-white transition-colors">
+                        {item.text}
+                      </span>
+                      {item.metric && (
+                        <span className="text-[11px] font-bold text-[#52C794] bg-[#52C794]/15 px-2 py-0.5 rounded-md uppercase tracking-wider">
+                          {item.metric}
+                        </span>
+                      )}
+                    </div>
                   </motion.div>
                 ))}
               </div>
@@ -155,3 +162,4 @@ export function MissionSection() {
     </section>
   );
 }
+

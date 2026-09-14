@@ -102,6 +102,7 @@ export function DataBackupView() {
       "esn_hero_admin",
       "esn_stats_admin",
       "esn_mission_admin",
+      "esn_mission_section_admin",
       "esn_thematic_areas_admin",
       "esn_research_admin",
       "esn_youth_initiatives_admin",

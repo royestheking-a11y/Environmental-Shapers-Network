@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, Link } from "react-router";
 import { motion } from "motion/react";
 import { Calendar, Clock, ChevronRight, ArrowLeft, ArrowRight, Share2, BookOpen, Tag, User, Check, Copy } from "lucide-react";
@@ -164,7 +164,28 @@ export default function NewsArticle() {
   const [copied, setCopied] = useState(false);
   const [cmsArticles] = useFirestoreData<any[]>("esn_cms_content", articles);
 
-  const allArticles = cmsArticles && cmsArticles.length > 0 ? cmsArticles : articles;
+  // Combine dynamic CMS content with fallback articles
+  const allArticles = useMemo(() => {
+    const staticMap = new Map(articles.map(a => [String(a.id), a]));
+    const dynamicList = (cmsArticles || []).map((item: any) => {
+      const match = staticMap.get(String(item.id));
+      return {
+        ...match,
+        ...item,
+        content: item.content || match?.content || item.excerpt || "",
+      };
+    });
+
+    // Add any static articles not present in dynamicList
+    const existingIds = new Set(dynamicList.map((d: any) => String(d.id)));
+    for (const s of articles) {
+      if (!existingIds.has(String(s.id))) {
+        dynamicList.push(s);
+      }
+    }
+    return dynamicList;
+  }, [cmsArticles]);
+
   const article = allArticles.find((a) => String(a.id) === id);
   const related = allArticles.filter((a) => (article?.relatedIds || []).includes(a.id));
 
