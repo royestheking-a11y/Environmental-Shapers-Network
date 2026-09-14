@@ -2,6 +2,7 @@ import { useParams, Link } from "react-router";
 import { motion, useInView } from "motion/react";
 import { useRef } from "react";
 import { ArrowRight, Leaf, Waves, Sun, Database, Users, Building, ChevronRight, Globe2, BookOpen, Download, FileText } from "lucide-react";
+import { resolveIcon } from "./admin/sections/ProgramsView";
 
 const researchData: Record<string, {
   slug: string;
@@ -198,7 +199,7 @@ export default function ResearchAreaPage() {
     label: adminMatch.title || staticData?.label || "Research Area",
     tagline: adminMatch.desc || staticData?.tagline || "",
     description: adminMatch.fullDesc || staticData?.description || adminMatch.desc,
-    icon: staticData?.icon || Leaf,
+    icon: resolveIcon(adminMatch.iconName) || staticData?.icon || Leaf,
     color: adminMatch.color || staticData?.color || "#0B5D3F",
     heroImage: adminMatch.image || staticData?.heroImage || "https://images.unsplash.com/photo-1511497584788-876760111969?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1400",
     stats: staticData?.stats || [

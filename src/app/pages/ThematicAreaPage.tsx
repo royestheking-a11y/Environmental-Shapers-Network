@@ -1,6 +1,9 @@
 import { useParams, Link } from "react-router";
 import { motion, useInView } from "motion/react";
-import { useRef, useState } from "react";
+import { useRef, useState, useMemo } from "react";
+import { useFirestoreData } from "../../lib/useFirestore";
+import { getInitialThematicAreas, ThematicArea } from "./admin/sections/ThematicAreasView";
+import { resolveIcon } from "./admin/sections/ProgramsView";
 import { 
   ArrowRight, 
   TreePine, 
@@ -370,11 +373,49 @@ export default function ThematicAreaPage() {
   const [search, setSearch] = useState("");
   const [selectedTag, setSelectedTag] = useState("all");
 
-  const allAreas = Object.values(areaData).filter((v, i, a) => a.findIndex(t => t.slug === v.slug) === i);
+  const [adminAreas] = useFirestoreData<ThematicArea[]>("esn_thematic_areas_admin", getInitialThematicAreas());
+
+  const dynamicAreas = useMemo(() => {
+    const list = (adminAreas && adminAreas.length > 0 ? adminAreas : getInitialThematicAreas()).map((adm) => {
+      const base = areaData[adm.slug];
+      return {
+        slug: adm.slug,
+        label: adm.title,
+        tagline: base ? base.tagline : adm.desc,
+        description: adm.desc,
+        icon: resolveIcon(adm.icon),
+        color: base ? base.color : "#0B5D3F",
+        heroImage: base ? base.heroImage : "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1400",
+        tag: adm.tag || (base ? base.tag : "Environmental Action"),
+        stats: base ? base.stats : [
+          { value: "50+", label: "Target Countries" },
+          { value: "100%", label: "Impact Monitored" },
+          { value: "24", label: "Partner Institutions" },
+          { value: "1M+", label: "Beneficiaries" }
+        ],
+        highlights: base ? base.highlights : [
+          "Evidence-based scientific interventions and policy integration",
+          "Cross-border collaboration and community empowerment",
+          "Open-access ecological intelligence and metrics"
+        ],
+        projects: base ? base.projects : [
+          { name: `${adm.title} Field Action`, country: "Global South", status: "Active", progress: 75, image: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" }
+        ],
+        sdgs: base ? base.sdgs : [13, 15, 17],
+        approach: base ? base.approach : [
+          { title: "Scientific Rigour", desc: "Co-designing solutions with research institutions and peer-reviewed methodologies." },
+          { title: "Grassroots Ownership", desc: "Deploying resources directly to frontline and indigenous communities." }
+        ]
+      };
+    });
+    return list;
+  }, [adminAreas]);
 
   // If no area parameter is provided or if it's the directory page
-  if (!area || !areaData[area]) {
-    const filtered = allAreas.filter(a => {
+  const activeData = area ? dynamicAreas.find(a => a.slug === area) || areaData[area] : null;
+
+  if (!area || !activeData) {
+    const filtered = dynamicAreas.filter(a => {
       const matchSearch = a.label.toLowerCase().includes(search.toLowerCase()) || 
                           a.description.toLowerCase().includes(search.toLowerCase()) ||
                           a.tag.toLowerCase().includes(search.toLowerCase());
@@ -456,7 +497,7 @@ export default function ThematicAreaPage() {
     );
   }
 
-  const data = areaData[area];
+  const data = activeData;
   const Icon = data.icon;
 
   return (

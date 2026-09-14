@@ -668,45 +668,47 @@ export default function ProgramPage() {
   if (pathname === "/insights") return <InsightsPage />;
   if (pathname === "/events") return <EventsPage />;
   
-  if (program && programData[program]) {
-    return <GenericProgramPage d={programData[program]} />;
-  }
-
   // Dynamic lookup for programs added or customized via the admin dashboard
   const dbProgram = allPrograms?.find(p => p.slug === program);
+  const baseProgram = program && programData[program] ? programData[program] : null;
+
   if (dbProgram) {
     const dynamicData = {
       slug: dbProgram.slug,
       label: dbProgram.title,
-      tagline: `${dbProgram.category} · ${dbProgram.reach}`,
+      tagline: `${dbProgram.category} · ${dbProgram.reach || "Global Initiative"}`,
       description: dbProgram.desc,
       icon: resolveIcon(dbProgram.iconName),
-      heroImage: dbProgram.image || "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400",
-      stats: [
+      heroImage: dbProgram.image || baseProgram?.heroImage || "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400",
+      stats: baseProgram?.stats || [
         { value: dbProgram.reach || "Global", label: "Program Reach" },
         { value: "470+", label: "Projects Supported" },
         { value: "80+", label: "Partner Countries" },
         { value: "100%", label: "Impact Verified" },
       ],
-      highlights: dbProgram.highlights && dbProgram.highlights.length > 0 ? dbProgram.highlights : [
+      highlights: dbProgram.highlights && dbProgram.highlights.length > 0 ? dbProgram.highlights : (baseProgram?.highlights || [
         "Community-led intervention models",
         "Transparent ecological tracking and data verification",
         "Cross-border collaboration and policy support"
-      ],
-      cards: [
+      ]),
+      cards: baseProgram?.cards || [
         { title: `${dbProgram.title} Field Action`, tag: "Operations", desc: `Direct on-the-ground execution and field deployments across partner communities.` },
         { title: "Capacity Building & Training", tag: "Education", desc: `Empowering local teams with open-source tools, technical skills, and resources.` },
         { title: "Policy & Multi-Stakeholder Coalition", tag: "Policy", desc: `Aligning program goals with regional environmental targets and SDG frameworks.` }
       ],
-      stories: [
+      stories: baseProgram?.stories || [
         { name: "Program Participant", role: "Field Coordinator", quote: "Working within this initiative has transformed our local capacity to protect and regenerate our environment.", country: "Global" }
       ],
-      ctaTitle: `Support ${dbProgram.title}`,
-      ctaDesc: `Help scale our ${dbProgram.title.toLowerCase()} initiatives across vulnerable regions.`,
-      ctaLink1: { text: "Donate to Program", url: "/donate" },
-      ctaLink2: { text: "Partner With Us", url: "/contact" }
+      ctaTitle: baseProgram?.ctaTitle || `Support ${dbProgram.title}`,
+      ctaDesc: baseProgram?.ctaDesc || `Help scale our ${dbProgram.title.toLowerCase()} initiatives across vulnerable regions.`,
+      ctaLink1: baseProgram?.ctaLink1 || { text: "Donate to Program", url: "/donate" },
+      ctaLink2: baseProgram?.ctaLink2 || { text: "Partner With Us", url: "/contact" }
     };
     return <GenericProgramPage d={dynamicData} />;
+  }
+
+  if (baseProgram) {
+    return <GenericProgramPage d={baseProgram} />;
   }
 
   return (

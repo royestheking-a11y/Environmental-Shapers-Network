@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { useFirestoreData } from "../../lib/useFirestore";
 import { MediaItem } from "./admin/sections/MediaLibraryView";
+import { initialTeamMembers, AboutTeamMember } from "./admin/sections/AboutPageAdminView";
 
 const pressReleases = [
   { id: 1, title: "ESN Reaches 2.4 Million Trees Planted Milestone", date: "Jul 15, 2026", category: "Milestone", desc: "Global network completes major restoration benchmark across 12 countries in the Global South." },
@@ -113,8 +114,26 @@ export default function MediaCenter() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [dbMedia] = useFirestoreData<MediaItem[]>("esn_media", []);
   const [cmsArticles] = useFirestoreData<any[]>("esn_cms_content", []);
+  const [teamMembers] = useFirestoreData<AboutTeamMember[]>("esn_about_team", initialTeamMembers);
 
   const categories = ["All", "Summits", "Field", "Youth", "Leadership"];
+
+  const liveSpokespeople = useMemo(() => {
+    if (teamMembers && teamMembers.length > 0) {
+      const leaders = teamMembers.filter(
+        (m) => m.category === "Founder" || m.category === "Advisor" || m.role.toLowerCase().includes("director") || m.role.toLowerCase().includes("lead") || m.role.toLowerCase().includes("founder")
+      );
+      if (leaders.length > 0) {
+        return leaders.slice(0, 3).map((m) => ({
+          name: m.name,
+          title: m.role,
+          expertise: m.tags && m.tags.length > 0 ? `${m.tags.join(", ")} · ${m.bio.slice(0, 95)}...` : `${m.bio.slice(0, 110)}...`,
+          image: m.img || "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+        }));
+      }
+    }
+    return spokespeople;
+  }, [teamMembers]);
 
   const allPressReleases = useMemo(() => {
     if (cmsArticles && cmsArticles.length > 0) {
@@ -421,7 +440,7 @@ export default function MediaCenter() {
             ESN Certified Spokespeople
           </h2>
           <div className="grid md:grid-cols-3 gap-6">
-            {spokespeople.map((sp, i) => (
+            {liveSpokespeople.map((sp, i) => (
               <motion.div
                 key={sp.name}
                 initial={{ opacity: 0, y: 16 }}
