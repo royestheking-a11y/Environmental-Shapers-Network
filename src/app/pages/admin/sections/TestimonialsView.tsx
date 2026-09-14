@@ -95,6 +95,7 @@ export default function TestimonialsView() {
     setFormData(t);
     setEditingId(t.id);
     setShowAdd(true);
+    setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
   };
 
   const confirmDelete = () => {
@@ -119,7 +120,7 @@ export default function TestimonialsView() {
           <h3 className="text-gray-900 font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Testimonials Manager</h3>
           <p className="text-sm text-gray-400">Manage quotes and endorsements on the homepage.</p>
         </div>
-        <button onClick={() => { setEditingId(null); setFormData({ name: "", role: "", avatar: "", quote: "", org: "", country: "", rating: 5 }); setShowAdd(true); }} className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all">
+        <button onClick={() => { setEditingId(null); setFormData({ name: "", role: "", avatar: "", quote: "", org: "", country: "", rating: 5 }); setShowAdd(true); setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50); }} className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all">
           <Plus size={16} /> Add Testimonial
         </button>
       </div>

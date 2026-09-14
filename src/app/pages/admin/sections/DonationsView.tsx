@@ -15,7 +15,68 @@ import { useFirestoreData, saveFirestoreData, fetchFirestoreData } from "../../.
 import { logAdminActivity } from "../../../../lib/activityLogger";
 
 export function getInitialDonations() {
-  return [];
+  return [
+    {
+      id: 1,
+      receipt: "RCP-ESN-8841",
+      donor: "EcoFoundation Germany",
+      email: "grants@ecofoundation.de",
+      amount: 2500,
+      project: "Amazon Reforestation Hub",
+      method: "Bank Transfer",
+      date: "Aug 12, 2026",
+      status: "completed",
+      recurring: false,
+    },
+    {
+      id: 2,
+      receipt: "RCP-ESN-8842",
+      donor: "Carlos Rodriguez",
+      email: "carlos.rodriguez@conservation.org",
+      amount: 1000,
+      project: "Forest Hub Brazil",
+      method: "Credit Card",
+      date: "Aug 14, 2026",
+      status: "completed",
+      recurring: false,
+    },
+    {
+      id: 3,
+      receipt: "RCP-ESN-8843",
+      donor: "TechCorp Global Giving",
+      email: "giving@techcorp.com",
+      amount: 5000,
+      project: "Sundarbans Phase 3",
+      method: "Wire",
+      date: "Aug 15, 2026",
+      status: "completed",
+      recurring: false,
+    },
+    {
+      id: 4,
+      receipt: "RCP-ESN-8844",
+      donor: "Sarah Chen",
+      email: "sarah.chen@greentech.sg",
+      amount: 250,
+      project: "Clean Ocean Initiative",
+      method: "Credit Card",
+      date: "Aug 16, 2026",
+      status: "completed",
+      recurring: true,
+    },
+    {
+      id: 5,
+      receipt: "RCP-ESN-8845",
+      donor: "Ahmad Raza",
+      email: "ahmad.raza@outlook.com",
+      amount: 100,
+      project: "Youth Leadership Program",
+      method: "PayPal",
+      date: "Aug 17, 2026",
+      status: "completed",
+      recurring: true,
+    },
+  ];
 }
 
 function exportToCSV(donations: any[]) {

@@ -65,7 +65,7 @@ export function TestimonialsSection() {
 
               {/* Rating */}
               <div className="flex gap-1 mb-5">
-                {[...Array(t.rating)].map((_, j) => (
+                {[...Array(Math.max(1, Math.min(5, Number(t.rating) || 5)))].map((_, j) => (
                   <Star key={j} size={14} className="text-[#D6A95A]" fill="#D6A95A" />
                 ))}
               </div>
@@ -104,7 +104,7 @@ export function TestimonialsSection() {
                 className="bg-[#F6FBF8] rounded-3xl p-8 border border-gray-100"
               >
                 <div className="flex gap-1 mb-5">
-                  {[...Array(testimonials[current].rating)].map((_, j) => (
+                  {[...Array(Math.max(1, Math.min(5, Number(testimonials[current]?.rating) || 5)))].map((_, j) => (
                     <Star key={j} size={14} className="text-[#D6A95A]" fill="#D6A95A" />
                   ))}
                 </div>

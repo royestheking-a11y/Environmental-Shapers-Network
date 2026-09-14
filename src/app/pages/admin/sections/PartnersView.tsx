@@ -64,6 +64,7 @@ export default function PartnersView() {
     setFormData(p);
     setEditingId(p.id);
     setShowAdd(true);
+    setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
   };
 
   const confirmDelete = () => {
@@ -87,7 +88,7 @@ export default function PartnersView() {
           <h3 className="text-gray-900 font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Trusted Partners</h3>
           <p className="text-sm text-gray-400">Manage the list of partner organizations.</p>
         </div>
-        <button onClick={() => { setEditingId(null); setFormData({ name: "", logo: "" }); setShowAdd(true); }} className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all">
+        <button onClick={() => { setEditingId(null); setFormData({ name: "", logo: "" }); setShowAdd(true); setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50); }} className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all">
           <Plus size={16} /> Add Partner
         </button>
       </div>

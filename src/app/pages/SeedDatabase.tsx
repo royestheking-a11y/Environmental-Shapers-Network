@@ -15,6 +15,13 @@ import { getInitialWhoWeAreFeatures, getInitialWhoWeAreStory } from "./admin/sec
 import { getInitialCampaigns } from "./admin/sections/CampaignsView";
 import { getInitialPrograms } from "./admin/sections/ProgramsView";
 import { getInitialProjects } from "./admin/sections/ProjectsView";
+import { getInitialDonations } from "./admin/sections/DonationsView";
+import { getInitialEvents } from "./admin/sections/EventsView";
+import { getInitialUsers } from "./admin/sections/UsersView";
+import { defaultJobs, defaultRoles } from "./admin/sections/OpportunitiesView";
+import { getInitialContent } from "./admin/AdminDashboard";
+import { getInitialActivityLogs } from "../../lib/activityLogger";
+import { getInitialWorkSessions } from "../../lib/workHoursService";
 import {
   initialHeroData,
   initialStoryData,
@@ -46,6 +53,14 @@ export default function SeedDatabase() {
         await saveFirestoreData("esn_campaigns_admin", getInitialCampaigns());
         await saveFirestoreData("esn_programs", getInitialPrograms());
         await saveFirestoreData("esn_projects_admin", getInitialProjects());
+        await saveFirestoreData("esn_donations", getInitialDonations());
+        await saveFirestoreData("esn_events", getInitialEvents());
+        await saveFirestoreData("esn_users_admin", getInitialUsers());
+        await saveFirestoreData("esn_career_jobs", defaultJobs);
+        await saveFirestoreData("esn_volunteer_roles", defaultRoles);
+        await saveFirestoreData("esn_cms_content", getInitialContent());
+        await saveFirestoreData("esn_activity_logs", getInitialActivityLogs());
+        await saveFirestoreData("esn_staff_work_hours", getInitialWorkSessions());
         await saveFirestoreData("esn_about_hero", initialHeroData);
         await saveFirestoreData("esn_about_story", initialStoryData);
         await saveFirestoreData("esn_about_milestones", initialMilestones);

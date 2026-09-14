@@ -120,6 +120,7 @@ export function CampaignsView() {
     });
     setEditId(id);
     setShowForm(true);
+    setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
   };
 
   const confirmDelete = (id: number) => setDeleteConfirmId(id);
@@ -163,7 +164,7 @@ export function CampaignsView() {
           <h3 className="font-black text-gray-900" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Campaigns Manager</h3>
           <p className="text-sm text-gray-400 mt-0.5">{campaigns.length} campaigns · {activeCampaigns} active</p>
         </div>
-        <button onClick={() => { setForm(blankCampaign); setEditId(null); setShowForm(true); }} className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all">
+        <button onClick={() => { setForm(blankCampaign); setEditId(null); setShowForm(true); setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50); }} className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all">
           <Plus size={16} /> New Campaign
         </button>
       </div>

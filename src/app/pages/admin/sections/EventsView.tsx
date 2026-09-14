@@ -337,11 +337,19 @@ export function EventsView() {
             const fillPct = Math.round((ev.registered / ev.capacity) * 100);
             return (
               <motion.div key={ev.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="flex items-start gap-5 p-5 hover:bg-[#F6FBF8]/50 transition-colors">
-                <div className="w-16 shrink-0 text-center bg-[#F6FBF8] rounded-2xl py-3 border border-gray-100">
-                  <div className="text-xs font-bold text-gray-400 uppercase">{ev.date.split(",")[0].split(" ")[0]}</div>
-                  <div className="text-2xl font-black text-[#0B5D3F]">{ev.date.split(",")[0].split(" ")[1]}</div>
-                  <div className="text-xs text-gray-400">{ev.date.split(",")[1]?.trim()}</div>
-                </div>
+                {(() => {
+                  const parts = String(ev.date || "").trim().split(/[\s,]+/);
+                  const month = parts[0] || "Event";
+                  const day = parts[1] || "";
+                  const year = parts[2] || "";
+                  return (
+                    <div className="w-16 shrink-0 text-center bg-[#F6FBF8] rounded-2xl py-3 border border-gray-100">
+                      <div className="text-xs font-bold text-gray-400 uppercase">{month}</div>
+                      <div className="text-2xl font-black text-[#0B5D3F]">{day || "—"}</div>
+                      {year && <div className="text-xs text-gray-400">{year}</div>}
+                    </div>
+                  );
+                })()}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
                     <span className="text-xs font-bold text-white px-2.5 py-1 rounded-full" style={{ backgroundColor: sc.bg }}>{sc.label}</span>

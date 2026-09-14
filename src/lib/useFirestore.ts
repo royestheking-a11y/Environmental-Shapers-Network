@@ -132,7 +132,8 @@ export function useFirestoreData<T>(key: string, defaultValue: T): [T, (val: T |
         inflightRequests.delete(key);
 
         if (docSnap && docSnap.exists && docSnap.exists() && isMounted) {
-          const rawVal = docSnap.data().value as T;
+          const docData = docSnap.data();
+          const rawVal = docData?.value !== undefined ? docData.value : docData;
           const cleanVal = sanitizeData(rawVal);
           memoryCache.set(key, cleanVal);
           setData(cleanVal);
@@ -186,7 +187,8 @@ export async function fetchFirestoreData<T>(key: string, defaultValue: T): Promi
     const docRef = doc(db, "site_data", key);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
-      const rawVal = docSnap.data().value as T;
+      const docData = docSnap.data();
+      const rawVal = docData?.value !== undefined ? docData.value : docData;
       const cleanVal = sanitizeData(rawVal);
       setLocalCache(key, cleanVal);
       if (JSON.stringify(rawVal) !== JSON.stringify(cleanVal)) {

@@ -117,7 +117,7 @@ const recentActivity = [
   { type: "news", action: "Article published", subject: "Mangrove Project Results", time: "3h", icon: FileText, color: "#5B8DB8" },
 ];
 
-function getInitialContent() {
+export function getInitialContent() {
   return [
     {
       id: 1,

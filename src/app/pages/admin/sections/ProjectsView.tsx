@@ -109,6 +109,7 @@ export function ProjectsView() {
     setForm(rest);
     setEditId(id);
     setShowForm(true);
+    setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
   };
 
   const doDelete = () => {
@@ -152,7 +153,7 @@ export function ProjectsView() {
           <button onClick={() => downloadCSV(projects)} className="flex items-center gap-2 text-sm text-gray-500 border border-gray-200 bg-white px-4 py-2.5 rounded-xl hover:bg-gray-50 transition-all">
             <Download size={14} /> Export CSV
           </button>
-          <button onClick={() => { setForm(blankProject); setEditId(null); setShowForm(true); }} className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all">
+          <button onClick={() => { setForm(blankProject); setEditId(null); setShowForm(true); setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50); }} className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all">
             <Plus size={16} /> Add Project
           </button>
         </div>

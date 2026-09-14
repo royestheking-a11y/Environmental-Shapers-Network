@@ -7,12 +7,12 @@ import {
 
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 
-const defaultJobs = [
+export const defaultJobs = [
   { id: 1, title: "Program Manager — Forest Restoration", dept: "Programs", location: "Dhaka, Bangladesh", type: "Full-time", deadline: "Aug 30, 2026", salary: "$45K–$60K", desc: "Lead our flagship forest restoration programs across South Asia, managing a team of 12 field staff and 200+ community volunteers.", requirements: "5+ years program management, NGO/environmental sector experience, Fluent in Bangla + English, PMP or equivalent preferred" },
   { id: 2, title: "Research Associate — Climate Policy", dept: "Research", location: "Remote", type: "Full-time", deadline: "Sep 5, 2026", salary: "$38K–$50K", desc: "Support ESN's policy research agenda, producing evidence briefs, policy papers, and stakeholder reports.", requirements: "Master's in environmental science/policy, Strong research & writing skills, Experience with IPCC frameworks, Quantitative analysis skills" },
 ];
 
-const defaultRoles = [
+export const defaultRoles = [
   { id: 1, title: "Field Volunteer", location: "Bangladesh / Global", commitment: "4–8 hrs/week", skills: "Physical fitness, teamwork" },
   { id: 2, title: "Research Assistant", location: "Remote / Global", commitment: "6–10 hrs/week", skills: "Research, data analysis" },
   { id: 3, title: "Social Media Volunteer", location: "Remote", commitment: "4–6 hrs/week", skills: "Content creation, design" },
