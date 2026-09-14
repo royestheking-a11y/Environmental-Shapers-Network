@@ -4,7 +4,8 @@ import { Link } from "react-router";
 import {
   Leaf, Target, Globe2, Users, Award, Calendar, ChevronRight,
   TreePine, Heart, Star, Sprout, Shield, Lightbulb, HandHeart,
-  ArrowRight, Quote, MapPin, ExternalLink, Check, Zap, BookOpen, Sun
+  ArrowRight, Quote, MapPin, ExternalLink, Check, Zap, BookOpen, Sun,
+  X, ArrowUpRight, Sparkles
 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { ImageWithFallback } from "../components/ui/ImageWithFallback";
@@ -69,6 +70,7 @@ export default function About() {
   const bdTeamList = teamData.filter(t => t.category === "BD");
   const globalTeamList = teamData.filter(t => t.category === "Global");
   const advisorTeamList = teamData.filter(t => t.category === "Advisor");
+  const [selectedMember, setSelectedMember] = useState<AboutTeamMember | null>(null);
 
   // Interactive click-to-grow plants state
   const [plants, setPlants] = useState<{ id: number; x: number; y: number }[]>([]);
@@ -583,9 +585,13 @@ export default function About() {
                 transition={{ delay: i * 0.1 }}
                 className="bg-[#F6FBF8] rounded-3xl p-8 border border-[#4CAF50]/10 hover:shadow-xl hover:shadow-[#0B5D3F]/5 transition-all group flex flex-col sm:flex-row gap-6 items-start"
               >
-                {member.img && (
-                  <div className="w-20 h-20 rounded-2xl overflow-hidden shrink-0 shadow-md">
-                    <ImageWithFallback src={member.img} alt={member.name} className="w-full h-full object-cover" />
+                {member.img ? (
+                  <div className="w-20 h-20 rounded-2xl overflow-hidden shrink-0 shadow-md bg-gradient-to-br from-[#0B5D3F]/10 to-[#173B63]/10">
+                    <ImageWithFallback src={member.img} alt={member.name} className="w-full h-full object-cover object-top" />
+                  </div>
+                ) : (
+                  <div className="w-20 h-20 rounded-2xl overflow-hidden shrink-0 shadow-sm bg-gradient-to-br from-[#0B5D3F]/10 to-[#173B63]/10 flex items-center justify-center text-[#0B5D3F] font-black text-xl border border-[#0B5D3F]/10">
+                    {member.name.slice(0, 2).toUpperCase()}
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
@@ -618,32 +624,80 @@ export default function About() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="bg-white rounded-3xl overflow-hidden border border-gray-100 hover:shadow-2xl hover:shadow-gray-100 hover:-translate-y-1 transition-all duration-300 group"
+                onClick={() => setSelectedMember(member)}
+                className="bg-white rounded-3xl overflow-hidden border border-gray-100/90 hover:border-[#0B5D3F]/25 hover:shadow-2xl hover:shadow-[#0B5D3F]/10 hover:-translate-y-1.5 transition-all duration-300 group flex flex-col h-full cursor-pointer"
               >
-                {/* Image */}
-                <div className="relative h-56 overflow-hidden">
-                  <ImageWithFallback
-                    src={member.img}
-                    alt={member.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B5D3F]/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  {/* Country badge */}
-                  <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-white/90 backdrop-blur-sm text-[#0B5D3F] text-xs font-bold px-3 py-1.5 rounded-full">
-                    <MapPin size={10} />
-                    {member.country}
+                {/* Profile Showcase Portrait */}
+                <div className="relative aspect-[4/5] w-full overflow-hidden bg-gradient-to-br from-[#0B5D3F]/10 via-[#F6FBF8] to-[#173B63]/10">
+                  {member.img ? (
+                    <ImageWithFallback
+                      src={member.img}
+                      alt={member.name}
+                      className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out ${
+                        member.imagePosition === "center"
+                          ? "object-center"
+                          : member.imagePosition === "bottom"
+                          ? "object-bottom"
+                          : "object-top"
+                      }`}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-[#0B5D3F]/15 via-[#F6FBF8] to-[#173B63]/10 p-6">
+                      <div className="w-24 h-24 rounded-full bg-white shadow-md border border-[#0B5D3F]/20 flex items-center justify-center text-[#0B5D3F] font-black text-3xl tracking-wider">
+                        {member.name.split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase()}
+                      </div>
+                      <span className="mt-3 text-xs font-bold text-[#0B5D3F]/70 tracking-widest uppercase">ESN Leadership</span>
+                    </div>
+                  )}
+
+                  {/* Gradient Vignette (bottom) */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent opacity-90 group-hover:opacity-95 transition-opacity pointer-events-none" />
+
+                  {/* Category badge - Unobtrusive at top right */}
+                  <div className="absolute top-3.5 right-3.5 flex items-center gap-1.5 bg-white/95 backdrop-blur-md text-[#0B5D3F] text-[11px] font-extrabold px-3 py-1.5 rounded-full shadow-md border border-white/40">
+                    <Sparkles size={11} className="text-[#4CAF50]" />
+                    <span>{member.category || "Leader"}</span>
+                  </div>
+
+                  {/* Location pill - Natural position at bottom left */}
+                  <div className="absolute bottom-3.5 left-3.5 flex items-center gap-1.5 bg-black/55 backdrop-blur-md text-white text-xs font-medium px-3 py-1.5 rounded-full border border-white/20 shadow-md">
+                    <MapPin size={11} className="text-[#4CAF50]" />
+                    <span>{member.country || "Global"}</span>
                   </div>
                 </div>
+
                 {/* Info */}
-                <div className="p-6">
-                  <h4 className="font-black text-gray-900 mb-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{member.name}</h4>
-                  <p className="text-[#0B5D3F] text-sm font-semibold mb-3">{member.role}</p>
-                  <p className="text-gray-500 text-xs leading-relaxed mb-4">{member.bio}</p>
-                  {/* Tags */}
-                  <div className="flex gap-2 flex-wrap">
-                    {member.tags.map((tag) => (
-                      <span key={tag} className="text-xs font-bold bg-[#0B5D3F]/8 text-[#0B5D3F] px-3 py-1 rounded-full border border-[#0B5D3F]/10">{tag}</span>
-                    ))}
+                <div className="p-6 sm:p-7 flex-1 flex flex-col justify-between">
+                  <div>
+                    <h4 className="font-black text-gray-900 text-xl mb-1 group-hover:text-[#0B5D3F] transition-colors" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                      {member.name}
+                    </h4>
+                    <p className="text-[#0B5D3F] text-sm font-bold mb-3 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#4CAF50]" />
+                      {member.role}
+                    </p>
+                    <p className="text-gray-500 text-xs sm:text-sm leading-relaxed mb-4 line-clamp-3">
+                      {member.bio}
+                    </p>
+
+                    {/* Tags */}
+                    {member.tags && member.tags.length > 0 && (
+                      <div className="flex gap-1.5 flex-wrap mb-4">
+                        {member.tags.map((tag) => (
+                          <span key={tag} className="text-[11px] font-bold bg-[#0B5D3F]/8 text-[#0B5D3F] px-3 py-1 rounded-full border border-[#0B5D3F]/12">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Showcase Action Link */}
+                  <div className="pt-3.5 border-t border-gray-100 flex items-center justify-between text-xs font-bold text-[#0B5D3F] group-hover:text-[#4CAF50] transition-colors mt-auto">
+                    <span>View Profile Showcase</span>
+                    <div className="w-7 h-7 rounded-full bg-[#0B5D3F]/8 flex items-center justify-center group-hover:bg-[#0B5D3F] group-hover:text-white transition-all">
+                      <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -651,8 +705,6 @@ export default function About() {
           </div>
         </div>
       </section>
-
-      
 
       {/* ── BD Team ─────────────────────────────────────────────────── */}
       <section className="py-28 bg-white border-t border-gray-100">
@@ -673,49 +725,194 @@ export default function About() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="bg-white rounded-3xl overflow-hidden border border-gray-100 hover:shadow-2xl hover:shadow-gray-100 hover:-translate-y-1 transition-all duration-300 group"
+                onClick={() => setSelectedMember(member)}
+                className="bg-white rounded-3xl overflow-hidden border border-gray-100/90 hover:border-[#4CAF50]/30 hover:shadow-2xl hover:shadow-[#0B5D3F]/10 hover:-translate-y-1.5 transition-all duration-300 group flex flex-col h-full cursor-pointer"
               >
-                {/* Image */}
-                <div className="relative h-56 overflow-hidden bg-gradient-to-br from-[#0B5D3F]/10 to-[#173B63]/10">
+                {/* Profile Showcase Portrait */}
+                <div className="relative aspect-[4/5] w-full overflow-hidden bg-gradient-to-br from-[#0B5D3F]/10 via-[#F6FBF8] to-[#173B63]/10">
                   {member.img ? (
                     <ImageWithFallback
                       src={member.img}
                       alt={member.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out ${
+                        member.imagePosition === "center"
+                          ? "object-center"
+                          : member.imagePosition === "bottom"
+                          ? "object-bottom"
+                          : "object-top"
+                      }`}
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-[#F6FBF8]">
-                      <div className="w-20 h-20 rounded-full bg-[#0B5D3F]/10 text-[#0B5D3F] flex items-center justify-center font-black text-2xl">
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-[#4CAF50]/15 via-[#F6FBF8] to-[#0B5D3F]/10 p-6">
+                      <div className="w-24 h-24 rounded-full bg-white shadow-md border border-[#4CAF50]/20 flex items-center justify-center text-[#0B5D3F] font-black text-3xl tracking-wider">
                         {member.name.slice(0, 2).toUpperCase()}
                       </div>
+                      <span className="mt-3 text-xs font-bold text-[#0B5D3F]/70 tracking-widest uppercase">Bangladesh Team</span>
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B5D3F]/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  {/* Country badge */}
-                  <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-white/90 backdrop-blur-sm text-[#0B5D3F] text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
-                    <MapPin size={10} />
-                    {member.country || "Bangladesh"}
+
+                  {/* Gradient Vignette (bottom) */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent opacity-90 group-hover:opacity-95 transition-opacity pointer-events-none" />
+
+                  {/* Category badge */}
+                  <div className="absolute top-3.5 right-3.5 flex items-center gap-1.5 bg-white/95 backdrop-blur-md text-[#0B5D3F] text-[11px] font-extrabold px-3 py-1.5 rounded-full shadow-md border border-white/40">
+                    <Sparkles size={11} className="text-[#4CAF50]" />
+                    <span>BD Chapter</span>
+                  </div>
+
+                  {/* Location pill */}
+                  <div className="absolute bottom-3.5 left-3.5 flex items-center gap-1.5 bg-black/55 backdrop-blur-md text-white text-xs font-medium px-3 py-1.5 rounded-full border border-white/20 shadow-md">
+                    <MapPin size={11} className="text-[#4CAF50]" />
+                    <span>{member.country || "Bangladesh"}</span>
                   </div>
                 </div>
+
                 {/* Info */}
-                <div className="p-6">
-                  <h4 className="font-black text-gray-900 mb-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{member.name}</h4>
-                  <p className="text-[#0B5D3F] text-sm font-semibold mb-3">{member.role}</p>
-                  <p className="text-gray-500 text-xs leading-relaxed mb-4">{member.bio}</p>
-                  {/* Tags */}
-                  {member.tags && member.tags.length > 0 && (
-                    <div className="flex gap-2 flex-wrap">
-                      {member.tags.map((tag) => (
-                        <span key={tag} className="text-xs font-bold bg-[#4CAF50]/10 text-[#0B5D3F] px-3 py-1 rounded-full border border-[#4CAF50]/20">{tag}</span>
-                      ))}
+                <div className="p-6 sm:p-7 flex-1 flex flex-col justify-between">
+                  <div>
+                    <h4 className="font-black text-gray-900 text-xl mb-1 group-hover:text-[#0B5D3F] transition-colors" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                      {member.name}
+                    </h4>
+                    <p className="text-[#0B5D3F] text-sm font-bold mb-3 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#4CAF50]" />
+                      {member.role}
+                    </p>
+                    <p className="text-gray-500 text-xs sm:text-sm leading-relaxed mb-4 line-clamp-3">
+                      {member.bio}
+                    </p>
+
+                    {/* Tags */}
+                    {member.tags && member.tags.length > 0 && (
+                      <div className="flex gap-1.5 flex-wrap mb-4">
+                        {member.tags.map((tag) => (
+                          <span key={tag} className="text-[11px] font-bold bg-[#4CAF50]/10 text-[#0B5D3F] px-3 py-1 rounded-full border border-[#4CAF50]/20">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Showcase Action Link */}
+                  <div className="pt-3.5 border-t border-gray-100 flex items-center justify-between text-xs font-bold text-[#0B5D3F] group-hover:text-[#4CAF50] transition-colors mt-auto">
+                    <span>View Profile Showcase</span>
+                    <div className="w-7 h-7 rounded-full bg-[#4CAF50]/15 flex items-center justify-center group-hover:bg-[#0B5D3F] group-hover:text-white transition-all">
+                      <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                     </div>
-                  )}
+                  </div>
                 </div>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
+
+      {/* ── Profile Showcase Modal ────────────────────────────────────────── */}
+      <AnimatePresence>
+        {selectedMember && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedMember(null)}
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-100 relative overflow-hidden"
+            >
+              <button
+                onClick={() => setSelectedMember(null)}
+                aria-label="Close profile showcase"
+                className="absolute top-4 right-4 z-20 w-9 h-9 rounded-full bg-white/90 hover:bg-white text-gray-700 flex items-center justify-center shadow-md transition-all hover:scale-105"
+              >
+                <X size={18} />
+              </button>
+
+              <div className="grid sm:grid-cols-5">
+                {/* Portrait showcase */}
+                <div className="sm:col-span-2 relative aspect-[4/5] sm:aspect-auto sm:min-h-full bg-gradient-to-br from-[#0B5D3F]/15 to-[#173B63]/15 overflow-hidden">
+                  {selectedMember.img ? (
+                    <ImageWithFallback
+                      src={selectedMember.img}
+                      alt={selectedMember.name}
+                      className={`w-full h-full object-cover ${
+                        selectedMember.imagePosition === "center"
+                          ? "object-center"
+                          : selectedMember.imagePosition === "bottom"
+                          ? "object-bottom"
+                          : "object-top"
+                      }`}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-[#F6FBF8]">
+                      <div className="w-24 h-24 rounded-full bg-[#0B5D3F]/10 text-[#0B5D3F] flex items-center justify-center font-black text-3xl">
+                        {selectedMember.name.slice(0, 2).toUpperCase()}
+                      </div>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
+                  <div className="absolute bottom-4 left-4 flex items-center gap-1.5 bg-black/60 backdrop-blur-md text-white text-xs font-medium px-3 py-1.5 rounded-full border border-white/20 shadow-md">
+                    <MapPin size={12} className="text-[#4CAF50]" />
+                    <span>{selectedMember.country || "Global"}</span>
+                  </div>
+                </div>
+
+                {/* Profile details */}
+                <div className="sm:col-span-3 p-6 sm:p-8 flex flex-col justify-between">
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 bg-[#0B5D3F]/10 text-[#0B5D3F] text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wider">
+                      <Sparkles size={11} className="text-[#4CAF50]" />
+                      {selectedMember.category} Leadership
+                    </div>
+                    <h3 className="text-2xl font-black text-gray-900 mb-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                      {selectedMember.name}
+                    </h3>
+                    <p className="text-[#0B5D3F] font-bold text-sm mb-4 flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-[#4CAF50]" />
+                      {selectedMember.role}
+                    </p>
+
+                    <div className="h-px bg-gray-100 my-4" />
+
+                    <h5 className="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2">Executive Biography</h5>
+                    <p className="text-gray-600 text-sm leading-relaxed mb-6 whitespace-pre-line">
+                      {selectedMember.bio}
+                    </p>
+
+                    {selectedMember.tags && selectedMember.tags.length > 0 && (
+                      <div>
+                        <h5 className="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2">Focus Areas & Expertise</h5>
+                        <div className="flex gap-2 flex-wrap">
+                          {selectedMember.tags.map(tag => (
+                            <span key={tag} className="text-xs font-bold bg-[#4CAF50]/10 text-[#0B5D3F] px-3 py-1 rounded-full border border-[#4CAF50]/20">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-8 pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <span className="text-xs text-gray-400">Environmental Shapers Network</span>
+                    <button
+                      onClick={() => setSelectedMember(null)}
+                      className="text-xs font-bold bg-[#0B5D3F] text-white px-4 py-2 rounded-xl hover:bg-[#0a5237] transition-all"
+                    >
+                      Close Showcase
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
 {/* ── Timeline ─────────────────────────────────────────────────────────── */}
       <section className="py-28 bg-white">

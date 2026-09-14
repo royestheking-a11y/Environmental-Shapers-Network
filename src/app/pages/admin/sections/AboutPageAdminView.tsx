@@ -42,6 +42,7 @@ export interface AboutTeamMember {
   img: string;
   tags: string[];
   category: "Advisor" | "BD" | "Global" | "Founder";
+  imagePosition?: "top" | "center" | "bottom";
 }
 
 export interface VisionMissionItem {
@@ -469,12 +470,25 @@ export default function AboutPageAdminView() {
                     </div>
                     <div className="md:col-span-2">
                       <ImageUploadField
-                        label="Team Member Photo"
+                        label="Team Member Photo (Portrait Showcase)"
                         value={teamFormData.img || ""}
                         onChange={(url) => setTeamFormData({ ...teamFormData, img: url })}
                         folder="team"
-                        helpText="Upload a portrait photo or profile picture for this team member"
+                        aspectRatio="portrait"
+                        helpText="Upload a portrait photo or profile picture (4:5 or 3:4 ratio recommended). The face will be framed naturally without cutting off the head."
                       />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-600 mb-1.5 block">Photo Framing Focus</label>
+                      <select
+                        value={teamFormData.imagePosition || "top"}
+                        onChange={e => setTeamFormData({ ...teamFormData, imagePosition: e.target.value as any })}
+                        className="w-full px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]"
+                      >
+                        <option value="top">Top (Recommended for headshots & portraits — ensures head is never cut off)</option>
+                        <option value="center">Center</option>
+                        <option value="bottom">Bottom</option>
+                      </select>
                     </div>
                     <div className="md:col-span-2">
                       <label className="text-xs font-bold text-gray-600 mb-1.5 block">Tags (Comma separated)</label>

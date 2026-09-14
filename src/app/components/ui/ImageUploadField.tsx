@@ -10,7 +10,7 @@ interface ImageUploadFieldProps {
   folder?: string;
   placeholder?: string;
   helpText?: string;
-  aspectRatio?: "video" | "square" | "wide" | "auto";
+  aspectRatio?: "video" | "square" | "wide" | "auto" | "portrait";
   compact?: boolean;
 }
 
@@ -64,7 +64,9 @@ export function ImageUploadField({
   };
 
   const aspectClass =
-    aspectRatio === "square"
+    aspectRatio === "portrait"
+      ? "aspect-[4/5] w-36 max-h-52"
+      : aspectRatio === "square"
       ? "aspect-square max-w-[140px]"
       : aspectRatio === "wide"
       ? "aspect-[21/9] max-h-44"
@@ -97,7 +99,7 @@ export function ImageUploadField({
               <ImageWithFallback
                 src={value}
                 alt="Preview"
-                className="w-full h-full object-cover rounded-lg"
+                className={`w-full h-full object-cover rounded-lg ${aspectRatio === "portrait" ? "object-top" : ""}`}
               />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                 <button
