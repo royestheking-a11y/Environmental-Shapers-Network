@@ -26,6 +26,7 @@ const TechPartnerPage = lazy(() => import("./pages/TechPartnerPage"));
 const ResearchAreaPage = lazy(() => import("./pages/ResearchAreaPage"));
 const YouthEngagement = lazy(() => import("./pages/YouthEngagement"));
 const ResearchPolicy = lazy(() => import("./pages/ResearchPolicy"));
+const SeedDatabase = lazy(() => import("./pages/SeedDatabase"));
 
 export const router = createBrowserRouter([
   {
@@ -84,6 +85,9 @@ export const router = createBrowserRouter([
       { path: "admin/dashboard", Component: AdminDashboard },
       { path: "admin/dashboard/:section", Component: AdminDashboard },
       { path: "admin/:section", Component: AdminDashboard },
+      // Database Seeder
+      { path: "seed-database", Component: SeedDatabase },
+      { path: "admin/seed-database", Component: SeedDatabase },
       // Catch-all
       { path: "*", Component: Home },
     ],

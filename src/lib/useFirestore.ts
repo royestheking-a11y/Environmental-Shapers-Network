@@ -119,12 +119,15 @@ export function useFirestoreData<T>(key: string, defaultValue: T): [T, (val: T |
         let req = inflightRequests.get(key);
         if (!req) {
           const docRef = doc(db, "site_data", key);
+          let timerId: any;
           const fetchPromise = getDoc(docRef);
           // 8000ms timeout so cloud Firestore network delays never hang indefinitely
-          const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Firestore timeout")), 8000)
-          );
-          req = Promise.race([fetchPromise, timeoutPromise]);
+          const timeoutPromise = new Promise((_, reject) => {
+            timerId = setTimeout(() => reject(new Error("Firestore timeout")), 8000);
+          });
+          req = Promise.race([fetchPromise, timeoutPromise]).finally(() => {
+            if (timerId) clearTimeout(timerId);
+          });
           inflightRequests.set(key, req);
         }
 

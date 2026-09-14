@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router";
+import { useParams, Link, useLocation } from "react-router";
 import { motion, useInView } from "motion/react";
 import { useRef, useMemo } from "react";
 import { ArrowRight, Users, BookOpen, Calendar, ChevronRight, Globe2, CheckCircle2, MapPin, Star, TrendingUp, TreePine, Waves, Sun, ShieldAlert, Bug, GraduationCap, Microscope } from "lucide-react";
@@ -662,7 +662,8 @@ function EventsPage() {
 
 export default function ProgramPage() {
   const { program } = useParams<{ program: string }>();
-  const pathname = window.location.pathname;
+  const location = useLocation();
+  const pathname = location.pathname;
   const [allPrograms] = useFirestoreData<ProgramData[]>("esn_programs", getInitialPrograms());
 
   if (pathname === "/insights") return <InsightsPage />;
