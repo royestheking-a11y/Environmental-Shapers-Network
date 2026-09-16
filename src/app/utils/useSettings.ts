@@ -5,6 +5,7 @@ const defaultSettings = {
   siteName: "Environmental Shapers Network",
   tagline: "Shaping Minds, Protecting Earth",
   contactEmail: "info@esnglobal.org",
+  officeLocation: "Dhaka, Bangladesh & California, United States of America",
   timezone: "Asia/Dhaka",
   language: "English",
   currency: "USD",
@@ -16,10 +17,14 @@ function normalizeSettings(s: any) {
   const contactEmail = (!s.contactEmail || s.contactEmail.includes("esnbd.org") || s.contactEmail.includes("environmentalshapersnetwork.org"))
     ? "info@esnglobal.org"
     : s.contactEmail;
+  const officeLocation = !s.officeLocation || s.officeLocation.includes("Global Offices in 12 Countries")
+    ? (s.officeLocation ? s.officeLocation : "Dhaka, Bangladesh & California, United States of America")
+    : s.officeLocation;
   return {
     ...defaultSettings,
     ...s,
     contactEmail,
+    officeLocation: officeLocation || "Dhaka, Bangladesh & California, United States of America",
   };
 }
 

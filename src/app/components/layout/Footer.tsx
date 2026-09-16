@@ -215,7 +215,7 @@ export function Footer() {
             <div className="mt-8 flex flex-col gap-3">
               <div className="flex items-center gap-3 text-sm text-gray-400">
                 <MapPin size={15} className="text-[#4CAF50] shrink-0" />
-                <span>Dhaka, Bangladesh | Global Offices in 12 Countries</span>
+                <span>{settings.officeLocation || "Dhaka, Bangladesh & California, United States of America"}</span>
               </div>
               <div className="flex items-center gap-3 text-sm text-gray-400">
                 <Mail size={15} className="text-[#4CAF50] shrink-0" />

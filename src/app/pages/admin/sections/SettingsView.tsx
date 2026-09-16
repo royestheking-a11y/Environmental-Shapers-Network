@@ -12,6 +12,7 @@ function getSavedSettings() {
     siteName: "Environmental Shapers Network",
     tagline: "Shaping Minds, Protecting Earth",
     contactEmail: "info@esnglobal.org",
+    officeLocation: "Dhaka, Bangladesh & California, United States of America",
     timezone: "Asia/Dhaka",
     language: "English",
     currency: "USD",
@@ -308,6 +309,7 @@ export function SettingsView() {
                 <Field label="Organization Name" k="siteName" />
                 <Field label="Platform Tagline" k="tagline" />
                 <Field label="Official Contact Email" k="contactEmail" type="email" />
+                <Field label="Global Offices / Location (Footer)" k="officeLocation" placeholder="Dhaka, Bangladesh & California, United States of America" />
                 <div>
                   <label className="text-xs font-bold text-gray-600 mb-1.5 block">Default Timezone</label>
                   <select
