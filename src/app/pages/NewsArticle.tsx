@@ -96,8 +96,18 @@ type ContentBlock = { type: string; text?: string; attribution?: string; items?:
 function ContentRenderer({ content }: { content: any }) {
   if (!content) return null;
 
-  // If content is a plain string or markdown text
+  // If content is an HTML string (contains HTML tags) or standard string
   if (typeof content === "string") {
+    const hasHtmlTags = /<\/?(?:p|div|h[1-6]|ul|ol|li|blockquote|table|tr|td|th|span|strong|em|u|s|a|img|figure|hr|font)[^>]*>/i.test(content);
+    if (hasHtmlTags) {
+      return (
+        <div
+          className="article-rich-content flex flex-col gap-3 text-gray-700 leading-[1.85] text-base"
+          dangerouslySetInnerHTML={{ __html: content }}
+        />
+      );
+    }
+
     const paragraphs = content.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
     return (
       <div className="flex flex-col gap-5">

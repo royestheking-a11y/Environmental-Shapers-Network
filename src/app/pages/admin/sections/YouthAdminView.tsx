@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Plus, Search, Edit3, Trash2, AlertCircle } from "lucide-react";
+import { Plus, Search, Edit3, Trash2, AlertCircle, Image as ImageIcon } from "lucide-react";
+import { ImageUploadField } from "../../../components/ui/ImageUploadField";
+import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 
 export interface YouthInitiative {
   id: number;
@@ -8,6 +10,7 @@ export interface YouthInitiative {
   title: string;
   desc: string;
   impact: string;
+  image?: string;
 }
 
 export interface YouthStat {
@@ -19,12 +22,54 @@ export interface YouthStat {
 
 export function getInitialYouthInitiatives(): YouthInitiative[] {
   return [
-    { id: 1, num: "01", title: "ESN Youth Leadership Academy", desc: "A 12-month immersive leadership programme for 18–30 year olds — combining environmental science training, policy advocacy skills, field experience, and mentorship from senior ESN practitioners and UN officials.", impact: "2,500 graduates in 55 countries" },
-    { id: 2, num: "02", title: "Climate Action Fellowships", desc: "Competitive, fully-funded fellowships placing young environmental professionals within ESN programs, partner NGOs, government ministries, and international institutions for 6–12 month assignments.", impact: "800 fellows placed annually" },
-    { id: 3, num: "03", title: "Youth Shapers COP Delegation", desc: "Providing rigorous negotiation training and accredited seats at UNFCCC COP summits, CBD COPs, and other key multilateral environmental forums — ensuring youth voices shape global climate agreements.", impact: "Active in 60 nations · COP29 ✓" },
-    { id: 4, num: "04", title: "Green Schools Initiative", desc: "Transforming schools into climate action hubs through curriculum integration, student-led environment clubs, solar installations, tree planting, and connections to ESN's global youth network.", impact: "4,200 schools across 38 countries" },
-    { id: 5, num: "05", title: "Digital Climate Literacy Platform", desc: "Free, multilingual online learning platform delivering climate science, sustainability, and environmental advocacy courses to young people — accessible on mobile with or without internet connectivity.", impact: "1.2M learners · 55 languages" },
-    { id: 6, num: "06", title: "Youth Research & Innovation Grants", desc: "Seed funding and mentorship for youth-led environmental research projects and social enterprises — supporting the next generation of environmental innovators from idea to impact in communities worldwide.", impact: "$4M awarded · 320 projects funded" }
+    {
+      id: 1,
+      num: "01",
+      title: "ESN Youth Leadership Academy",
+      desc: "A 12-month immersive leadership programme for 18–30 year olds — combining environmental science training, policy advocacy skills, field experience, and mentorship from senior ESN practitioners and UN officials.",
+      impact: "2,500 graduates in 55 countries",
+      image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080"
+    },
+    {
+      id: 2,
+      num: "02",
+      title: "Climate Action Fellowships",
+      desc: "Competitive, fully-funded fellowships placing young environmental professionals within ESN programs, partner NGOs, government ministries, and international institutions for 6–12 month assignments.",
+      impact: "800 fellows placed annually",
+      image: "https://images.unsplash.com/photo-1577495508048-b635879837f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080"
+    },
+    {
+      id: 3,
+      num: "03",
+      title: "Youth Shapers COP Delegation",
+      desc: "Providing rigorous negotiation training and accredited seats at UNFCCC COP summits, CBD COPs, and other key multilateral environmental forums — ensuring youth voices shape global climate agreements.",
+      impact: "Active in 60 nations · COP29 ✓",
+      image: "/Commonwealth Secretariat at COP27.jpeg"
+    },
+    {
+      id: 4,
+      num: "04",
+      title: "Green Schools Initiative",
+      desc: "Transforming schools into climate action hubs through curriculum integration, student-led environment clubs, solar installations, tree planting, and connections to ESN's global youth network.",
+      impact: "4,200 schools across 38 countries",
+      image: "https://images.unsplash.com/photo-1509062522246-3755977927d7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080"
+    },
+    {
+      id: 5,
+      num: "05",
+      title: "Digital Climate Literacy Platform",
+      desc: "Free, multilingual online learning platform delivering climate science, sustainability, and environmental advocacy courses to young people — accessible on mobile with or without internet connectivity.",
+      impact: "1.2M learners · 55 languages",
+      image: "https://images.unsplash.com/photo-1531482615713-2afd69097998?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080"
+    },
+    {
+      id: 6,
+      num: "06",
+      title: "Youth Research & Innovation Grants",
+      desc: "Seed funding and mentorship for youth-led environmental research projects and social enterprises — supporting the next generation of environmental innovators from idea to impact in communities worldwide.",
+      impact: "$4M awarded · 320 projects funded",
+      image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080"
+    }
   ];
 }
 
@@ -37,8 +82,6 @@ export function getInitialYouthStats(): YouthStat[] {
   ];
 }
 
-import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
-
 export default function YouthAdminView() {
   const [initiatives, setInitiatives, loading] = useFirestoreData<YouthInitiative[]>("esn_youth_initiatives_admin", getInitialYouthInitiatives());
   const [stats, setStats] = useFirestoreData<YouthStat[]>("esn_youth_stats", getInitialYouthStats());
@@ -48,7 +91,7 @@ export default function YouthAdminView() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   
-  const [initForm, setInitForm] = useState<Partial<YouthInitiative>>({ num: "", title: "", desc: "", impact: "" });
+  const [initForm, setInitForm] = useState<Partial<YouthInitiative>>({ num: "", title: "", desc: "", impact: "", image: "" });
   const [statForm, setStatForm] = useState<Partial<YouthStat>>({ value: "", label: "", sub: "" });
 
   const saveInitiatives = async (newData: YouthInitiative[]) => {
@@ -74,7 +117,7 @@ export default function YouthAdminView() {
       saveInitiatives([...initiatives, { ...dataToSave, id: newId } as YouthInitiative]);
     }
     setShowAdd(false);
-    setInitForm({ num: "", title: "", desc: "", impact: "" });
+    setInitForm({ num: "", title: "", desc: "", impact: "", image: "" });
   };
 
   const handleSaveStat = () => {
@@ -91,7 +134,7 @@ export default function YouthAdminView() {
   };
 
   const startEditInit = (i: YouthInitiative) => {
-    setInitForm(i);
+    setInitForm({ ...i, image: i.image || "" });
     setEditingId(i.id);
     setShowAdd(true);
     setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
@@ -122,7 +165,7 @@ export default function YouthAdminView() {
           <h3 className="text-gray-900 font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Youth Development</h3>
           <p className="text-sm text-gray-400">Manage youth initiatives and statistics.</p>
         </div>
-        <button onClick={() => { setEditingId(null); setShowAdd(true); setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50); }} className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all">
+        <button onClick={() => { setEditingId(null); setInitForm({ num: "", title: "", desc: "", impact: "", image: "" }); setShowAdd(true); setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50); }} className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all">
           <Plus size={16} /> Add {activeTab === "initiatives" ? "Initiative" : "Stat"}
         </button>
       </div>
@@ -134,7 +177,7 @@ export default function YouthAdminView() {
 
       <AnimatePresence>
         {showAdd && activeTab === "initiatives" && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="bg-white rounded-2xl p-6 border border-[#4CAF50]/30 overflow-hidden">
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="bg-white rounded-2xl p-6 border border-[#4CAF50]/30 overflow-hidden shadow-sm">
             <h4 className="font-bold text-gray-900 mb-5">{editingId ? "Edit Initiative" : "Add Initiative"}</h4>
             <div className="grid md:grid-cols-2 gap-4 mb-4">
               <div>
@@ -153,6 +196,16 @@ export default function YouthAdminView() {
                 <label className="text-xs font-bold text-gray-600 mb-1.5 block">Impact text</label>
                 <input type="text" value={initForm.impact || ""} onChange={e => setInitForm({ ...initForm, impact: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
               </div>
+              <div className="md:col-span-2 pt-2 border-t border-gray-100">
+                <ImageUploadField
+                  label="Initiative Photo / Cover Image"
+                  value={initForm.image || ""}
+                  onChange={(url) => setInitForm({ ...initForm, image: url })}
+                  folder="youth_initiatives"
+                  aspectRatio="video"
+                  helpText="Upload a photo (PNG, JPG, WebP) or paste an image URL for this youth initiative"
+                />
+              </div>
             </div>
             <div className="flex gap-3 mt-4">
               <button onClick={handleSaveInit} className="bg-[#0B5D3F] text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#0a5237] transition-all">Save Initiative</button>
@@ -162,7 +215,7 @@ export default function YouthAdminView() {
         )}
 
         {showAdd && activeTab === "stats" && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="bg-white rounded-2xl p-6 border border-[#4CAF50]/30 overflow-hidden">
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="bg-white rounded-2xl p-6 border border-[#4CAF50]/30 overflow-hidden shadow-sm">
             <h4 className="font-bold text-gray-900 mb-5">{editingId ? "Edit Stat" : "Add Stat"}</h4>
             <div className="grid md:grid-cols-3 gap-4 mb-4">
               <div>
@@ -203,19 +256,36 @@ export default function YouthAdminView() {
 
       <div className="bg-white rounded-2xl border border-gray-100 p-6 mt-2">
         {activeTab === "initiatives" && (
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {initiatives.map(i => (
-              <div key={i.id} className="border border-gray-100 rounded-xl p-5 hover:border-[#0B5D3F]/20 transition-all">
-                <div className="flex justify-between items-start mb-2">
-                  <div className="text-[#0B5D3F] font-bold opacity-30 text-2xl">{i.num}</div>
-                  <div className="flex gap-2">
-                    <button onClick={() => startEditInit(i)} className="p-1 text-gray-400 hover:text-[#0B5D3F]"><Edit3 size={14} /></button>
-                    <button onClick={() => setDeleteConfirmId(i.id)} className="p-1 text-gray-400 hover:text-red-500"><Trash2 size={14} /></button>
+              <div key={i.id} className="border border-gray-100 rounded-2xl p-5 hover:border-[#0B5D3F]/30 hover:shadow-md transition-all flex flex-col justify-between bg-white">
+                <div>
+                  {i.image ? (
+                    <div className="w-full h-40 rounded-xl overflow-hidden mb-3.5 bg-gray-50 border border-gray-100 relative group">
+                      <img src={i.image} alt={i.title} className="w-full h-full object-cover" />
+                      <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-md text-white font-bold text-[11px] px-2.5 py-1 rounded-md">
+                        {i.num}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="w-full h-24 rounded-xl mb-3.5 bg-[#F6FBF8] border border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400">
+                      <ImageIcon size={20} className="mb-1 text-gray-300" />
+                      <span className="text-[11px] font-medium text-gray-400">No Photo Added</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="text-[#0B5D3F] font-bold text-xs bg-[#E6F3EB] px-2.5 py-1 rounded-md">{i.num}</div>
+                    <div className="flex gap-1.5">
+                      <button onClick={() => startEditInit(i)} className="p-1.5 text-gray-400 hover:text-[#0B5D3F] hover:bg-gray-100 rounded-lg transition-colors" title="Edit"><Edit3 size={15} /></button>
+                      <button onClick={() => setDeleteConfirmId(i.id)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete"><Trash2 size={15} /></button>
+                    </div>
                   </div>
+                  <h4 className="font-bold text-gray-900 mb-2 line-clamp-2">{i.title}</h4>
+                  <p className="text-sm text-gray-500 mb-4 line-clamp-3 font-light leading-relaxed">{i.desc}</p>
                 </div>
-                <h4 className="font-bold text-gray-900 mb-2">{i.title}</h4>
-                <p className="text-sm text-gray-500 mb-3">{i.desc}</p>
-                <div className="text-xs font-semibold text-[#0B5D3F] bg-[#E6F3EB] inline-block px-2 py-1 rounded">{i.impact}</div>
+                <div className="text-xs font-semibold text-[#0B5D3F] bg-[#E6F3EB]/70 border border-[#0B5D3F]/10 px-3 py-1.5 rounded-lg w-fit">
+                  {i.impact}
+                </div>
               </div>
             ))}
           </div>
@@ -240,3 +310,4 @@ export default function YouthAdminView() {
     </div>
   );
 }
+

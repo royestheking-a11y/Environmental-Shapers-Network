@@ -30,6 +30,7 @@ import ResearchAdminView from "./sections/ResearchAdminView";
 import YouthAdminView from "./sections/YouthAdminView";
 import AboutPageAdminView from "./sections/AboutPageAdminView";
 import { ImageUploadField } from "../../components/ui/ImageUploadField";
+import { RichTextEditor } from "../../components/ui/RichTextEditor";
 import { ActivityLogItem, getInitialActivityLogs, sanitizeRealActivityLogs, logAdminActivity } from "../../../lib/activityLogger";
 import { AdminNotification, getInitialNotifications } from "../../../lib/notificationService";
 import {
@@ -1260,12 +1261,12 @@ function CMSView({ content, onDelete, onToggle, onShowAdd, showAdd, newContent, 
                 <textarea value={newContent.excerpt || ""} onChange={(e) => setNewContent({ ...newContent, excerpt: e.target.value })} placeholder="A compelling 1-2 sentence lead or overview that appears on news cards..." className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] transition-colors resize-none h-20" />
               </div>
               <div className="sm:col-span-3">
-                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Full Article Story & Content *</label>
-                <textarea
+                <RichTextEditor
+                  label="Full Article Story & Content *"
                   value={newContent.content || ""}
-                  onChange={(e) => setNewContent({ ...newContent, content: e.target.value })}
-                  placeholder="Write the full story or article here. Separate paragraphs with blank lines. You can write your complete news report, updates, and quotes here..."
-                  className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] transition-colors h-48"
+                  onChange={(html) => setNewContent({ ...newContent, content: html })}
+                  placeholder="Write the full story or article here. Use Word-like styling, headings, quotes, tables, and colors..."
+                  helpText="Word-style formatting: Font Family, Size, Colors, Highlight, Alignment, Lists, Insert Links, Images, Tables, Quotes & Callouts"
                 />
               </div>
               <div className="sm:col-span-3">
@@ -1344,12 +1345,12 @@ function CMSView({ content, onDelete, onToggle, onShowAdd, showAdd, newContent, 
                 <textarea value={editingContent.excerpt || ""} onChange={(e) => setEditingContent({ ...editingContent, excerpt: e.target.value })} className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#173B63] transition-colors resize-none h-20" />
               </div>
               <div className="sm:col-span-3">
-                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Full Article Story & Content</label>
-                <textarea
+                <RichTextEditor
+                  label="Full Article Story & Content"
                   value={typeof editingContent.content === "string" ? editingContent.content : (Array.isArray(editingContent.content) ? editingContent.content.map((b: any) => b.text || "").filter(Boolean).join("\n\n") : "")}
-                  onChange={(e) => setEditingContent({ ...editingContent, content: e.target.value })}
-                  placeholder="Write the full story or article here. Separate paragraphs with blank lines..."
-                  className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#173B63] transition-colors h-48"
+                  onChange={(html) => setEditingContent({ ...editingContent, content: html })}
+                  placeholder="Write the full story or article here. Use Word-like styling, headings, quotes, tables, and colors..."
+                  helpText="Word-style formatting: Font Family, Size, Colors, Highlight, Alignment, Lists, Insert Links, Images, Tables, Quotes & Callouts"
                 />
               </div>
               <div className="sm:col-span-3">
