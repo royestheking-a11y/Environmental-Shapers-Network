@@ -688,12 +688,14 @@ export default function ProgramPage() {
       description: dbProgram.desc,
       icon: resolveIcon(dbProgram.iconName),
       heroImage: dbProgram.image || baseProgram?.heroImage || "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400",
-      stats: baseProgram?.stats || [
-        { value: dbProgram.reach || "Global", label: "Program Reach" },
-        { value: "470+", label: "Projects Supported" },
-        { value: "80+", label: "Partner Countries" },
-        { value: "100%", label: "Impact Verified" },
-      ],
+      stats: (dbProgram.stats && dbProgram.stats.length > 0 && dbProgram.stats.some(s => s.value || s.label))
+        ? dbProgram.stats.filter(s => s.value || s.label)
+        : (baseProgram?.stats || [
+            { value: dbProgram.reach || "Global", label: "Program Reach" },
+            { value: "470+", label: "Projects Supported" },
+            { value: "80+", label: "Partner Countries" },
+            { value: "100%", label: "Impact Verified" },
+          ]),
       highlights: dbProgram.highlights && dbProgram.highlights.length > 0 ? dbProgram.highlights : (baseProgram?.highlights || [
         "Community-led intervention models",
         "Transparent ecological tracking and data verification",
