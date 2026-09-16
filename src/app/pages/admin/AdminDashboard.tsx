@@ -27,6 +27,7 @@ import WhoWeAreAdminView from "./sections/WhoWeAreAdminView";
 import StatsAdminView from "./sections/StatsAdminView";
 import MissionAdminView from "./sections/MissionAdminView";
 import ResearchAdminView from "./sections/ResearchAdminView";
+import KnowledgeHubAdminView from "./sections/KnowledgeHubAdminView";
 import YouthAdminView from "./sections/YouthAdminView";
 import AboutPageAdminView from "./sections/AboutPageAdminView";
 import { ImageUploadField } from "../../components/ui/ImageUploadField";
@@ -57,6 +58,7 @@ const sidebarItems = [
   { icon: BarChart3, label: "Impact Stats", id: "stats" },
   { icon: Heart, label: "Mission & Goals", id: "mission" },
   { icon: Target, label: "Thematic Areas", id: "thematic" },
+  { icon: BookOpen, label: "Knowledge Hub", id: "knowledge-hub" },
   { icon: BookOpen, label: "Research", id: "research" },
   { icon: TreePine, label: "Programs", id: "programs" },
   { icon: Users, label: "Youth Development", id: "youth" },
@@ -556,6 +558,9 @@ export default function AdminDashboard() {
         return <MissionAdminView />;
       case "research":
         return <ResearchAdminView />;
+      case "knowledge-hub":
+      case "knowledge":
+        return <KnowledgeHubAdminView />;
       case "youth":
         return <YouthAdminView />;
       case "projects":
