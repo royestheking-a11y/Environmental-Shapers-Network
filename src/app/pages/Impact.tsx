@@ -1,7 +1,8 @@
 import { useState, useRef } from "react";
+import { Link } from "react-router";
 import { motion, useInView } from "motion/react";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
-import { TreePine, Droplets, Wind, Globe2, Users, Target, TrendingUp, Award, Leaf, Calculator, ArrowRight, Sparkles } from "lucide-react";
+import { TreePine, Droplets, Wind, Globe2, Users, Target, TrendingUp, Award, Leaf, Calculator, ArrowRight, Sparkles, FileText } from "lucide-react";
 import { useFirestoreData } from "../../lib/useFirestore";
 import { getInitialStats, StatItem } from "./admin/sections/StatsAdminView";
 
@@ -340,6 +341,67 @@ export default function Impact() {
                 ))}
               </div>
             </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Connected Leadership & Audits Section */}
+      <section className="py-20 bg-[#F6FBF8] border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <div className="inline-flex items-center gap-2 bg-[#E8F5E9] text-[#0B5D3F] text-xs font-bold px-4 py-1.5 rounded-full mb-3 uppercase tracking-wider">
+              Connected Global Operations
+            </div>
+            <h2 className="text-3xl md:text-4xl font-black text-[#0A3D2A]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              How Our Global Movement Delivers Impact
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-[#E8F5E9] flex items-center justify-center mb-6">
+                  <Globe2 size={24} className="text-[#0B5D3F]" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">80+ Global Representatives</h3>
+                <p className="text-gray-600 text-xs leading-relaxed mb-6">
+                  Our official country delegates coordinate grassroots actions, local restoration drives, and government dialogues across 80+ nations.
+                </p>
+              </div>
+              <Link to="/global-representatives" className="inline-flex items-center gap-2 text-xs font-bold text-[#0B5D3F] hover:text-[#4CAF50] transition-colors">
+                Meet Global Reps <ArrowRight size={14} />
+              </Link>
+            </div>
+
+            <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-[#E3F2FD] flex items-center justify-center mb-6">
+                  <Users size={24} className="text-[#173B63]" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Youth Leadership Movement</h3>
+                <p className="text-gray-600 text-xs leading-relaxed mb-6">
+                  Over 48,000 active youth volunteers and campus chapters power the field projects behind our verified metrics.
+                </p>
+              </div>
+              <Link to="/programs/youth" className="inline-flex items-center gap-2 text-xs font-bold text-[#173B63] hover:text-[#0B5D3F] transition-colors">
+                Explore Youth Programs <ArrowRight size={14} />
+              </Link>
+            </div>
+
+            <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-[#FFF8E1] flex items-center justify-center mb-6">
+                  <FileText size={24} className="text-[#D6A95A]" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Audited Annual Reports</h3>
+                <p className="text-gray-600 text-xs leading-relaxed mb-6">
+                  Download certified independent financial and ecological audit reports backing every single statistic shown above.
+                </p>
+              </div>
+              <Link to="/reports" className="inline-flex items-center gap-2 text-xs font-bold text-[#0B5D3F] hover:text-[#4CAF50] transition-colors">
+                Download Certified Reports <ArrowRight size={14} />
+              </Link>
+            </div>
           </div>
         </div>
       </section>

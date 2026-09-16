@@ -6,10 +6,11 @@ import {
   CheckCircle2, MapPin, Globe2, Mail, Building2, Clock, Check,
   Leaf, RefreshCw, Calendar, Star, Sprout, BarChart2, Megaphone,
   Monitor, Pen, GraduationCap, Languages, UserCheck, Trophy,
-  Send, FileText, Phone, User, Info, AlertCircle, ExternalLink, X
+  Send, FileText, Phone, User, Info, AlertCircle, ExternalLink, X, TrendingUp
 } from "lucide-react";
 
 import { fetchFirestoreData, saveFirestoreData, useFirestoreData } from "../../lib/useFirestore";
+import { defaultGlobalRepsSettings, defaultRepPillars } from "./admin/sections/GlobalRepsAdminView";
 
 // ─── Shared helpers ────────────────────────────────────────────────────────────
 
@@ -1067,16 +1068,20 @@ function CareersPage() {
 // ─── Global Representative Page ──────────────────────────────────────────────────
 
 function GlobalRepresentativePage() {
+  const [settingsData] = useFirestoreData<any>("esn_global_representatives_settings", defaultGlobalRepsSettings);
+  const [pillarsData] = useFirestoreData<any[]>("esn_global_representatives_pillars", defaultRepPillars);
+
+  const settings = settingsData || defaultGlobalRepsSettings;
+  const pillars = pillarsData && pillarsData.length > 0 ? pillarsData : defaultRepPillars;
+
   const [form, setForm] = useState({
     name: "",
     email: "",
     phone: "",
     country: "",
     city: "",
-    resumeLink: "",
     linkedIn: "",
-    profession: "",
-    languages: "",
+    resumeLink: "",
     motivation: "",
     experience: "",
   });
@@ -1095,39 +1100,8 @@ function GlobalRepresentativePage() {
     setSubmitted(true);
   };
 
-  const pillars = [
-    {
-      icon: Globe2,
-      title: "National Chapter Leadership",
-      desc: "Establish, coordinate, and scale localized environmental chapters, tree plantations, and youth advocacy circles in your country.",
-      color: "text-[#0B5D3F]",
-      bg: "bg-[#0B5D3F]/10",
-    },
-    {
-      icon: Users,
-      title: "Grassroots Mobilization",
-      desc: "Empower youth, volunteers, students, and indigenous communities through climate literacy workshops and restoration initiatives.",
-      color: "text-[#4CAF50]",
-      bg: "bg-[#4CAF50]/10",
-    },
-    {
-      icon: Handshake,
-      title: "Policy & Strategic Alliances",
-      desc: "Connect with environmental ministries, academic institutions, and regional NGOs to amplify grassroots environmental policy.",
-      color: "text-[#173B63]",
-      bg: "bg-[#173B63]/10",
-    },
-    {
-      icon: Trophy,
-      title: "Global Delegations & Grants",
-      desc: "Represent your country at international COP conferences, UNEP forums, and access project micro-grants from ESN International.",
-      color: "text-[#D6A95A]",
-      bg: "bg-[#D6A95A]/10",
-    },
-  ];
-
   return (
-    <div className="pt-28 pb-20">
+    <div className="pt-28 pb-20 bg-[#F6FBF8]">
       {/* Hero */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-16">
         <div className="flex items-center gap-2 text-xs text-gray-600 mb-6">
@@ -1141,24 +1115,25 @@ function GlobalRepresentativePage() {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div>
             <div className="inline-flex items-center gap-2 bg-[#E8F5E9] text-[#0B5D3F] text-xs font-bold px-4 py-2 rounded-full mb-6 uppercase tracking-wider">
-              <Globe2 size={13} /> Global Leadership Network
+              <Globe2 size={13} /> {settings.badge || "Global Leadership Network"}
             </div>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#0A3D2A] leading-tight mb-6" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-              Lead Environmental Action in <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0B5D3F] to-[#4CAF50]">Your Country</span>
+              {settings.title || "Lead Environmental Action in"}{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0B5D3F] to-[#4CAF50]">
+                {settings.highlightedTitle || "Your Country"}
+              </span>
             </h1>
             <p className="text-gray-600 text-base sm:text-lg leading-relaxed mb-8">
-              Environmental Shapers Network appoints dedicated <strong>Country & Regional Representatives</strong> across 80+ nations. As an official ESN Representative, you will lead national initiatives, coordinate youth volunteers, and represent your region on global environmental stages.
+              {settings.subtitle ||
+                "Environmental Shapers Network appoints dedicated Country & Regional Representatives across 80+ nations. As an official ESN Representative, you will lead national initiatives, coordinate youth volunteers, and represent your region on global environmental stages."}
             </p>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {[
-                { label: "Country Reps", val: "80+" },
-                { label: "Active Nations", val: "190+" },
-                { label: "Regional Hubs", val: "12" },
-                { label: "Volunteers", val: "48K+" },
-              ].map((s) => (
+              {(settings.stats || defaultGlobalRepsSettings.stats).map((s: any) => (
                 <div key={s.label} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm text-center">
-                  <div className="text-2xl font-black text-[#0B5D3F]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{s.val}</div>
+                  <div className="text-2xl font-black text-[#0B5D3F]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    {s.val}
+                  </div>
                   <div className="text-xs text-gray-500 font-medium mt-1">{s.label}</div>
                 </div>
               ))}
@@ -1166,9 +1141,12 @@ function GlobalRepresentativePage() {
           </div>
 
           <div className="relative">
-            <div className="rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
+            <div className="rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-white">
               <img
-                src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=900"
+                src={
+                  settings.image ||
+                  "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=900"
+                }
                 alt="ESN Global Representatives Collaboration"
                 className="w-full h-80 lg:h-[450px] object-cover"
               />
@@ -1178,8 +1156,12 @@ function GlobalRepresentativePage() {
                 <Globe2 size={24} className="text-[#4CAF50]" />
               </div>
               <div>
-                <div className="text-sm font-bold text-gray-900">Official Representation</div>
-                <div className="text-xs text-gray-600">UN & COP Credentialed Network</div>
+                <div className="text-sm font-bold text-gray-900">
+                  {settings.floatingBadgeTitle || "Official Representation"}
+                </div>
+                <div className="text-xs text-gray-600">
+                  {settings.floatingBadgeSub || "UN & COP Credentialed Network"}
+                </div>
               </div>
             </div>
           </div>
@@ -1190,18 +1172,21 @@ function GlobalRepresentativePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-20">
         <div className="text-center max-w-2xl mx-auto mb-12">
           <h2 className="text-2xl sm:text-3xl font-black text-[#0A3D2A] mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            Role Responsibilities & Privileges
+            {settings.roleTitle || "Role Responsibilities & Privileges"}
           </h2>
           <p className="text-gray-600 text-sm">
-            What you will accomplish and experience as an authorized Country Representative.
+            {settings.roleSub || "What you will accomplish and experience as an authorized Country Representative."}
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {pillars.map((p) => (
-            <div key={p.title} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 flex flex-col">
-              <div className={`w-12 h-12 rounded-xl ${p.bg} flex items-center justify-center mb-5`}>
-                <p.icon size={22} className={p.color} />
+          {pillars.map((p: any, idx: number) => (
+            <div
+              key={p.id || p.title + idx}
+              className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 flex flex-col"
+            >
+              <div className={`w-12 h-12 rounded-xl ${p.bg || "bg-[#E8F5E9]"} flex items-center justify-center mb-5`}>
+                <Globe2 size={22} className={p.color || "text-[#0B5D3F]"} />
               </div>
               <h3 className="font-bold text-gray-900 mb-2 text-base">{p.title}</h3>
               <p className="text-gray-600 text-xs leading-relaxed flex-1">{p.desc}</p>
@@ -1211,7 +1196,7 @@ function GlobalRepresentativePage() {
       </div>
 
       {/* Application Form Section */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6" id="apply-form">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 mb-20" id="apply-form">
         <div className="bg-white rounded-3xl p-8 sm:p-12 shadow-xl border border-gray-100">
           {submitted ? (
             <SuccessCard
@@ -1245,7 +1230,7 @@ function GlobalRepresentativePage() {
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
                       placeholder="e.g. Dr. Jane Doe"
-                      className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] text-sm"
+                      className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] text-sm font-medium"
                     />
                   </div>
                   <div>
@@ -1258,7 +1243,7 @@ function GlobalRepresentativePage() {
                       value={form.email}
                       onChange={(e) => setForm({ ...form, email: e.target.value })}
                       placeholder="e.g. jane.doe@example.org"
-                      className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] text-sm"
+                      className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] text-sm font-medium"
                     />
                   </div>
                 </div>
@@ -1266,15 +1251,14 @@ function GlobalRepresentativePage() {
                 <div className="grid sm:grid-cols-3 gap-6">
                   <div>
                     <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                      Phone / WhatsApp *
+                      Phone Number
                     </label>
                     <input
-                      required
                       type="tel"
                       value={form.phone}
                       onChange={(e) => setForm({ ...form, phone: e.target.value })}
                       placeholder="+1 (555) 000-0000"
-                      className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] text-sm"
+                      className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] text-sm font-medium"
                     />
                   </div>
                   <div>
@@ -1287,7 +1271,7 @@ function GlobalRepresentativePage() {
                       value={form.country}
                       onChange={(e) => setForm({ ...form, country: e.target.value })}
                       placeholder="e.g. Canada, Ghana, Japan..."
-                      className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] text-sm"
+                      className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] text-sm font-medium"
                     />
                   </div>
                   <div>
@@ -1300,7 +1284,7 @@ function GlobalRepresentativePage() {
                       value={form.city}
                       onChange={(e) => setForm({ ...form, city: e.target.value })}
                       placeholder="e.g. Toronto, Accra, Tokyo"
-                      className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] text-sm"
+                      className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] text-sm font-medium"
                     />
                   </div>
                 </div>
@@ -1341,57 +1325,29 @@ function GlobalRepresentativePage() {
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                      Current Profession / Background *
+                      Motivation Statement *
                     </label>
-                    <input
+                    <textarea
                       required
-                      type="text"
-                      value={form.profession}
-                      onChange={(e) => setForm({ ...form, profession: e.target.value })}
-                      placeholder="e.g. Environmental Scientist, NGO Director"
-                      className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] text-sm"
+                      rows={2}
+                      value={form.motivation}
+                      onChange={(e) => setForm({ ...form, motivation: e.target.value })}
+                      placeholder="Why do you wish to lead ESN's mission in your nation?"
+                      className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] text-sm resize-none font-medium"
                     />
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                    Languages Spoken
-                  </label>
-                  <input
-                    type="text"
-                    value={form.languages}
-                    onChange={(e) => setForm({ ...form, languages: e.target.value })}
-                    placeholder="e.g. English, French, Spanish, Arabic"
-                    className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                    National Environmental Vision & Strategy *
+                    Relevant Leadership / Volunteer Experience
                   </label>
                   <textarea
-                    required
-                    rows={4}
-                    value={form.motivation}
-                    onChange={(e) => setForm({ ...form, motivation: e.target.value })}
-                    placeholder="What are the key environmental challenges in your country, and what specific campaigns or chapters would you organize as ESN Representative?"
-                    className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] text-sm resize-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                    Leadership & Community Experience *
-                  </label>
-                  <textarea
-                    required
                     rows={3}
                     value={form.experience}
                     onChange={(e) => setForm({ ...form, experience: e.target.value })}
                     placeholder="Briefly describe your previous experience in volunteering, team leadership, youth mobilization, or project management."
-                    className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] text-sm resize-none"
+                    className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] text-sm resize-none font-medium"
                   />
                 </div>
 
@@ -1405,7 +1361,7 @@ function GlobalRepresentativePage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-4 rounded-xl bg-[#0B5D3F] hover:bg-[#094c34] text-white font-bold text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#0B5D3F]/20 disabled:opacity-60 hover:scale-[1.01]"
+                  className="w-full py-4 rounded-xl bg-[#0B5D3F] hover:bg-[#094c34] text-white font-bold text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#0B5D3F]/20 disabled:opacity-60 hover:scale-[1.01] cursor-pointer"
                 >
                   {loading ? (
                     <>
@@ -1420,6 +1376,65 @@ function GlobalRepresentativePage() {
               </form>
             </>
           )}
+        </div>
+      </div>
+
+      {/* Cross-Link Integration with Impacts & Youth Development */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <div className="inline-flex items-center gap-2 text-[#0B5D3F] bg-[#E8F5E9] text-xs font-bold px-4 py-1.5 rounded-full mb-3 uppercase tracking-wider">
+            Connected Global Ecosystem
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-black text-[#0A3D2A]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            Explore Our Impact & Youth Networks
+          </h2>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          <div className="bg-gradient-to-br from-[#0B5D3F] to-[#0A3D2A] p-7 rounded-3xl text-white flex flex-col justify-between shadow-xl">
+            <div>
+              <div className="inline-flex items-center gap-1.5 bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase">
+                <Users size={12} /> Youth Movement
+              </div>
+              <h3 className="font-bold text-lg mb-2">Youth Engagement Programs</h3>
+              <p className="text-xs text-white/80 leading-relaxed mb-6">
+                Discover our youth leadership academies, COP delegations, and campus chapters mobilizing young changemakers globally.
+              </p>
+            </div>
+            <Link to="/programs/youth" className="inline-flex items-center gap-2 text-xs font-bold text-[#4CAF50] hover:text-white transition-colors">
+              Explore Youth Programs <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          <div className="bg-gradient-to-br from-[#173B63] to-[#0E2847] p-7 rounded-3xl text-white flex flex-col justify-between shadow-xl">
+            <div>
+              <div className="inline-flex items-center gap-1.5 bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase">
+                <TrendingUp size={12} /> Verified Outcomes
+              </div>
+              <h3 className="font-bold text-lg mb-2">Global Impact Dashboard</h3>
+              <p className="text-xs text-white/80 leading-relaxed mb-6">
+                See verified carbon drawdown, trees planted, and community resilience statistics delivered across 80+ nations.
+              </p>
+            </div>
+            <Link to="/impact" className="inline-flex items-center gap-2 text-xs font-bold text-[#D6A95A] hover:text-white transition-colors">
+              View Impact Dashboard <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          <div className="bg-gradient-to-br from-[#0A3D2A] to-[#173B63] p-7 rounded-3xl text-white flex flex-col justify-between shadow-xl">
+            <div>
+              <div className="inline-flex items-center gap-1.5 bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase">
+                <FileText size={12} /> Transparency & Governance
+              </div>
+              <h3 className="font-bold text-lg mb-2">Audited Annual Reports</h3>
+              <p className="text-xs text-white/80 leading-relaxed mb-6">
+                Download certified independent financial audits and annual milestone reports detailing worldwide operations.
+              </p>
+            </div>
+            <Link to="/reports" className="inline-flex items-center gap-2 text-xs font-bold text-[#4CAF50] hover:text-white transition-colors">
+              Download Audit Reports <ArrowRight size={14} />
+            </Link>
+          </div>
         </div>
       </div>
     </div>

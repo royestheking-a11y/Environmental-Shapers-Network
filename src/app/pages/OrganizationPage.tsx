@@ -3,11 +3,12 @@ import { useLocation, Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import {
   ChevronRight, Users, Shield, FileText, Award, Star, Download, ExternalLink,
-  CheckCircle2, ArrowRight, Globe2, Linkedin, Mail, MapPin, Sparkles, ArrowUpRight, X
+  CheckCircle2, ArrowRight, Globe2, Linkedin, Mail, MapPin, Sparkles, ArrowUpRight, X, TrendingUp
 } from "lucide-react";
 import { useFirestoreData } from "../../lib/useFirestore";
 import { ImageWithFallback } from "../components/ui/ImageWithFallback";
 import { initialTeamMembers, AboutTeamMember } from "./admin/sections/AboutPageAdminView";
+import { defaultAuditReports, defaultReportsSettings } from "./admin/sections/ReportsAdminView";
 
 function PageHero({ title, sub, image }: { title: string; sub: string; image: string }) {
   return (
@@ -453,65 +454,166 @@ function BoardPage() {
 }
 
 function ReportsPage() {
-  const [cmsContent] = useFirestoreData<any[]>("esn_cms_content", []);
+  const [reportsData] = useFirestoreData<any[]>("esn_reports_admin", defaultAuditReports);
+  const [settingsData] = useFirestoreData<any>("esn_reports_settings", defaultReportsSettings);
+  const [downloadNotice, setDownloadNotice] = useState<string | null>(null);
 
-  // Extract dynamic reports published in CMS
-  const dynamicReports = (cmsContent || [])
-    .filter((item: any) => item.type === "Report" && (item.status === "Published" || !item.status))
-    .map((item: any) => ({
-      year: item.date?.split(" ")?.pop() || "2026",
-      title: item.title,
-      pages: item.pages || 45,
-      size: item.size || "8.5 MB",
-      highlights: item.category ? [item.category, "Open Access", "Peer-Reviewed"] : ["Environmental Impact", "Audited Report"],
-      url: item.fileUrl || null
-    }));
+  const settings = settingsData || defaultReportsSettings;
+  const reportsList = reportsData && reportsData.length > 0 ? reportsData : defaultAuditReports;
 
-  const allReports = [...dynamicReports, ...initialReports];
+  const handleDownload = (r: any) => {
+    if (r.fileUrl) {
+      window.open(r.fileUrl, "_blank", "noopener,noreferrer");
+      setDownloadNotice(`Opening PDF: ${r.title}`);
+    } else {
+      setDownloadNotice(`Downloading Certified PDF: ${r.title}`);
+    }
+    setTimeout(() => setDownloadNotice(null), 3500);
+  };
+
+  const handleView = (r: any) => {
+    if (r.viewUrl) {
+      if (r.viewUrl.startsWith("http")) {
+        window.open(r.viewUrl, "_blank", "noopener,noreferrer");
+      } else {
+        window.location.href = r.viewUrl;
+      }
+    } else if (r.fileUrl) {
+      window.open(r.fileUrl, "_blank", "noopener,noreferrer");
+    } else {
+      setDownloadNotice(`Viewing: ${r.title}`);
+      setTimeout(() => setDownloadNotice(null), 3500);
+    }
+  };
 
   return (
     <div className="bg-[#F6FBF8] min-h-screen">
-      <PageHero title="Annual Reports & Publications" sub="Transparent reporting on our environmental impact, finances, and organizational performance." image="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400" />
+      {downloadNotice && (
+        <div className="fixed bottom-6 right-6 z-50 bg-[#0B5D3F] text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border border-white/20 animate-bounce">
+          <CheckCircle2 size={18} className="text-[#4CAF50]" />
+          <span className="text-xs font-bold">{downloadNotice}</span>
+        </div>
+      )}
+
+      <PageHero
+        title={settings.heroTitle || "Annual Reports & Publications"}
+        sub={settings.heroSub || "Transparent reporting on our environmental impact, finances, and organizational performance."}
+        image={settings.heroImage || "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400"}
+      />
       <div className="max-w-6xl mx-auto px-6 py-16">
         <Breadcrumb current="Annual Reports" />
+
+        {/* 3 Transparency Rating Badges */}
         <div className="grid md:grid-cols-3 gap-5 mb-12">
-          {[["100%", "Independently Audited"], ["4-Star", "Charity Navigator Rating"], ["A+", "Transparency Grade"]].map(([v, l]) => (
-            <div key={l} className="bg-white rounded-2xl p-6 text-center border border-gray-100 shadow-sm">
-              <div className="text-3xl font-black text-[#0B5D3F] mb-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{v}</div>
-              <div className="text-sm text-gray-500">{l}</div>
+          {(settings.trustMetrics || defaultReportsSettings.trustMetrics).map((met: any, idx: number) => (
+            <div key={idx} className="bg-white rounded-2xl p-6 text-center border border-gray-100 shadow-sm">
+              <div className="text-3xl font-black text-[#0B5D3F] mb-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                {met.value}
+              </div>
+              <div className="text-sm text-gray-500 font-medium">{met.label}</div>
             </div>
           ))}
         </div>
+
         <div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider mb-2">Reports & Audits</div>
-        <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 2vw, 1.8rem)", fontWeight: 800 }} className="text-gray-900 mb-8">Download Our Reports</h2>
-        <div className="flex flex-col gap-5">
-          {allReports.map((r, i) => (
-            <motion.div key={r.title + i} initial={{ opacity: 0, x: -16 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
-              className="bg-white rounded-2xl p-6 border border-gray-100 hover:border-[#4CAF50]/30 hover:shadow-md transition-all flex flex-col sm:flex-row gap-5 items-start sm:items-center">
-              <div className="w-14 h-14 rounded-2xl bg-[#0B5D3F] flex items-center justify-center text-white font-black text-sm shrink-0" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{r.year}</div>
+        <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 2vw, 1.8rem)", fontWeight: 800 }} className="text-gray-900 mb-8">
+          Download Our Reports ({reportsList.length})
+        </h2>
+
+        <div className="flex flex-col gap-5 mb-16">
+          {reportsList.map((r: any, i: number) => (
+            <motion.div
+              key={r.id || r.title + i}
+              initial={{ opacity: 0, x: -16 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.08 }}
+              className="bg-white rounded-2xl p-6 border border-gray-100 hover:border-[#4CAF50]/30 hover:shadow-md transition-all flex flex-col sm:flex-row gap-5 items-start sm:items-center"
+            >
+              <div
+                className="w-14 h-14 rounded-2xl bg-[#0B5D3F] flex items-center justify-center text-white font-black text-sm shrink-0"
+                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+              >
+                {r.year}
+              </div>
               <div className="flex-1">
-                <div className="font-bold text-gray-900 mb-2">{r.title}</div>
+                <div className="font-bold text-gray-900 mb-2 text-base">{r.title}</div>
                 <div className="flex flex-wrap gap-2 mb-2">
-                  {r.highlights.map((h: string) => <span key={h} className="text-xs bg-[#4CAF50]/10 text-[#0B5D3F] px-2.5 py-1 rounded-full font-medium">{h}</span>)}
+                  {r.highlights?.map((h: string) => (
+                    <span key={h} className="text-xs bg-[#4CAF50]/10 text-[#0B5D3F] px-2.5 py-1 rounded-full font-semibold">
+                      {h}
+                    </span>
+                  ))}
                 </div>
-                <div className="text-xs text-gray-400">{r.pages} pages · {r.size}</div>
+                <div className="text-xs text-gray-400">
+                  {r.pages} pages · {r.size}
+                  {r.fileUrl && <span className="ml-2 text-[#0B5D3F] font-bold">· PDF Available</span>}
+                </div>
               </div>
               <div className="flex gap-2">
                 <button
-                  onClick={() => alert(`Downloading ${r.title} (PDF)`)}
-                  className="flex items-center gap-1.5 bg-[#0B5D3F] text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#0a5237] transition-all"
+                  onClick={() => handleDownload(r)}
+                  className="flex items-center gap-1.5 bg-[#0B5D3F] text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#0a5237] transition-all cursor-pointer shadow-sm"
                 >
                   <Download size={14} /> Download PDF
                 </button>
                 <button
-                  onClick={() => alert(`Opening ${r.title} in online reader`)}
-                  className="flex items-center gap-1.5 border border-gray-200 text-gray-600 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-all"
+                  onClick={() => handleView(r)}
+                  className="flex items-center gap-1.5 border border-gray-200 text-gray-600 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-all cursor-pointer"
                 >
                   <ExternalLink size={14} /> View Online
                 </button>
               </div>
             </motion.div>
           ))}
+        </div>
+
+        {/* Cross-Link Integration with Impacts & Youth Development & Global Reps */}
+        <div className="grid md:grid-cols-3 gap-6">
+          <div className="bg-gradient-to-br from-[#0B5D3F] to-[#0A3D2A] p-7 rounded-3xl text-white flex flex-col justify-between shadow-lg">
+            <div>
+              <div className="inline-flex items-center gap-1.5 bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase">
+                <TrendingUp size={12} /> Live Metrics
+              </div>
+              <h3 className="font-bold text-lg mb-2">Impact Dashboard</h3>
+              <p className="text-xs text-white/80 leading-relaxed mb-6">
+                Explore real-time carbon sequestration, trees planted, and geospatial project verification charts.
+              </p>
+            </div>
+            <Link to="/impact" className="inline-flex items-center gap-2 text-xs font-bold text-[#4CAF50] hover:text-white transition-colors">
+              View Impact Dashboard <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          <div className="bg-gradient-to-br from-[#173B63] to-[#0E2847] p-7 rounded-3xl text-white flex flex-col justify-between shadow-lg">
+            <div>
+              <div className="inline-flex items-center gap-1.5 bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase">
+                <Users size={12} /> Next Generation
+              </div>
+              <h3 className="font-bold text-lg mb-2">Youth Engagement</h3>
+              <p className="text-xs text-white/80 leading-relaxed mb-6">
+                See our global youth leadership initiatives, campus chapters, and leadership training programs.
+              </p>
+            </div>
+            <Link to="/programs/youth" className="inline-flex items-center gap-2 text-xs font-bold text-[#D6A95A] hover:text-white transition-colors">
+              Explore Youth Programs <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          <div className="bg-gradient-to-br from-[#0A3D2A] to-[#173B63] p-7 rounded-3xl text-white flex flex-col justify-between shadow-lg">
+            <div>
+              <div className="inline-flex items-center gap-1.5 bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase">
+                <Globe2 size={12} /> Global Network
+              </div>
+              <h3 className="font-bold text-lg mb-2">Global Representatives</h3>
+              <p className="text-xs text-white/80 leading-relaxed mb-6">
+                Connect with our authorized Country & Regional Representatives leading local action across 80+ countries.
+              </p>
+            </div>
+            <Link to="/global-representatives" className="inline-flex items-center gap-2 text-xs font-bold text-[#4CAF50] hover:text-white transition-colors">
+              Meet Global Representatives <ArrowRight size={14} />
+            </Link>
+          </div>
         </div>
       </div>
     </div>

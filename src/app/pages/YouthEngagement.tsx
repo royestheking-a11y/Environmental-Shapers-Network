@@ -86,6 +86,70 @@ export default function YouthEngagement() {
           </div>
         </div>
       </section>
+
+      {/* Cross-Link Opportunities: Global Representatives & Audited Impact */}
+      <section className="py-20 bg-[#F6FBF8] border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <div className="inline-flex items-center gap-2 bg-[#E8F5E9] text-[#0B5D3F] text-xs font-bold px-4 py-1.5 rounded-full mb-3 uppercase tracking-wider">
+              Expand Your Leadership
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-[#0A3D2A]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              Take Your Youth Leadership Further
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="bg-gradient-to-br from-[#0B5D3F] via-[#0A3D2A] to-[#173B63] p-8 sm:p-10 rounded-3xl text-white flex flex-col justify-between shadow-xl">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-white/15 flex items-center justify-center mb-6">
+                  <Globe2 size={24} className="text-[#4CAF50]" />
+                </div>
+                <h3 className="text-2xl font-bold mb-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  Lead As a Country Representative
+                </h3>
+                <p className="text-white/80 text-sm leading-relaxed mb-8">
+                  Ready to step onto the global stage? ESN appoints dedicated Country & Regional Representatives across 80+ nations with UN & COP credentialed seats.
+                </p>
+              </div>
+              <Link
+                to="/global-representatives"
+                className="inline-flex items-center justify-center gap-2 bg-[#4CAF50] hover:bg-[#43a047] text-white px-7 py-3.5 rounded-xl font-bold text-sm transition-all shadow-md self-start"
+              >
+                Apply as Global Representative <ArrowRight size={16} />
+              </Link>
+            </div>
+
+            <div className="bg-white p-8 sm:p-10 rounded-3xl border border-gray-200 flex flex-col justify-between shadow-sm">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-[#E6F3EB] flex items-center justify-center mb-6">
+                  <Users size={24} className="text-[#0B5D3F]" />
+                </div>
+                <h3 className="text-2xl font-bold text-[#0A3D2A] mb-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  Verified Impact & Annual Audits
+                </h3>
+                <p className="text-gray-600 text-sm leading-relaxed mb-8">
+                  Explore real-time data on how youth volunteers and grassroots projects contribute to our global 2.4M+ trees planted and carbon reduction targets.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-4">
+                <Link
+                  to="/impact"
+                  className="inline-flex items-center gap-2 bg-[#0A3D2A] hover:bg-[#173B63] text-white px-6 py-3 rounded-xl font-bold text-sm transition-all shadow-sm"
+                >
+                  Impact Dashboard <ArrowRight size={14} />
+                </Link>
+                <Link
+                  to="/reports"
+                  className="inline-flex items-center gap-2 border border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-3 rounded-xl font-bold text-sm transition-all"
+                >
+                  Audit Reports <ArrowRight size={14} />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

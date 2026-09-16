@@ -28,6 +28,8 @@ import StatsAdminView from "./sections/StatsAdminView";
 import MissionAdminView from "./sections/MissionAdminView";
 import ResearchAdminView from "./sections/ResearchAdminView";
 import KnowledgeHubAdminView from "./sections/KnowledgeHubAdminView";
+import ReportsAdminView from "./sections/ReportsAdminView";
+import GlobalRepsAdminView from "./sections/GlobalRepsAdminView";
 import YouthAdminView from "./sections/YouthAdminView";
 import AboutPageAdminView from "./sections/AboutPageAdminView";
 import { ImageUploadField } from "../../components/ui/ImageUploadField";
@@ -59,9 +61,11 @@ const sidebarItems = [
   { icon: Heart, label: "Mission & Goals", id: "mission" },
   { icon: Target, label: "Thematic Areas", id: "thematic" },
   { icon: BookOpen, label: "Knowledge Hub", id: "knowledge-hub" },
+  { icon: FileText, label: "Audit & Reports", id: "reports" },
   { icon: BookOpen, label: "Research", id: "research" },
   { icon: TreePine, label: "Programs", id: "programs" },
   { icon: Users, label: "Youth Development", id: "youth" },
+  { icon: Globe2, label: "Global Representatives", id: "representatives" },
   { icon: Globe2, label: "Projects", id: "projects" },
   { icon: Megaphone, label: "Campaigns", id: "campaigns" },
   { icon: Calendar, label: "Events", id: "events" },
@@ -561,8 +565,14 @@ export default function AdminDashboard() {
       case "knowledge-hub":
       case "knowledge":
         return <KnowledgeHubAdminView />;
+      case "reports":
+      case "audit-reports":
+        return <ReportsAdminView />;
       case "youth":
         return <YouthAdminView />;
+      case "representatives":
+      case "global-representatives":
+        return <GlobalRepsAdminView />;
       case "projects":
         return <ProjectsView />;
       case "programs":
