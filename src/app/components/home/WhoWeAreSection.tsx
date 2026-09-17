@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { ArrowRight, Check } from "lucide-react";
 import { ImageWithFallback } from "../ui/ImageWithFallback";
 import { getInitialWhoWeAreFeatures, getInitialWhoWeAreStory, WhoWeAreStory } from "../../pages/admin/sections/WhoWeAreAdminView";
+import { getInitialStats, StatItem } from "../../pages/admin/sections/StatsAdminView";
 import { useFirestoreData } from "../../../lib/useFirestore";
 import { resolveIcon } from "../../pages/admin/sections/ProgramsView";
 
@@ -33,7 +34,17 @@ const proofPoints = [
 export function WhoWeAreSection() {
   const [featuresRaw] = useFirestoreData<any[]>("esn_whoweare_admin", getInitialWhoWeAreFeatures());
   const [storyRaw] = useFirestoreData<WhoWeAreStory>("esn_whoweare_story", getInitialWhoWeAreStory());
+  const [statsRaw] = useFirestoreData<StatItem[]>("esn_stats_admin", getInitialStats());
   const story = storyRaw || getInitialWhoWeAreStory();
+
+  const statsList = statsRaw && statsRaw.length > 0 ? statsRaw : getInitialStats();
+  const countriesStat = statsList.find(s =>
+    s.label.toLowerCase().includes("countries reached") ||
+    s.label.toLowerCase().includes("country") ||
+    s.label.toLowerCase().includes("partner")
+  );
+  const countriesCount = countriesStat ? `${countriesStat.value}${countriesStat.suffix || "+"}` : "80+";
+  const yearsCount = Math.max(new Date().getFullYear() - 2019, 7);
 
   const features = (featuresRaw && featuresRaw.length > 0 ? featuresRaw : defaultFeatures).map((f) => ({
     iconName: f.iconName,
@@ -48,7 +59,7 @@ export function WhoWeAreSection() {
         <div className="max-w-7xl mx-auto flex items-center gap-3">
           <span className="text-[#4CAF50] text-xs font-black uppercase tracking-[0.3em]">{story.tagline || "Who We Are"}</span>
           <div className="flex-1 h-px bg-[#4CAF50]/20" />
-          <span className="text-gray-400 text-xs font-medium">{story.subtagline || "Est. 2019 · 80+ Countries"}</span>
+          <span className="text-gray-400 text-xs font-medium">{story.subtagline || `Est. 2019 · ${countriesCount} Countries`}</span>
         </div>
       </div>
 
@@ -176,11 +187,11 @@ export function WhoWeAreSection() {
             {/* Years badge */}
             <div className="flex items-center gap-3 bg-gradient-to-r from-[#0B5D3F] to-[#173B63] rounded-2xl p-4">
               <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
-                <span className="text-white font-black text-lg" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>7+</span>
+                <span className="text-white font-black text-lg" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{yearsCount}+</span>
               </div>
               <div>
                 <div className="text-white font-bold text-sm">Years of Global Action</div>
-                <div className="text-white/60 text-xs">From Dhaka to 80+ countries worldwide</div>
+                <div className="text-white/60 text-xs">From Dhaka to {countriesCount} countries worldwide</div>
               </div>
               <Link
                 to="/programs"

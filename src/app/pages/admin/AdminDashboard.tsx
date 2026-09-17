@@ -32,6 +32,7 @@ import ReportsAdminView from "./sections/ReportsAdminView";
 import GlobalRepsAdminView from "./sections/GlobalRepsAdminView";
 import YouthAdminView from "./sections/YouthAdminView";
 import AboutPageAdminView from "./sections/AboutPageAdminView";
+import CampusChaptersAdminView from "./sections/CampusChaptersAdminView";
 import { ImageUploadField } from "../../components/ui/ImageUploadField";
 import { RichTextEditor } from "../../components/ui/RichTextEditor";
 import { ActivityLogItem, getInitialActivityLogs, sanitizeRealActivityLogs, logAdminActivity } from "../../../lib/activityLogger";
@@ -41,7 +42,7 @@ import {
   Bell, Search, LogOut, ChevronDown, Menu, X, TrendingUp, TrendingDown, Eye, Edit3, Trash2,
   Plus, Filter, Download, RefreshCw, Shield, Mail, Image, Database, Leaf, Target, Award,
   AlertCircle, CheckCircle2, Clock, MapPin, Star, Briefcase, MessageSquare, MonitorPlay, Focus,
-  Activity, Check, Sparkles, Newspaper, AlertTriangle, BookOpen, HelpCircle, Quote, ClipboardList, UserCheck, Compass
+  Activity, Check, Sparkles, Newspaper, AlertTriangle, BookOpen, HelpCircle, Quote, ClipboardList, UserCheck, Compass, GraduationCap
 } from "lucide-react";
 import { AreaChart, Area, LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
@@ -66,6 +67,7 @@ const sidebarItems = [
   { icon: TreePine, label: "Programs", id: "programs" },
   { icon: Users, label: "Youth Development", id: "youth" },
   { icon: Globe2, label: "Global Representatives", id: "representatives" },
+  { icon: GraduationCap, label: "Campus Chapters", id: "campus-chapters" },
   { icon: Globe2, label: "Projects", id: "projects" },
   { icon: Megaphone, label: "Campaigns", id: "campaigns" },
   { icon: Calendar, label: "Events", id: "events" },
@@ -573,6 +575,9 @@ export default function AdminDashboard() {
       case "representatives":
       case "global-representatives":
         return <GlobalRepsAdminView />;
+      case "campus-chapters":
+      case "chapters":
+        return <CampusChaptersAdminView />;
       case "projects":
         return <ProjectsView />;
       case "programs":

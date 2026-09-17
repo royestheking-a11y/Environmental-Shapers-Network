@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Plus, Search, Edit3, Trash2, AlertCircle, Image as ImageIcon } from "lucide-react";
+import { Plus, Search, Edit3, Trash2, AlertCircle, Image as ImageIcon, Globe2, Zap, ArrowRight } from "lucide-react";
 import { ImageUploadField } from "../../../components/ui/ImageUploadField";
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 import { logAdminActivity } from "../../../../lib/activityLogger";
+import { defaultGlobalRepsSettings, GlobalRepsSettings } from "./GlobalRepsAdminView";
 
 export interface HeroSlide {
   id: number;
@@ -47,6 +48,10 @@ export function getInitialHeroSlides(): HeroSlide[] {
 
 export default function HeroAdminView() {
   const [slides, setSlides, loading] = useFirestoreData<HeroSlide[]>("esn_hero_admin", getInitialHeroSlides());
+  const [repsSettings] = useFirestoreData<GlobalRepsSettings>(
+    "esn_global_representatives_settings",
+    defaultGlobalRepsSettings
+  );
   const [search, setSearch] = useState("");
   const [showAdd, setShowAdd] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -57,6 +62,16 @@ export default function HeroAdminView() {
     sub: "",
     image: "/Commonwealth Secretariat at COP27.jpeg",
   });
+
+  const activeReps = repsSettings || defaultGlobalRepsSettings;
+  const repsStat = (activeReps.stats || defaultGlobalRepsSettings.stats).find((s: any) =>
+    s.label?.toLowerCase().includes("rep")
+  ) || { val: "80+", label: "Country Reps" };
+  const nationsStat = (activeReps.stats || defaultGlobalRepsSettings.stats).find((s: any) =>
+    s.label?.toLowerCase().includes("nation") || s.label?.toLowerCase().includes("countr")
+  ) || { val: "190+", label: "Active Nations" };
+  const repsCount = repsStat.val || "80+";
+  const nationsCount = nationsStat.val || "190+";
 
   // Auto-migrate any existing slides in database/cache that lack image property
   useEffect(() => {
@@ -150,6 +165,34 @@ export default function HeroAdminView() {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Interconnected Global Reps Status Banner */}
+      <div className="bg-gradient-to-r from-[#0B5D3F]/10 via-[#173B63]/10 to-[#4CAF50]/10 border border-[#4CAF50]/30 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#0B5D3F] text-white flex items-center justify-center shrink-0 shadow-sm">
+            <Globe2 size={20} className="text-[#81C784]" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-[#0B5D3F] uppercase tracking-wider">
+                Interconnected Global Representatives
+              </span>
+              <span className="bg-[#4CAF50] text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+                Live on Homepage
+              </span>
+            </div>
+            <p className="text-xs text-gray-600 mt-0.5">
+              Currently displaying <strong>{repsCount} Global Representatives</strong> across <strong>{nationsCount} Nations</strong> on the Hero badge & collage.
+            </p>
+          </div>
+        </div>
+        <a
+          href="/admin/representatives"
+          className="px-4 py-2 rounded-xl bg-white border border-[#4CAF50]/40 text-[#0B5D3F] text-xs font-bold hover:bg-[#0B5D3F] hover:text-white transition-all flex items-center gap-1.5 shrink-0"
+        >
+          <Zap size={13} /> Edit Global Reps <ArrowRight size={13} />
+        </a>
+      </div>
+
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-gray-900 font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Hero Section Slides</h3>

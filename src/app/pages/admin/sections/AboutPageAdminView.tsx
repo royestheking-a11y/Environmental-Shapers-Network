@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Plus, Edit3, Trash2, AlertCircle, Save, LayoutTemplate, Users, History, AlignLeft, Image as ImageIcon, Target, Globe2 } from "lucide-react";
+import { Plus, Edit3, Trash2, AlertCircle, Save, LayoutTemplate, Users, History, AlignLeft, Image as ImageIcon, Target, Globe2, BarChart3, ArrowRight } from "lucide-react";
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 import { logAdminActivity } from "../../../../lib/activityLogger";
 import { resolveIcon } from "./ProgramsView";
@@ -269,6 +269,34 @@ export default function AboutPageAdminView() {
       <div>
         <h3 className="text-gray-900 font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>About Page CMS</h3>
         <p className="text-sm text-gray-400">Manage all content for the About Page</p>
+      </div>
+
+      {/* Interconnected Impact Notice */}
+      <div className="bg-gradient-to-r from-[#0B5D3F]/10 via-[#173B63]/10 to-[#4CAF50]/10 border border-[#4CAF50]/30 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#0B5D3F] text-white flex items-center justify-center shrink-0 shadow-sm">
+            <BarChart3 size={20} className="text-[#81C784]" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-[#0B5D3F] uppercase tracking-wider">
+                Interconnected Impact Metrics
+              </span>
+              <span className="bg-[#4CAF50] text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+                Auto-Synced Live
+              </span>
+            </div>
+            <p className="text-xs text-gray-600 mt-0.5">
+              The 4 stat cards in About Hero (Countries, Trees, Communities, Years) and the full <strong>Impact at Scale</strong> section are automatically connected in real-time with the main Impact Stats.
+            </p>
+          </div>
+        </div>
+        <a
+          href="/admin/stats"
+          className="px-4 py-2 rounded-xl bg-white border border-[#4CAF50]/40 text-[#0B5D3F] text-xs font-bold hover:bg-[#0B5D3F] hover:text-white transition-all flex items-center gap-1.5 shrink-0"
+        >
+          Edit Impact Stats <ArrowRight size={13} />
+        </a>
       </div>
 
       <AnimatePresence>

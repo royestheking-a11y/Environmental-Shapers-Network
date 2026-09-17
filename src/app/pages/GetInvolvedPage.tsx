@@ -11,6 +11,12 @@ import {
 
 import { fetchFirestoreData, saveFirestoreData, useFirestoreData } from "../../lib/useFirestore";
 import { defaultGlobalRepsSettings, defaultRepPillars } from "./admin/sections/GlobalRepsAdminView";
+import {
+  defaultCampusChaptersSettings,
+  defaultCampusChapters,
+  CampusChapter,
+  CampusChaptersSettings,
+} from "./admin/sections/CampusChaptersAdminView";
 
 // ─── Shared helpers ────────────────────────────────────────────────────────────
 
@@ -528,112 +534,45 @@ function CampusPage() {
   const [selectedChapter, setSelectedChapter] = useState<any | null>(null);
   const [joinSubmitted, setJoinSubmitted] = useState(false);
 
-  const chapters = [
-    {
-      name: "University of Dhaka Chapter",
-      country: "Bangladesh",
-      city: "Dhaka",
-      members: 240,
-      projects: 12,
-      established: "2016",
-      lead: "Tanvir Ahmed (Chapter President)",
-      email: "dhaka.chapter@esnglobal.org",
-      treesPlanted: "32,000+",
-      meeting: "Wednesdays at 4:00 PM · Curzon Hall Green Yard",
-      image: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800",
-      description: "Founded in 2016, the DU Chapter is ESN's pioneer campus network in South Asia, leading weekly urban cleanups, nursery development, and climate policy symposiums.",
-      keyProjects: ["Buriganga River Waste Interceptor", "Sundarbans Youth Field Delegation", "University Plastic-Free Campaign", "Eco-Seedling Distribution Drive"],
-    },
-    {
-      name: "IIT Delhi Chapter",
-      country: "India",
-      city: "New Delhi",
-      members: 185,
-      projects: 9,
-      established: "2017",
-      lead: "Aarav Sharma (Chapter Lead)",
-      email: "iitd.chapter@esnglobal.org",
-      treesPlanted: "18,500+",
-      meeting: "Thursdays at 5:30 PM · Student Activity Centre",
-      image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800",
-      description: "Engineers and researchers deploying IoT air quality monitoring sensors, decentralized solar charging stations, and campus e-waste recycling hubs.",
-      keyProjects: ["Smart Campus Air Monitor Mesh", "Hostel Solar Energy Challenge", "Yamuna Floodplain Afforestation", "E-Waste Circularity Drive"],
-    },
-    {
-      name: "University of Nairobi Chapter",
-      country: "Kenya",
-      city: "Nairobi",
-      members: 160,
-      projects: 11,
-      established: "2018",
-      lead: "Wanjiku Mwangi (Regional Coordinator)",
-      email: "uon.chapter@esnglobal.org",
-      treesPlanted: "45,000+",
-      meeting: "Saturdays at 10:00 AM · Taifa Hall Green Lawn",
-      image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800",
-      description: "Leading extensive agroforestry and indigenous seed saving projects in the Great Rift Valley in partnership with rural community schools.",
-      keyProjects: ["Karura Forest Buffer Plantation", "Indigenous Tree Seedling Bank", "Green Schools Climate Fellowship", "Drought Adaptation Workshops"],
-    },
-    {
-      name: "São Paulo State University",
-      country: "Brazil",
-      city: "São Paulo",
-      members: 210,
-      projects: 14,
-      established: "2017",
-      lead: "Lucas Oliveira (Chapter President)",
-      email: "unesp.chapter@esnglobal.org",
-      treesPlanted: "28,000+",
-      meeting: "Tuesdays at 6:00 PM · Biology Department Lounge",
-      image: "https://images.unsplash.com/photo-1498429089284-41f8cf3ffd39?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800",
-      description: "Focuses on Atlantic Forest restoration, river basin water testing, and training indigenous youth in drone-based ecological mapping.",
-      keyProjects: ["Atlantic Rainforest Corridors", "Urban River Bio-Filters", "Indigenous Youth Drone Lab", "Campus Zero-Waste Transition"],
-    },
-    {
-      name: "University of Copenhagen",
-      country: "Denmark",
-      city: "Copenhagen",
-      members: 130,
-      projects: 7,
-      established: "2019",
-      lead: "Astrid Lind (Lead Organizer)",
-      email: "ku.chapter@esnglobal.org",
-      treesPlanted: "12,000+",
-      meeting: "Mondays at 4:30 PM · Science Campus Hub",
-      image: "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800",
-      description: "Nordic student coalition specializing in circular economy modeling, climate finance policy briefs, and Arctic ecosystem awareness.",
-      keyProjects: ["Nordic Campus Carbon Audit", "Baltic Coastal Microplastic Survey", "Youth COP Delegation Policy Brief", "Circular Canteen Policy"],
-    },
-    {
-      name: "National University of Singapore",
-      country: "Singapore",
-      city: "Singapore",
-      members: 145,
-      projects: 8,
-      established: "2019",
-      lead: "Cheryl Tan (Chapter Lead)",
-      email: "nus.chapter@esnglobal.org",
-      treesPlanted: "15,000+",
-      meeting: "Fridays at 5:00 PM · UTown Eco-Auditorium",
-      image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800",
-      description: "Pioneering urban mangrove monitoring, coral nursery research, and green technology hackathons across Southeast Asian campuses.",
-      keyProjects: ["Pulau Ubin Mangrove Restoration", "Southern Islands Coral Nursery", "ASEAN Eco-Innovation Hackathon", "Campus Biodiversity Census"],
-    },
-  ];
+  const [settings] = useFirestoreData<CampusChaptersSettings>(
+    "esn_campus_chapters_settings",
+    defaultCampusChaptersSettings
+  );
+  const [chapters] = useFirestoreData<CampusChapter[]>(
+    "esn_campus_chapters_list",
+    defaultCampusChapters
+  );
+
+  const activeSettings = settings || defaultCampusChaptersSettings;
+  const activeChapters = chapters || defaultCampusChapters;
 
   return (
     <div className="bg-[#F6FBF8] min-h-screen">
-      <PageHero title="Campus Chapters" sub="ESN chapters bring environmental action to universities worldwide." image="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400" icon={BookOpen} />
+      <PageHero
+        title={activeSettings.title || "Campus Chapters"}
+        sub={activeSettings.sub || "ESN chapters bring environmental action to universities worldwide."}
+        image={
+          activeSettings.image ||
+          "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400"
+        }
+        icon={BookOpen}
+      />
       <div className="max-w-6xl mx-auto px-6 py-16">
         <Breadcrumb current="Campus Chapters" />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-12">
-          {[["200+", "Campus Chapters"], ["50+", "Countries"], ["28K+", "Student Members"], ["600+", "Campus Projects"]].map(([v, l]) => <StatCard key={l} value={v} label={l} />)}
+          {(activeSettings.stats || defaultCampusChaptersSettings.stats).map((st: any) => (
+            <StatCard key={st.label} value={st.val} label={st.label} />
+          ))}
         </div>
         
         <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
           <div>
-            <div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider mb-1">Global Campus Network</div>
-            <h2 className="text-gray-900" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 2vw, 1.8rem)", fontWeight: 800 }}>Featured University Chapters</h2>
+            <div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider mb-1">
+              {activeSettings.badge || "Global Campus Network"}
+            </div>
+            <h2 className="text-gray-900" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 2vw, 1.8rem)", fontWeight: 800 }}>
+              Featured University Chapters
+            </h2>
           </div>
           <span className="text-xs text-gray-500 bg-white px-3 py-1.5 rounded-full border border-gray-200">
             Click any university to view chapter details
@@ -641,9 +580,9 @@ function CampusPage() {
         </div>
 
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 mb-16">
-          {chapters.map((c, i) => (
+          {activeChapters.map((c, i) => (
             <motion.div
-              key={c.name}
+              key={c.id || c.name}
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -755,7 +694,7 @@ function CampusPage() {
                   <div>
                     <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Key Campus Initiatives</h4>
                     <div className="grid sm:grid-cols-2 gap-2.5">
-                      {selectedChapter.keyProjects.map((p: string) => (
+                      {(selectedChapter.keyProjects || []).map((p: string) => (
                         <div key={p} className="flex items-center gap-2 text-xs font-semibold text-gray-800 bg-[#F6FBF8] p-2.5 rounded-xl border border-gray-100">
                           <CheckCircle2 size={14} className="text-[#4CAF50] shrink-0" />
                           <span>{p}</span>

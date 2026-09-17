@@ -2,10 +2,13 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Globe2, Plus, Search, Edit3, Trash2, CheckCircle2, Award, Users,
-  MapPin, Shield, Star, ExternalLink, Eye, Compass, Heart
+  MapPin, Shield, Star, ExternalLink, Eye, Compass, Heart, Zap
 } from "lucide-react";
-import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
+import { useFirestoreData, saveFirestoreData, fetchFirestoreData } from "../../../../lib/useFirestore";
 import { ImageUploadField } from "../../../components/ui/ImageUploadField";
+import { logAdminActivity } from "../../../../lib/activityLogger";
+import { getInitialStats, StatItem } from "./StatsAdminView";
+import { getInitialHeroSlides, HeroSlide } from "./HeroAdminView";
 
 export interface GlobalRepsSettings {
   badge: string;
@@ -18,6 +21,25 @@ export interface GlobalRepsSettings {
   stats: Array<{ val: string; label: string }>;
   roleTitle: string;
   roleSub: string;
+}
+
+function parseNumericValue(valStr: string): number {
+  if (!valStr) return 0;
+  const clean = valStr.toUpperCase().replace(/[^0-9.KMB]/g, "");
+  let multiplier = 1;
+  let numPart = clean;
+  if (clean.endsWith("M")) {
+    multiplier = 1000000;
+    numPart = clean.slice(0, -1);
+  } else if (clean.endsWith("K")) {
+    multiplier = 1000;
+    numPart = clean.slice(0, -1);
+  } else if (clean.endsWith("B")) {
+    multiplier = 1000000000;
+    numPart = clean.slice(0, -1);
+  }
+  const parsed = parseFloat(numPart);
+  return isNaN(parsed) ? 0 : Math.round(parsed * multiplier);
 }
 
 export interface RepPillar {
@@ -110,6 +132,70 @@ export default function GlobalRepsAdminView() {
   const saveSettingsToFirestore = async (newSettings: GlobalRepsSettings) => {
     setSettings(newSettings);
     await saveFirestoreData("esn_global_representatives_settings", newSettings);
+
+    // Cross-synchronization: Update Homepage Impact Stats & Hero Slides automatically
+    try {
+      const repsStat = (newSettings.stats || []).find((s) => s.label.toLowerCase().includes("rep"));
+      const nationsStat = (newSettings.stats || []).find((s) =>
+        s.label.toLowerCase().includes("nation") || s.label.toLowerCase().includes("countr")
+      );
+
+      const repsNum = repsStat ? parseNumericValue(repsStat.val) : 80;
+      const nationsNum = nationsStat ? parseNumericValue(nationsStat.val) : 190;
+
+      // 1. Sync Impact Stats (esn_stats_admin)
+      const existingStats = await fetchFirestoreData<StatItem[]>("esn_stats_admin", getInitialStats());
+      if (existingStats && existingStats.length > 0) {
+        let statsModified = false;
+        const syncedStats = existingStats.map((st) => {
+          if (
+            st.label.toLowerCase().includes("countries reached") ||
+            (st.label.toLowerCase().includes("countries") && !st.label.toLowerCase().includes("partner"))
+          ) {
+            statsModified = true;
+            return { ...st, value: nationsNum || st.value };
+          }
+          if (st.label.toLowerCase().includes("partner countries") || st.label.toLowerCase().includes("reps")) {
+            statsModified = true;
+            return { ...st, value: repsNum || st.value };
+          }
+          return st;
+        });
+
+        if (statsModified) {
+          await saveFirestoreData("esn_stats_admin", syncedStats);
+        }
+      }
+
+      // 2. Sync Hero Slides (esn_hero_admin)
+      const existingSlides = await fetchFirestoreData<HeroSlide[]>("esn_hero_admin", getInitialHeroSlides());
+      if (existingSlides && existingSlides.length > 0 && repsStat) {
+        let slidesModified = false;
+        const syncedSlides = existingSlides.map((slide) => {
+          if (slide.sub && /\b\d+\+\s*countries\b/i.test(slide.sub)) {
+            slidesModified = true;
+            return {
+              ...slide,
+              sub: slide.sub.replace(/\b\d+\+\s*countries\b/gi, `${repsStat.val} countries`),
+            };
+          }
+          return slide;
+        });
+        if (slidesModified) {
+          await saveFirestoreData("esn_hero_admin", syncedSlides);
+        }
+      }
+
+      await logAdminActivity(
+        "Updated Global Representatives",
+        "CMS",
+        `Saved Global Representatives settings and auto-synced Homepage Hero & Impact Stats (${repsStat?.val || "80+"} reps, ${nationsStat?.val || "190+"} nations).`,
+        "success"
+      );
+    } catch (e) {
+      console.error("Auto-sync error:", e);
+    }
+
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 3000);
   };
@@ -231,6 +317,26 @@ export default function GlobalRepsAdminView() {
       {/* TAB 1: HERO BANNER & STATS */}
       {activeTab === "hero-stats" && (
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm flex flex-col gap-6">
+          {/* Interconnected System Notice */}
+          <div className="bg-gradient-to-r from-[#0B5D3F]/10 via-[#173B63]/10 to-[#4CAF50]/10 border border-[#4CAF50]/30 rounded-2xl p-4 flex items-start gap-3.5">
+            <div className="w-9 h-9 rounded-xl bg-[#0B5D3F] text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+              <Zap size={18} className="text-[#81C784]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-[#0B5D3F] uppercase tracking-wider">
+                  Interconnected with Homepage
+                </span>
+                <span className="bg-[#4CAF50] text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+                  Auto-Sync Active
+                </span>
+              </div>
+              <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+                Updates to <strong>Country Reps</strong>, <strong>Active Nations</strong>, and the <strong>Featured Photo</strong> here are automatically synchronized with the <strong>Homepage Hero Section</strong> live badge, collage, and <strong>Impact Counters</strong>.
+              </p>
+            </div>
+          </div>
+
           <div className="border-b border-gray-100 pb-4">
             <h4 className="font-bold text-gray-900 text-base">Hero Section Settings</h4>
             <p className="text-xs text-gray-400">Configure the top badge, heading, subtitle, and primary photo</p>

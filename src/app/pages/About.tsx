@@ -52,6 +52,12 @@ function FallingLeaf({ delay, x }: { delay: number; x: number }) {
   );
 }
 
+function formatNumber(n: number): string {
+  if (n >= 1000000) return (n / 1000000).toFixed(1) + "M";
+  if (n >= 1000) return (n / 1000).toFixed(0) + "K";
+  return n.toLocaleString();
+}
+
 export default function About() {
   const heroRef = useRef(null);
   
@@ -64,6 +70,58 @@ export default function About() {
   const [statsData] = useFirestoreData<StatItem[]>("esn_stats_admin", getInitialStats());
   const [visionMissionData] = useFirestoreData<AboutVisionMissionData>("esn_about_vision_mission", initialVisionMissionData);
   const [presenceData] = useFirestoreData<AboutGlobalPresenceData>("esn_about_global_presence", initialGlobalPresenceData);
+
+  // Derive dynamic stats from main Impact section (esn_stats_admin)
+  const statsList = statsData && statsData.length > 0 ? statsData : getInitialStats();
+
+  const treeStat = statsList.find(s => s.label.toLowerCase().includes("tree") || s.iconName === "TreePine");
+  const treeCount = treeStat ? treeStat.value : 2400000;
+  const calculatedCO2 = Math.round(treeCount * 0.0625);
+
+  const countriesStat = statsList.find(s =>
+    s.label.toLowerCase().includes("countries reached") ||
+    s.label.toLowerCase().includes("country") ||
+    s.label.toLowerCase().includes("partner")
+  );
+  const communitiesStat = statsList.find(s =>
+    s.label.toLowerCase().includes("communit") ||
+    s.label.toLowerCase().includes("chapter")
+  );
+
+  const formattedTrees = treeStat ? `${formatNumber(treeStat.value)}${treeStat.suffix || "+"}` : "2.4M+";
+  const formattedCountries = countriesStat ? `${formatNumber(countriesStat.value)}${countriesStat.suffix || "+"}` : "190+";
+  const formattedCommunities = communitiesStat ? `${formatNumber(communitiesStat.value)}${communitiesStat.suffix || "+"}` : "12K+";
+
+  const currentYear = new Date().getFullYear();
+  const yearsOfImpactNumber = Math.max(currentYear - 2019, 7);
+  const yearsOfImpact = `${yearsOfImpactNumber} Yrs`;
+
+  const heroStatCards = [
+    { v: formattedCountries, l: countriesStat?.label || "Countries", icon: Globe2 },
+    { v: formattedTrees, l: treeStat?.label || "Trees Planted", icon: TreePine },
+    { v: formattedCommunities, l: communitiesStat?.label || "Communities", icon: Users },
+    { v: yearsOfImpact, l: "Of Impact", icon: Calendar },
+  ];
+
+  const storyStatBadges = [
+    { v: formattedCountries, l: "Countries" },
+    { v: formattedTrees, l: "Trees Planted" },
+    { v: yearsOfImpact, l: "Of Impact" },
+  ];
+
+  const displayStats = statsList.map(stat => {
+    if (stat.label.toLowerCase().includes("co₂") || stat.label.toLowerCase().includes("co2") || stat.label.toLowerCase().includes("carbon")) {
+      return {
+        ...stat,
+        value: calculatedCO2,
+        formattedValue: formatNumber(calculatedCO2),
+      };
+    }
+    return {
+      ...stat,
+      formattedValue: formatNumber(stat.value),
+    };
+  });
 
   // Filter team
   const founderTeam = teamData.filter(t => t.category === "Founder");
@@ -208,12 +266,7 @@ export default function About() {
 
             {/* Right — stat cards grid */}
             <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, delay: 0.2 }} className="grid grid-cols-2 gap-4">
-              {[
-                { v: "80+", l: "Countries", icon: Globe2 },
-                { v: "1.2M+", l: "Trees Planted", icon: TreePine },
-                { v: "12K+", l: "Local Chapters", icon: Users },
-                { v: "7 Yrs", l: "Of Impact", icon: Calendar },
-              ].map((s, i) => (
+              {heroStatCards.map((s, i) => (
                 <motion.div
                   key={s.l}
                   initial={{ opacity: 0, scale: 0.8 }}
@@ -338,11 +391,7 @@ export default function About() {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#071a0f]/80 via-transparent to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-6">
                   <div className="flex gap-3 flex-wrap">
-                    {[
-                      { v: "80+", l: "Countries" },
-                      { v: "1.2M+", l: "Trees Planted" },
-                      { v: "7 Yrs", l: "Of Impact" },
-                    ].map((s) => (
+                    {storyStatBadges.map((s) => (
                       <div key={s.l} className="bg-white/15 backdrop-blur-md border border-white/20 rounded-xl px-4 py-2.5 text-center">
                         <div className="text-white font-black text-lg leading-none" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{s.v}</div>
                         <div className="text-white/70 text-[10px] font-semibold mt-0.5 uppercase tracking-wider">{s.l}</div>
@@ -533,12 +582,12 @@ export default function About() {
             <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white text-xs font-bold px-4 py-2 rounded-full mb-5 uppercase tracking-widest">
               <Target size={12} className="text-[#4CAF50]" /> Impact at Scale
             </div>
-            <h2 className="text-white mb-4">7 Years. One Planet.<br />Measurable Impact.</h2>
+            <h2 className="text-white mb-4">{yearsOfImpactNumber} Years. One Planet.<br />Measurable Impact.</h2>
             <p className="text-white/65 text-lg max-w-xl mx-auto">Every number represents communities protected, ecosystems restored, and futures secured.</p>
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {statsData.map((s, i) => (
+            {displayStats.map((s, i) => (
               <motion.div
                 key={s.label}
                 initial={{ opacity: 0, y: 30 }}
@@ -553,11 +602,20 @@ export default function About() {
                     return <Icon size={26} className="text-[#4CAF50]" />;
                   })()}
                 </div>
-                <div className="text-4xl font-black text-white mb-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{s.value}{s.suffix}</div>
+                <div className="text-4xl font-black text-white mb-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{s.formattedValue}{s.suffix}</div>
                 <div className="text-white font-semibold mb-1">{s.label}</div>
                 <div className="text-white/50 text-sm">{s.description}</div>
               </motion.div>
             ))}
+          </div>
+
+          <div className="mt-12 text-center">
+            <Link
+              to="/impact"
+              className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/25 text-white px-7 py-3.5 rounded-full font-semibold text-xs tracking-wider uppercase transition-all hover:scale-105"
+            >
+              Explore Full Audited Impact Report <ArrowRight size={14} />
+            </Link>
           </div>
         </div>
       </section>

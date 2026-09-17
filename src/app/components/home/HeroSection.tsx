@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronDown, HeartHandshake } from "lucide-react";
+import { ChevronDown, HeartHandshake, Globe2, ArrowRight } from "lucide-react";
 
 const rightImages = [
   "/Climate Reality Leadership Corps Training | Representing Bangladesh.jpeg",
@@ -9,6 +9,7 @@ const rightImages = [
 ];
 
 import { getInitialHeroSlides, DEFAULT_HERO_IMAGES } from "../../pages/admin/sections/HeroAdminView";
+import { defaultGlobalRepsSettings, GlobalRepsSettings } from "../../pages/admin/sections/GlobalRepsAdminView";
 import { useFirestoreData } from "../../../lib/useFirestore";
 
 const defaultSlides = [
@@ -94,7 +95,21 @@ function FallingLeaf({ delay, x }: { delay: number; x: number }) {
 
 export function HeroSection() {
   const [slides, setSlides, loading] = useFirestoreData<any[]>("esn_hero_admin", getInitialHeroSlides());
+  const [repsSettings] = useFirestoreData<GlobalRepsSettings>(
+    "esn_global_representatives_settings",
+    defaultGlobalRepsSettings
+  );
   const [slide, setSlide] = useState(0);
+
+  const activeReps = repsSettings || defaultGlobalRepsSettings;
+  const repsStat = (activeReps.stats || defaultGlobalRepsSettings.stats).find((s: any) =>
+    s.label?.toLowerCase().includes("rep")
+  ) || { val: "80+", label: "Country Reps" };
+  const nationsStat = (activeReps.stats || defaultGlobalRepsSettings.stats).find((s: any) =>
+    s.label?.toLowerCase().includes("nation") || s.label?.toLowerCase().includes("countr")
+  ) || { val: "190+", label: "Active Nations" };
+  const repsCount = repsStat.val || "80+";
+  const nationsCount = nationsStat.val || "190+";
 
   // Interactive click-to-grow plants state
   const [plants, setPlants] = useState<{ id: number; x: number; y: number }[]>([]);
@@ -264,6 +279,32 @@ export function HeroSection() {
         <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[calc(100vh-160px)]">
           {/* LEFT: Text Column */}
           <div className="flex flex-col justify-center">
+            {/* Live Interconnected Global Reps Indicator */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="mb-4"
+            >
+              <Link
+                to="/global-representatives"
+                className="inline-flex items-center gap-2.5 bg-white/10 hover:bg-white/15 border border-white/20 hover:border-[#4CAF50]/60 text-white text-xs font-semibold px-4 py-1.5 rounded-full shadow-lg shadow-black/20 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] group"
+              >
+                <span className="flex h-2 w-2 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#4CAF50] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#4CAF50]"></span>
+                </span>
+                <span className="text-[#81C784] font-bold">
+                  {repsCount} Global Representatives
+                </span>
+                <span className="text-white/40">·</span>
+                <span className="text-white/80">
+                  {nationsCount} Nations
+                </span>
+                <ArrowRight size={12} className="text-[#81C784] group-hover:translate-x-1 transition-transform ml-0.5" />
+              </Link>
+            </motion.div>
+
             {/* Tag pill */}
             <AnimatePresence mode="wait">
               <motion.div
@@ -352,6 +393,26 @@ export function HeroSection() {
 
           {/* RIGHT: Image collage */}
           <div className="hidden lg:flex relative h-[520px] items-center justify-center">
+            {/* Interconnected Global Reps Floating Highlight */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.9, duration: 0.6 }}
+              className="absolute top-2 left-2 z-20 bg-[#0a1a0e]/85 backdrop-blur-xl border border-white/20 rounded-2xl p-3 shadow-2xl flex items-center gap-2.5 text-white max-w-[220px]"
+            >
+              <div className="w-8 h-8 rounded-xl bg-[#0B5D3F] flex items-center justify-center text-white shrink-0 border border-[#4CAF50]/40">
+                <Globe2 size={16} className="text-[#81C784]" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-[10px] uppercase font-bold tracking-wider text-[#81C784]">
+                  {activeReps.badge || "Global Leadership"}
+                </div>
+                <div className="text-xs font-black truncate text-white">
+                  {repsCount} Country Reps
+                </div>
+              </div>
+            </motion.div>
+
             {/* Main large image */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9, rotate: -3 }}
@@ -361,8 +422,8 @@ export function HeroSection() {
               style={{ rotate: -4 }}
             >
               <img
-                src="/Speaking on Climate Adaptation and Resilience in South Asia- CEPCA 2024, Ottawa, Canada.jpeg"
-                alt="Speaking at CEPCA 2024"
+                src={activeReps.image || "/Speaking on Climate Adaptation and Resilience in South Asia- CEPCA 2024, Ottawa, Canada.jpeg"}
+                alt="Global Representation"
                 className="w-full h-full object-cover"
                 decoding="async"
               />
