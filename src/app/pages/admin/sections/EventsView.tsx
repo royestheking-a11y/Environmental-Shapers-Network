@@ -23,19 +23,57 @@ export interface ESNEvent {
   description: string;
   speaker: string;
   image?: string;
+  // Interconnection & Impact Dashboard Insights (Point 1):
+  programSlug?: string;
+  initiativeTitle?: string;
+  impactTrees?: number;
+  impactCommunities?: number;
+  impactBeneficiaries?: number;
 }
 
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 import { logAdminActivity } from "../../../../lib/activityLogger";
+import { DEFAULT_PROGRAM_INITIATIVES } from "./ProgramsView";
+import { PROGRAM_OPTIONS } from "./ProjectsView";
 
 export function getInitialEvents(): ESNEvent[] {
   return [
-    { id: 1, title: "Global Youth Climate Summit 2026", type: "Summit", date: "Aug 15, 2026", time: "09:00 AM", location: "Dhaka, Bangladesh", mode: "Hybrid", capacity: 500, registered: 423, status: "upcoming", description: "Annual gathering of youth climate leaders from 80+ countries.", speaker: "Dr. Priya Sharma" },
-    { id: 2, title: "Forest Restoration Volunteer Day", type: "Field", date: "Aug 8, 2026", time: "07:00 AM", location: "Sundarbans, Bangladesh", mode: "In-Person", capacity: 200, registered: 187, status: "upcoming", description: "Community mangrove planting event at the Sundarbans delta.", speaker: "Rizwan Ahmed" },
-    { id: 3, title: "Climate Policy Webinar Series #12", type: "Webinar", date: "Jul 30, 2026", time: "03:00 PM", location: "Online", mode: "Virtual", capacity: 2000, registered: 1847, status: "ongoing", description: "Deep-dive into UNFCCC COP31 outcomes and what they mean for NGOs.", speaker: "Carlos Rodriguez" },
-    { id: 4, title: "ESN Annual Gala & Awards Night", type: "Gala", date: "Sep 20, 2026", time: "06:00 PM", location: "Geneva, Switzerland", mode: "In-Person", capacity: 150, registered: 112, status: "upcoming", description: "Celebrating environmental champions and impact milestones.", speaker: "Board of Directors" },
-    { id: 5, title: "Biodiversity Hackathon 2026", type: "Hackathon", date: "Jul 5, 2026", time: "10:00 AM", location: "Online", mode: "Virtual", capacity: 800, registered: 800, status: "completed", description: "48-hour innovation sprint for biodiversity conservation tech.", speaker: "Multiple Judges" },
-    { id: 6, title: "Water Security Field Training", type: "Training", date: "Jun 20, 2026", time: "08:00 AM", location: "Nairobi, Kenya", mode: "In-Person", capacity: 80, registered: 78, status: "completed", description: "Hands-on training for watershed management practitioners.", speaker: "Amara Osei" },
+    {
+      id: 1, title: "Global Youth Climate Summit 2026", type: "Summit", date: "Aug 15, 2026", time: "09:00 AM", location: "Dhaka, Bangladesh",
+      mode: "Hybrid", capacity: 500, registered: 423, status: "upcoming", description: "Annual gathering of youth climate leaders from 80+ countries.",
+      speaker: "Dr. Priya Sharma", programSlug: "youth", initiativeTitle: "Youth COP Delegation Support",
+      impactTrees: 10000, impactCommunities: 80, impactBeneficiaries: 25000
+    },
+    {
+      id: 2, title: "Forest Restoration Volunteer Day", type: "Field", date: "Aug 8, 2026", time: "07:00 AM", location: "Sundarbans, Bangladesh",
+      mode: "In-Person", capacity: 200, registered: 187, status: "upcoming", description: "Community mangrove planting event at the Sundarbans delta.",
+      speaker: "Rizwan Ahmed", programSlug: "forest-restoration", initiativeTitle: "Mangrove Shield",
+      impactTrees: 25000, impactCommunities: 14, impactBeneficiaries: 1800
+    },
+    {
+      id: 3, title: "Climate Policy Webinar Series #12", type: "Webinar", date: "Jul 30, 2026", time: "03:00 PM", location: "Online",
+      mode: "Virtual", capacity: 2000, registered: 1847, status: "ongoing", description: "Deep-dive into UNFCCC COP31 outcomes and what they mean for NGOs.",
+      speaker: "Carlos Rodriguez", programSlug: "research", initiativeTitle: "Policy Briefs & White Papers",
+      impactTrees: 0, impactCommunities: 50, impactBeneficiaries: 1847
+    },
+    {
+      id: 4, title: "ESN Annual Gala & Awards Night", type: "Gala", date: "Sep 20, 2026", time: "06:00 PM", location: "Geneva, Switzerland",
+      mode: "In-Person", capacity: 150, registered: 112, status: "upcoming", description: "Celebrating environmental champions and impact milestones.",
+      speaker: "Board of Directors", programSlug: "youth", initiativeTitle: "ESN Youth Innovation Fund",
+      impactTrees: 0, impactCommunities: 25, impactBeneficiaries: 500
+    },
+    {
+      id: 5, title: "Biodiversity Hackathon 2026", type: "Hackathon", date: "Jul 5, 2026", time: "10:00 AM", location: "Online",
+      mode: "Virtual", capacity: 800, registered: 800, status: "completed", description: "48-hour innovation sprint for biodiversity conservation tech.",
+      speaker: "Multiple Judges", programSlug: "biodiversity", initiativeTitle: "Endangered Species Tracking",
+      impactTrees: 0, impactCommunities: 10, impactBeneficiaries: 800
+    },
+    {
+      id: 6, title: "Water Security Field Training", type: "Training", date: "Jun 20, 2026", time: "08:00 AM", location: "Nairobi, Kenya",
+      mode: "In-Person", capacity: 80, registered: 78, status: "completed", description: "Hands-on training for watershed management practitioners.",
+      speaker: "Amara Osei", programSlug: "climate-adaptation", initiativeTitle: "Community Early Warning Systems",
+      impactTrees: 5000, impactCommunities: 12, impactBeneficiaries: 350
+    },
   ];
 }
 
@@ -52,6 +90,8 @@ const modeIcon = { "In-Person": MapPin, "Virtual": Video, "Hybrid": Globe2 };
 const blankEvent: Omit<ESNEvent, "id"> = {
   title: "", type: "Webinar", date: "", time: "", location: "", mode: "Virtual",
   capacity: 100, registered: 0, status: "upcoming", description: "", speaker: "", image: "",
+  programSlug: "youth", initiativeTitle: "Youth COP Delegation Support",
+  impactTrees: 0, impactCommunities: 0, impactBeneficiaries: 0,
 };
 
 function exportRegistrations(ev: ESNEvent) {
@@ -126,10 +166,15 @@ export function EventsView() {
 
   const startEdit = (ev: ESNEvent) => {
     const { id, ...rest } = ev;
-    setForm(rest);
+    setForm({
+      ...blankEvent,
+      ...rest,
+    });
     setEditId(id);
     setShowForm(true);
   };
+
+  const currentProgramInitiatives = DEFAULT_PROGRAM_INITIATIVES[form.programSlug || "youth"] || [];
 
   const confirmDelete = (id: number) => setDeleteConfirmId(id);
   const doDelete = () => {
@@ -259,6 +304,99 @@ export function EventsView() {
                   <label className="text-xs font-bold text-gray-600 mb-1.5 block">Description</label>
                   <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none resize-none" placeholder="Brief event description..." />
                 </div>
+
+                {/* Program & Initiative Interconnection (Point 1) */}
+                <div className="sm:col-span-2 p-4 bg-[#F0FDF4] border border-emerald-200/80 rounded-2xl">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="w-2 h-2 rounded-full bg-[#0B5D3F]" />
+                    <label className="text-xs font-bold text-[#0B5D3F] uppercase tracking-wider">
+                      Program & Initiative Interconnection
+                    </label>
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[11px] font-bold text-gray-700 block mb-1">Parent Core Program *</label>
+                      <select
+                        value={form.programSlug || "youth"}
+                        onChange={(e) => {
+                          const slug = e.target.value;
+                          const inits = DEFAULT_PROGRAM_INITIATIVES[slug] || [];
+                          setForm({
+                            ...form,
+                            programSlug: slug,
+                            initiativeTitle: inits[0]?.title || ""
+                          });
+                        }}
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-emerald-300 text-xs font-semibold text-gray-800 focus:outline-none"
+                      >
+                        {PROGRAM_OPTIONS.map((po) => (
+                          <option key={po.slug} value={po.slug}>{po.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-bold text-gray-700 block mb-1">Linked Program Initiative</label>
+                      <input
+                        type="text"
+                        list="event-init-options"
+                        value={form.initiativeTitle || ""}
+                        onChange={(e) => setForm({ ...form, initiativeTitle: e.target.value })}
+                        placeholder="Select or enter initiative track..."
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-emerald-300 text-xs font-medium text-gray-800 focus:outline-none"
+                      />
+                      <datalist id="event-init-options">
+                        {currentProgramInitiatives.map((init) => (
+                          <option key={init.title} value={init.title} />
+                        ))}
+                      </datalist>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Impact Dashboard Insights (Point 1: Live Aggregation Numbers) */}
+                <div className="sm:col-span-2 p-4 bg-[#F8FAFC] border border-slate-200 rounded-2xl">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                      Impact Dashboard Insights (Live Aggregation Numbers)
+                    </label>
+                    <span className="text-[10px] font-medium text-slate-500">Auto-sums into final Impact Dashboard</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Trees Planted</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={form.impactTrees || 0}
+                        onChange={(e) => setForm({ ...form, impactTrees: Number(e.target.value) })}
+                        placeholder="0"
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-[#0B5D3F] focus:outline-none focus:border-[#4CAF50]"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Communities</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={form.impactCommunities || 0}
+                        onChange={(e) => setForm({ ...form, impactCommunities: Number(e.target.value) })}
+                        placeholder="0"
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-[#173B63] focus:outline-none focus:border-[#4CAF50]"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Beneficiaries</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={form.impactBeneficiaries || 0}
+                        onChange={(e) => setForm({ ...form, impactBeneficiaries: Number(e.target.value) })}
+                        placeholder="0"
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-[#D6A95A] focus:outline-none focus:border-[#4CAF50]"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
               <div className="flex gap-3 mt-6">
                 <button onClick={handleSubmit} className="flex-1 bg-[#0B5D3F] text-white py-3 rounded-xl font-semibold hover:bg-[#0a5237] transition-all">
@@ -357,13 +495,26 @@ export function EventsView() {
                     <span className="flex items-center gap-1 text-xs text-gray-400">
                       <ModeIcon size={11} />{ev.mode}
                     </span>
+                    {ev.programSlug && (
+                      <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                        {PROGRAM_OPTIONS.find(p => p.slug === ev.programSlug)?.label || ev.programSlug}
+                        {ev.initiativeTitle ? ` · ${ev.initiativeTitle}` : ""}
+                      </span>
+                    )}
                   </div>
                   <h4 className="font-bold text-gray-900 text-sm mb-1 truncate" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{ev.title}</h4>
-                  <div className="flex items-center gap-4 text-xs text-gray-400 mb-3 flex-wrap">
+                  <div className="flex items-center gap-4 text-xs text-gray-400 mb-2 flex-wrap">
                     <span className="flex items-center gap-1"><MapPin size={11} />{ev.location}</span>
                     <span className="flex items-center gap-1"><Clock size={11} />{ev.time}</span>
                     <span className="flex items-center gap-1"><Users size={11} />{ev.registered}/{ev.capacity} registered</span>
                   </div>
+                  {((ev.impactTrees || 0) > 0 || (ev.impactCommunities || 0) > 0 || (ev.impactBeneficiaries || 0) > 0) && (
+                    <div className="flex items-center gap-3 text-[11px] font-medium text-emerald-700 bg-emerald-50/70 border border-emerald-100 px-2.5 py-1 rounded-lg w-fit mb-2">
+                      {(ev.impactTrees || 0) > 0 && <span>🌲 {(ev.impactTrees || 0).toLocaleString()} trees</span>}
+                      {(ev.impactCommunities || 0) > 0 && <span>🏘️ {ev.impactCommunities} communities</span>}
+                      {(ev.impactBeneficiaries || 0) > 0 && <span>👥 {(ev.impactBeneficiaries || 0).toLocaleString()} beneficiaries</span>}
+                    </div>
+                  )}
                   <div className="flex items-center gap-2">
                     <div className="flex-1 max-w-[180px] h-1.5 bg-gray-100 rounded-full overflow-hidden">
                       <div className="h-full bg-[#4CAF50] rounded-full transition-all" style={{ width: `${fillPct}%` }} />
@@ -409,6 +560,34 @@ export function EventsView() {
                   <h3 className="text-white mb-1 text-base" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{detail.title}</h3>
                   <p className="text-white/60 text-sm">{detail.description}</p>
                 </div>
+                {detail.programSlug && (
+                  <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
+                    <div className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider mb-0.5">Linked Core Program</div>
+                    <div className="text-xs font-semibold text-emerald-950">
+                      {PROGRAM_OPTIONS.find(p => p.slug === detail.programSlug)?.label || detail.programSlug}
+                      {detail.initiativeTitle ? ` — ${detail.initiativeTitle}` : ""}
+                    </div>
+                  </div>
+                )}
+                {((detail.impactTrees || 0) > 0 || (detail.impactCommunities || 0) > 0 || (detail.impactBeneficiaries || 0) > 0) && (
+                  <div className="mb-4 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                    <div className="text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-2">Live Impact Insights</div>
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                      <div className="p-2 bg-white rounded-lg border border-slate-100">
+                        <div className="text-xs font-black text-[#0B5D3F]">{(detail.impactTrees || 0).toLocaleString()}</div>
+                        <div className="text-[9px] text-gray-500 uppercase">Trees</div>
+                      </div>
+                      <div className="p-2 bg-white rounded-lg border border-slate-100">
+                        <div className="text-xs font-black text-[#173B63]">{(detail.impactCommunities || 0).toLocaleString()}</div>
+                        <div className="text-[9px] text-gray-500 uppercase">Communities</div>
+                      </div>
+                      <div className="p-2 bg-white rounded-lg border border-slate-100">
+                        <div className="text-xs font-black text-[#D6A95A]">{(detail.impactBeneficiaries || 0).toLocaleString()}</div>
+                        <div className="text-[9px] text-gray-500 uppercase">Beneficiaries</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   {[
                     ["Date", detail.date], ["Time", detail.time],

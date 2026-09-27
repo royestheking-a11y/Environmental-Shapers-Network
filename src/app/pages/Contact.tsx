@@ -217,8 +217,12 @@ export default function Contact() {
                     </div>
                     <div>
                       <div className="text-xs text-white/60 mb-0.5">Follow ESN</div>
-                      <div className="text-sm font-medium flex gap-2">
-                        <span>Facebook</span> &middot; <span>Twitter</span> &middot; <span>Instagram</span> &middot; <span>LinkedIn</span>
+                      <div className="text-sm font-medium flex gap-2 flex-wrap">
+                        <a href={settings.facebookUrl || "https://facebook.com/EnvironmentalShapersNetwork"} target="_blank" rel="noopener noreferrer" className="hover:underline text-white">Facebook</a> &middot;
+                        <a href={settings.twitterUrl || "https://twitter.com/esnglobal"} target="_blank" rel="noopener noreferrer" className="hover:underline text-white">Twitter / X</a> &middot;
+                        <a href={settings.instagramUrl || "https://instagram.com/esnglobal"} target="_blank" rel="noopener noreferrer" className="hover:underline text-white">Instagram</a> &middot;
+                        <a href={settings.linkedinUrl || "https://linkedin.com/company/environmental-shapers-network"} target="_blank" rel="noopener noreferrer" className="hover:underline text-white">LinkedIn</a> &middot;
+                        <a href={settings.youtubeUrl || "https://youtube.com/@esnglobal"} target="_blank" rel="noopener noreferrer" className="hover:underline text-white">YouTube</a>
                       </div>
                     </div>
                   </div>

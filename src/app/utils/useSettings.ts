@@ -10,6 +10,11 @@ const defaultSettings = {
   language: "English",
   currency: "USD",
   maintenanceMode: false,
+  facebookUrl: "https://facebook.com/EnvironmentalShapersNetwork",
+  instagramUrl: "https://instagram.com/esnglobal",
+  linkedinUrl: "https://linkedin.com/company/environmental-shapers-network",
+  twitterUrl: "https://twitter.com/esnglobal",
+  youtubeUrl: "https://youtube.com/@esnglobal",
 };
 
 function normalizeSettings(s: any) {

@@ -8,12 +8,12 @@ import { ImageWithFallback } from "../components/ui/ImageWithFallback";
 import { useFirestoreData } from "../../lib/useFirestore";
 
 function ProgressBar({ goal, raised, color }: { goal: number; raised: number; color: string }) {
-  const pct = Math.min(100, Math.round((raised / goal) * 100));
+  const pct = Math.min(100, Math.round((raised / (goal || 1)) * 100));
   return (
     <div>
       <div className="flex justify-between text-xs mb-1.5">
-        <span className="text-gray-500">{pct}% funded</span>
-        <span className="text-gray-500">{raised.toLocaleString()} / {goal.toLocaleString()}</span>
+        <span className="text-gray-500">{pct}% completed</span>
+        <span className="text-emerald-700 font-medium">Community Target</span>
       </div>
       <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
         <motion.div initial={{ width: 0 }} whileInView={{ width: `${pct}%` }} viewport={{ once: true }} transition={{ duration: 1.2, ease: "easeOut" }}
@@ -49,7 +49,7 @@ export default function Campaigns() {
               Every campaign is a targeted effort to solve a specific environmental crisis. Your contribution directly funds on-the-ground action.
             </p>
             <div className="flex items-center justify-center gap-10 flex-wrap">
-              {[["$42M+", "Raised in 2025"], ["140K+", "Campaign Donors"], ["6", "Active Campaigns"], ["1B+", "Lives Impacted"]].map(([v, l]) => (
+              {[["140K+", "Campaign Supporters"], ["470+", "Active Projects"], ["80+", "Countries Active"], ["1B+", "Lives Impacted"]].map(([v, l]) => (
                 <div key={l} className="text-center">
                   <div className="text-white text-2xl font-black" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{v}</div>
                   <div className="text-white/60 text-xs">{l}</div>
@@ -66,7 +66,7 @@ export default function Campaigns() {
         <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 2vw, 1.8rem)", fontWeight: 800 }} className="text-gray-900 mb-8">Active Campaigns</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
           {filteredCampaigns.map((campaign, i) => {
-            const progress = Math.min(100, Math.round((campaign.raised / campaign.goal) * 100));
+            const progress = Math.min(100, Math.round((campaign.raised / (campaign.goal || 1)) * 100));
             const Icon = resolveIcon("Target");
             return (
               <motion.div
@@ -92,8 +92,8 @@ export default function Campaigns() {
                   
                   <div className="mt-auto">
                     <div className="flex justify-between text-sm mb-2">
-                      <span className="font-bold text-gray-900">${campaign.raised.toLocaleString()} raised</span>
-                      <span className="text-gray-500">of ${campaign.goal.toLocaleString()}</span>
+                      <span className="font-bold text-gray-900">{progress}% Milestone Achieved</span>
+                      <span className="text-[#0B5D3F] font-semibold text-xs bg-emerald-50 px-2 py-0.5 rounded-md">{campaign.category}</span>
                     </div>
                     <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden mb-6">
                       <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${progress}%`, backgroundColor: campaign.color }} />

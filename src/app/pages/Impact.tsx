@@ -1,10 +1,13 @@
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router";
 import { motion, useInView } from "motion/react";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import { TreePine, Droplets, Wind, Globe2, Users, Target, TrendingUp, Award, Leaf, Calculator, ArrowRight, Sparkles, FileText } from "lucide-react";
 import { useFirestoreData } from "../../lib/useFirestore";
 import { getInitialStats, StatItem } from "./admin/sections/StatsAdminView";
+import { getInitialProjects, Project } from "./admin/sections/ProjectsView";
+import { getInitialCampaigns, Campaign } from "./admin/sections/CampaignsView";
+import { getInitialEvents, ESNEvent } from "./admin/sections/EventsView";
 
 const carbonData = [
   { month: "Jan", reduced: 8500 },
@@ -48,11 +51,44 @@ export default function Impact() {
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
   const [statsRaw] = useFirestoreData<StatItem[]>("esn_stats_admin", getInitialStats());
+  const [projectsRaw] = useFirestoreData<Project[]>("esn_projects_admin", getInitialProjects());
+  const [campaignsRaw] = useFirestoreData<Campaign[]>("esn_campaigns_admin", getInitialCampaigns());
+  const [eventsRaw] = useFirestoreData<ESNEvent[]>("esn_events", getInitialEvents());
+
   const rawList = statsRaw && statsRaw.length > 0 ? statsRaw : getInitialStats();
+  const projects = projectsRaw && projectsRaw.length > 0 ? projectsRaw : getInitialProjects();
+  const campaigns = campaignsRaw && campaignsRaw.length > 0 ? campaignsRaw : getInitialCampaigns();
+  const events = eventsRaw && eventsRaw.length > 0 ? eventsRaw : getInitialEvents();
+
+  // Dynamic aggregation from all connected activities (Projects, Campaigns, Events)
+  const projTrees = projects.reduce((s, p) => s + (Number(p.impactTrees) || 0), 0);
+  const campTrees = campaigns.reduce((s, c) => s + (Number(c.impactTrees) || 0), 0);
+  const eventTrees = events.reduce((s, e) => s + (Number(e.impactTrees) || 0), 0);
+  const additionalTrees = projTrees + campTrees + eventTrees;
+
+  const projCO2 = projects.reduce((s, p) => s + (Number(p.impactCO2) || 0), 0);
+  const campCO2 = campaigns.reduce((s, c) => s + (Number(c.impactCO2) || 0), 0);
+  const additionalCO2 = projCO2 + campCO2;
+
+  const projComm = projects.reduce((s, p) => s + (Number(p.impactCommunities) || 0), 0);
+  const campComm = campaigns.reduce((s, c) => s + (Number(c.impactCommunities) || 0), 0);
+  const eventComm = events.reduce((s, e) => s + (Number(e.impactCommunities) || 0), 0);
+  const additionalComm = projComm + campComm + eventComm;
 
   const treeStat = rawList.find(s => s.label.toLowerCase().includes("tree") || s.iconName === "TreePine");
-  const currentTreeCount = treeStat ? treeStat.value : 2400000;
-  const currentCO2 = Math.round(currentTreeCount * 0.0625);
+  const baseTreeCount = treeStat ? treeStat.value : 2400000;
+  const currentTreeCount = baseTreeCount + additionalTrees;
+  const currentCO2 = Math.round(currentTreeCount * 0.0625) + additionalCO2;
+
+  const baseCommStat = rawList.find(s => s.label.toLowerCase().includes("communit"))?.value || 12000;
+  const totalCommunities = baseCommStat + additionalComm;
+
+  const baseCountryStat = rawList.find(s => s.label.toLowerCase().includes("countr") || s.label.toLowerCase().includes("nation"))?.value || 80;
+  const liveActiveProjects = projects.filter(p => !p.status || p.status.toLowerCase() === "active").length;
+  const baseProjectsStat = rawList.find(s => s.label.toLowerCase().includes("project"))?.value || 470;
+  const totalProjects = Math.max(baseProjectsStat, liveActiveProjects);
+
+  const baseAwardsStat = rawList.find(s => s.label.toLowerCase().includes("award"))?.value || 24;
 
   // Dynamic tree trend dataset based on current count
   const dynamicTreeData = [
@@ -67,18 +103,23 @@ export default function Impact() {
 
   // Interactive Live Calculator state
   const [calcTrees, setCalcTrees] = useState<number>(currentTreeCount);
+
+  useEffect(() => {
+    setCalcTrees(currentTreeCount);
+  }, [currentTreeCount]);
+
   const calcCO2MT = Math.round(calcTrees * 0.0625);
   const calcCO2Kg = Math.round(calcTrees * 62.5);
   const calcVehicles = Math.round(calcCO2MT / 4.6);
   const calcHectares = (calcTrees / 500).toFixed(1);
 
   const dynamicKpis = [
-    { icon: TreePine, value: formatCount(currentTreeCount), label: "Trees Planted", change: "+18% vs last year", color: "#0B5D3F" },
+    { icon: TreePine, value: formatCount(currentTreeCount), label: "Trees Planted", change: `+${formatCount(additionalTrees)} from activities`, color: "#0B5D3F" },
     { icon: Droplets, value: `${currentCO2.toLocaleString()} MT`, label: "CO₂ Sequestered", change: `Derived from ${formatCount(currentTreeCount)} trees`, color: "#173B63" },
-    { icon: Users, value: "12,000+", label: "Communities Reached", change: "+31% vs last year", color: "#4CAF50" },
-    { icon: Globe2, value: "80+", label: "Countries Active", change: "+5 new countries", color: "#D6A95A" },
-    { icon: Target, value: "470+", label: "Active Projects", change: "+67 new projects", color: "#0B5D3F" },
-    { icon: Award, value: "24", label: "International Awards", change: "+3 this year", color: "#4CAF50" },
+    { icon: Users, value: `${totalCommunities.toLocaleString()}+`, label: "Communities Reached", change: `+${additionalComm.toLocaleString()} across 3 sectors`, color: "#4CAF50" },
+    { icon: Globe2, value: `${baseCountryStat}+`, label: "Countries Active", change: "+5 new countries", color: "#D6A95A" },
+    { icon: Target, value: `${totalProjects}+`, label: "Active Projects", change: `${liveActiveProjects} active initiatives`, color: "#0B5D3F" },
+    { icon: Award, value: `${baseAwardsStat}`, label: "International Awards", change: "+3 this year", color: "#4CAF50" },
   ];
 
   return (

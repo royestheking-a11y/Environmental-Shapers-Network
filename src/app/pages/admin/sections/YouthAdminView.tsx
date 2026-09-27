@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Plus, Search, Edit3, Trash2, AlertCircle, Image as ImageIcon } from "lucide-react";
+import { Plus, Search, Edit3, Trash2, AlertCircle, Image as ImageIcon, Eye, X, CheckCircle2, Users, Target } from "lucide-react";
 import { ImageUploadField } from "../../../components/ui/ImageUploadField";
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 
@@ -11,6 +11,9 @@ export interface YouthInitiative {
   desc: string;
   impact: string;
   image?: string;
+  details?: string;
+  audience?: string;
+  outcomes?: string;
 }
 
 export interface YouthStat {
@@ -28,7 +31,10 @@ export function getInitialYouthInitiatives(): YouthInitiative[] {
       title: "ESN Youth Leadership Academy",
       desc: "A 12-month immersive leadership programme for 18–30 year olds — combining environmental science training, policy advocacy skills, field experience, and mentorship from senior ESN practitioners and UN officials.",
       impact: "2,500 graduates in 55 countries",
-      image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080"
+      image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080",
+      details: "The ESN Youth Leadership Academy is our cornerstone leadership engine. Over 12 intensive months, cohorts engage in virtual masterclasses with world-leading climate scientists, UN negotiators, and community organizers. Fellows participate in localized ecological restoration projects, design regional public campaigns, and receive one-on-one mentorship to convert their ecological concepts into measurable, community-supported initiatives.",
+      audience: "Ages 18–30, grassroots leaders, university advocates, and emerging sustainability practitioners.",
+      outcomes: "Accredited youth leadership diploma, direct seed funding access, international peer network, and field intervention toolkit."
     },
     {
       id: 2,
@@ -36,7 +42,10 @@ export function getInitialYouthInitiatives(): YouthInitiative[] {
       title: "Climate Action Fellowships",
       desc: "Competitive, fully-funded fellowships placing young environmental professionals within ESN programs, partner NGOs, government ministries, and international institutions for 6–12 month assignments.",
       impact: "800 fellows placed annually",
-      image: "https://images.unsplash.com/photo-1577495508048-b635879837f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080"
+      image: "https://images.unsplash.com/photo-1577495508048-b635879837f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080",
+      details: "A high-impact bridge from academic learning to international environmental governance and field execution. Fellows receive full living stipends, professional insurance, and specialized advisory to support regional watershed conservation, green energy mini-grids, and climate policy drafts.",
+      audience: "Early-career environmental professionals, researchers, and community organizers.",
+      outcomes: "800 annual placements, high career transition rate to UN agencies & conservation bodies, co-authored policy briefs."
     },
     {
       id: 3,
@@ -44,7 +53,10 @@ export function getInitialYouthInitiatives(): YouthInitiative[] {
       title: "Youth Shapers COP Delegation",
       desc: "Providing rigorous negotiation training and accredited seats at UNFCCC COP summits, CBD COPs, and other key multilateral environmental forums — ensuring youth voices shape global climate agreements.",
       impact: "Active in 60 nations · COP29 ✓",
-      image: "/Commonwealth Secretariat at COP27.jpeg"
+      image: "/Commonwealth Secretariat at COP27.jpeg",
+      details: "We remove systemic financial and geopolitical barriers preventing frontline youth from engaging in high-level multilateral treaties. ESN provides comprehensive training in treaty language, negotiation protocol, and bilateral drafting prior to each UNFCCC and CBD COP.",
+      audience: "Selected youth delegates from 60+ countries with emphasis on climate-vulnerable coastal and island territories.",
+      outcomes: "Direct input into official COP text, ministerial youth roundtables, and international press amplification."
     },
     {
       id: 4,
@@ -52,7 +64,10 @@ export function getInitialYouthInitiatives(): YouthInitiative[] {
       title: "Green Schools Initiative",
       desc: "Transforming schools into climate action hubs through curriculum integration, student-led environment clubs, solar installations, tree planting, and connections to ESN's global youth network.",
       impact: "4,200 schools across 38 countries",
-      image: "https://images.unsplash.com/photo-1509062522246-3755977927d7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080"
+      image: "https://images.unsplash.com/photo-1509062522246-3755977927d7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080",
+      details: "Turning primary and secondary school grounds into living laboratories. We partner with headteachers, student environment clubs, and local authorities to establish schoolyard vegetable gardens, micro-solar arrays, rainwater catchment systems, and youth-led waste audits.",
+      audience: "K-12 educators, student environmental council members, and school administrators.",
+      outcomes: "4,200 active campus ecosystems, reduction in single-use school plastics, cross-school climate leagues."
     },
     {
       id: 5,
@@ -60,7 +75,10 @@ export function getInitialYouthInitiatives(): YouthInitiative[] {
       title: "Digital Climate Literacy Platform",
       desc: "Free, multilingual online learning platform delivering climate science, sustainability, and environmental advocacy courses to young people — accessible on mobile with or without internet connectivity.",
       impact: "1.2M learners · 55 languages",
-      image: "https://images.unsplash.com/photo-1531482615713-2afd69097998?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080"
+      image: "https://images.unsplash.com/photo-1531482615713-2afd69097998?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080",
+      details: "Accessible, offline-capable open education for all. Available in 55 indigenous and global languages, featuring bite-sized modules on climate science, carbon accounting, regenerative agriculture, and legal advocacy.",
+      audience: "Millions of self-paced learners worldwide, particularly in bandwidth-constrained regions.",
+      outcomes: "Over 1.2M learners certified, zero data-cost partnerships with regional telcos, mobile learning app."
     },
     {
       id: 6,
@@ -68,7 +86,10 @@ export function getInitialYouthInitiatives(): YouthInitiative[] {
       title: "Youth Research & Innovation Grants",
       desc: "Seed funding and mentorship for youth-led environmental research projects and social enterprises — supporting the next generation of environmental innovators from idea to impact in communities worldwide.",
       impact: "$4M awarded · 320 projects funded",
-      image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080"
+      image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080",
+      details: "Providing rapid, non-bureaucratic seed capital between $1,000 and $10,000 for innovative youth-designed solutions—from bio-plastic alternatives to low-cost river water filtration systems.",
+      audience: "Young eco-inventors, social entrepreneurs, and grassroots laboratory collectives.",
+      outcomes: "320+ prototypes piloted, 45 patented sustainable products, venture acceleration partners."
     }
   ];
 }
@@ -88,10 +109,11 @@ export default function YouthAdminView() {
   
   const [activeTab, setActiveTab] = useState<"initiatives" | "stats">("initiatives");
   const [showAdd, setShowAdd] = useState(false);
+  const [viewingInitiative, setViewingInitiative] = useState<YouthInitiative | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   
-  const [initForm, setInitForm] = useState<Partial<YouthInitiative>>({ num: "", title: "", desc: "", impact: "", image: "" });
+  const [initForm, setInitForm] = useState<Partial<YouthInitiative>>({ num: "", title: "", desc: "", impact: "", image: "", details: "", audience: "", outcomes: "" });
   const [statForm, setStatForm] = useState<Partial<YouthStat>>({ value: "", label: "", sub: "" });
 
   const saveInitiatives = async (newData: YouthInitiative[]) => {
@@ -117,7 +139,7 @@ export default function YouthAdminView() {
       saveInitiatives([...initiatives, { ...dataToSave, id: newId } as YouthInitiative]);
     }
     setShowAdd(false);
-    setInitForm({ num: "", title: "", desc: "", impact: "", image: "" });
+    setInitForm({ num: "", title: "", desc: "", impact: "", image: "", details: "", audience: "", outcomes: "" });
   };
 
   const handleSaveStat = () => {
@@ -134,7 +156,7 @@ export default function YouthAdminView() {
   };
 
   const startEditInit = (i: YouthInitiative) => {
-    setInitForm({ ...i, image: i.image || "" });
+    setInitForm({ ...i, image: i.image || "", details: i.details || "", audience: i.audience || "", outcomes: i.outcomes || "" });
     setEditingId(i.id);
     setShowAdd(true);
     setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
@@ -189,11 +211,23 @@ export default function YouthAdminView() {
                 <input type="text" value={initForm.title || ""} onChange={e => setInitForm({ ...initForm, title: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
               </div>
               <div className="md:col-span-2">
-                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Description *</label>
-                <textarea rows={3} value={initForm.desc || ""} onChange={e => setInitForm({ ...initForm, desc: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
+                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Short Summary / Description *</label>
+                <textarea rows={2} value={initForm.desc || ""} onChange={e => setInitForm({ ...initForm, desc: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
               </div>
               <div className="md:col-span-2">
-                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Impact text</label>
+                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Full In-Depth Details & Methodology</label>
+                <textarea rows={4} value={initForm.details || ""} onChange={e => setInitForm({ ...initForm, details: e.target.value })} placeholder="Comprehensive overview of how the program operates, curriculum components, mentoring structure, etc." className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Target Audience / Eligibility</label>
+                <input type="text" value={initForm.audience || ""} onChange={e => setInitForm({ ...initForm, audience: e.target.value })} placeholder="e.g. Ages 18–30, grassroots leaders, university advocates" className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Key Outcomes & Deliverables</label>
+                <input type="text" value={initForm.outcomes || ""} onChange={e => setInitForm({ ...initForm, outcomes: e.target.value })} placeholder="e.g. Accredited diploma, direct seed funding access" className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
+              </div>
+              <div className="md:col-span-2">
+                <label className="text-xs font-bold text-gray-600 mb-1.5 block">Impact Badge Text (e.g. 2,500 graduates in 55 countries)</label>
                 <input type="text" value={initForm.impact || ""} onChange={e => setInitForm({ ...initForm, impact: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
               </div>
               <div className="md:col-span-2 pt-2 border-t border-gray-100">
@@ -239,6 +273,96 @@ export default function YouthAdminView() {
         )}
       </AnimatePresence>
 
+      {/* In-Depth View Modal for Youth Initiative */}
+      <AnimatePresence>
+        {viewingInitiative && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 overflow-y-auto">
+            <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }} className="bg-white rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl my-8 relative">
+              <button onClick={() => setViewingInitiative(null)} className="absolute top-5 right-5 w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors">
+                <X size={16} />
+              </button>
+
+              {viewingInitiative.image && (
+                <div className="w-full h-56 rounded-2xl overflow-hidden mb-6 bg-gray-100 relative">
+                  <img src={viewingInitiative.image} alt={viewingInitiative.title} className="w-full h-full object-cover" />
+                  <div className="absolute top-3 left-3 bg-[#0B5D3F] text-white font-bold text-xs px-3 py-1 rounded-full shadow-md">
+                    {viewingInitiative.num}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs font-bold text-[#0B5D3F] bg-[#E6F3EB] px-3 py-1 rounded-full">
+                  Initiative #{viewingInitiative.num}
+                </span>
+                <span className="text-xs font-semibold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                  {viewingInitiative.impact}
+                </span>
+              </div>
+
+              <h3 className="text-2xl font-bold text-gray-900 mb-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                {viewingInitiative.title}
+              </h3>
+
+              <p className="text-gray-600 text-sm leading-relaxed mb-6 font-medium bg-[#F6FBF8] p-4 rounded-xl border border-gray-100">
+                {viewingInitiative.desc}
+              </p>
+
+              {viewingInitiative.details && (
+                <div className="mb-6">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Detailed Program Blueprint</h4>
+                  <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                    {viewingInitiative.details}
+                  </p>
+                </div>
+              )}
+
+              <div className="grid sm:grid-cols-2 gap-4 mb-6">
+                {viewingInitiative.audience && (
+                  <div className="bg-[#F8FCF9] p-4 rounded-2xl border border-emerald-100/70">
+                    <div className="flex items-center gap-2 text-xs font-bold text-[#0B5D3F] mb-1.5 uppercase tracking-wider">
+                      <Users size={14} /> Target Audience
+                    </div>
+                    <p className="text-xs text-gray-700 leading-relaxed font-medium">
+                      {viewingInitiative.audience}
+                    </p>
+                  </div>
+                )}
+                {viewingInitiative.outcomes && (
+                  <div className="bg-[#F8FCF9] p-4 rounded-2xl border border-emerald-100/70">
+                    <div className="flex items-center gap-2 text-xs font-bold text-[#0B5D3F] mb-1.5 uppercase tracking-wider">
+                      <Target size={14} /> Outcomes & Deliverables
+                    </div>
+                    <p className="text-xs text-gray-700 leading-relaxed font-medium">
+                      {viewingInitiative.outcomes}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-3 pt-4 border-t border-gray-100">
+                <button
+                  onClick={() => {
+                    const init = viewingInitiative;
+                    setViewingInitiative(null);
+                    startEditInit(init);
+                  }}
+                  className="flex-1 bg-[#0B5D3F] hover:bg-[#0a5237] text-white py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
+                >
+                  <Edit3 size={15} /> Edit This Initiative
+                </button>
+                <button
+                  onClick={() => setViewingInitiative(null)}
+                  className="px-6 py-3 border border-gray-200 hover:bg-gray-50 text-gray-600 rounded-xl font-semibold text-sm transition-all"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {deleteConfirmId !== null && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
@@ -276,6 +400,7 @@ export default function YouthAdminView() {
                   <div className="flex justify-between items-start mb-2">
                     <div className="text-[#0B5D3F] font-bold text-xs bg-[#E6F3EB] px-2.5 py-1 rounded-md">{i.num}</div>
                     <div className="flex gap-1.5">
+                      <button onClick={() => setViewingInitiative(i)} className="p-1.5 text-gray-400 hover:text-[#0B5D3F] hover:bg-emerald-50 rounded-lg transition-colors" title="View In-Depth Details"><Eye size={15} /></button>
                       <button onClick={() => startEditInit(i)} className="p-1.5 text-gray-400 hover:text-[#0B5D3F] hover:bg-gray-100 rounded-lg transition-colors" title="Edit"><Edit3 size={15} /></button>
                       <button onClick={() => setDeleteConfirmId(i.id)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete"><Trash2 size={15} /></button>
                     </div>
@@ -283,8 +408,16 @@ export default function YouthAdminView() {
                   <h4 className="font-bold text-gray-900 mb-2 line-clamp-2">{i.title}</h4>
                   <p className="text-sm text-gray-500 mb-4 line-clamp-3 font-light leading-relaxed">{i.desc}</p>
                 </div>
-                <div className="text-xs font-semibold text-[#0B5D3F] bg-[#E6F3EB]/70 border border-[#0B5D3F]/10 px-3 py-1.5 rounded-lg w-fit">
-                  {i.impact}
+                <div className="flex items-center justify-between gap-2 pt-2 border-t border-gray-50">
+                  <div className="text-xs font-semibold text-[#0B5D3F] bg-[#E6F3EB]/70 border border-[#0B5D3F]/10 px-3 py-1 rounded-lg truncate">
+                    {i.impact}
+                  </div>
+                  <button
+                    onClick={() => setViewingInitiative(i)}
+                    className="text-xs font-bold text-[#0B5D3F] hover:underline shrink-0"
+                  >
+                    View Details →
+                  </button>
                 </div>
               </div>
             ))}

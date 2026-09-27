@@ -36,6 +36,11 @@ function getSavedSettings() {
     seoTitle: "ESN - Environmental Shapers Network",
     seoDesc: "Global platform for environmental action, innovation, and collaboration.",
     ogImage: "",
+    facebookUrl: "https://facebook.com/EnvironmentalShapersNetwork",
+    instagramUrl: "https://instagram.com/esnglobal",
+    linkedinUrl: "https://linkedin.com/company/environmental-shapers-network",
+    twitterUrl: "https://twitter.com/esnglobal",
+    youtubeUrl: "https://youtube.com/@esnglobal",
   };
 }
 
@@ -341,6 +346,26 @@ export function SettingsView() {
                   </select>
                 </div>
               </div>
+
+              {/* Official Social Media Links */}
+              <div className="bg-[#F6FBF8] rounded-2xl p-6 border border-gray-100">
+                <div className="flex items-center justify-between pb-3 mb-4 border-b border-gray-200/60">
+                  <div>
+                    <h5 className="font-bold text-gray-900 text-sm">Official Social Media Profiles</h5>
+                    <p className="text-xs text-gray-500">Connected to website footer, floating social widgets, and contact channels</p>
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Field label="Facebook Page URL" k="facebookUrl" placeholder="https://facebook.com/EnvironmentalShapersNetwork" />
+                  <Field label="Instagram Profile URL" k="instagramUrl" placeholder="https://instagram.com/esnglobal" />
+                  <Field label="LinkedIn Organization URL" k="linkedinUrl" placeholder="https://linkedin.com/company/environmental-shapers-network" />
+                  <Field label="Twitter / X Profile URL" k="twitterUrl" placeholder="https://twitter.com/esnglobal" />
+                  <div className="sm:col-span-2">
+                    <Field label="YouTube Channel URL" k="youtubeUrl" placeholder="https://youtube.com/@esnglobal" />
+                  </div>
+                </div>
+              </div>
+
               <div className="bg-[#F6FBF8] rounded-2xl p-5 border border-gray-100">
                 <SwitchRow label="Maintenance Mode" desc="Take the public website offline for scheduled updates. Admin dashboard remains accessible." k="maintenanceMode" />
               </div>

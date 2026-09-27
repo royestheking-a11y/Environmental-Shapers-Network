@@ -1335,7 +1335,7 @@ function GlobalRepresentativePage() {
               <div className="inline-flex items-center gap-1.5 bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase">
                 <Users size={12} /> Youth Movement
               </div>
-              <h3 className="font-bold text-lg mb-2">Youth Engagement Programs</h3>
+              <h3 className="font-bold text-lg mb-2">Youth Development Programs</h3>
               <p className="text-xs text-white/80 leading-relaxed mb-6">
                 Discover our youth leadership academies, COP delegations, and campus chapters mobilizing young changemakers globally.
               </p>

@@ -32,6 +32,8 @@ import {
   initialVisionMissionData,
   initialGlobalPresenceData
 } from "./admin/sections/AboutPageAdminView";
+import { getInitialCampaigns as getInitialNewsletters } from "./admin/sections/NewsletterView";
+import { getSavedSettings } from "../utils/useSettings";
 
 export default function SeedDatabase() {
   const [status, setStatus] = useState("Seeding database... Please wait.");
@@ -71,6 +73,9 @@ export default function SeedDatabase() {
         await saveFirestoreData("esn_about_team", initialTeamMembers);
         await saveFirestoreData("esn_about_vision_mission", initialVisionMissionData);
         await saveFirestoreData("esn_about_global_presence", initialGlobalPresenceData);
+        await saveFirestoreData("esn_newsletters", getInitialNewsletters());
+        const initialSettings = await getSavedSettings();
+        await saveFirestoreData("esn_settings", initialSettings);
 
         setStatus("Database seeded successfully! You can check your Firebase Console now.");
       } catch (e) {

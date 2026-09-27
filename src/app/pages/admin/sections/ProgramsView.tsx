@@ -12,6 +12,14 @@ export interface ProgramStat {
   label: string;
 }
 
+export interface ProgramInitiative {
+  id?: string | number;
+  title: string;
+  tag: string;
+  desc: string;
+  impactInsight?: string;
+}
+
 export interface ProgramData {
   id: number;
   slug: string;
@@ -24,6 +32,7 @@ export interface ProgramData {
   reach: string;
   image: string;
   stats?: ProgramStat[];
+  initiatives?: ProgramInitiative[];
 }
 
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
@@ -79,6 +88,57 @@ export const DEFAULT_PROGRAM_STATS: Record<string, ProgramStat[]> = {
   ]
 };
 
+export const DEFAULT_PROGRAM_INITIATIVES: Record<string, ProgramInitiative[]> = {
+  "forest-restoration": [
+    { title: "Amazon Revival", tag: "Flagship", desc: "Working with indigenous communities to restore 500,000 hectares of degraded rainforest using native species and sustainable agroforestry.", impactInsight: "500K ha restored" },
+    { title: "Great Green Wall Support", tag: "Partnership", desc: "Partnering with African nations to plant drought-resistant trees across the Sahel, combating desertification and creating green jobs.", impactInsight: "1.2M trees planted" },
+    { title: "Mangrove Shield", tag: "Coastal", desc: "Restoring critical mangrove ecosystems in Southeast Asia to protect coastlines from storm surges and sequester blue carbon.", impactInsight: "85 km coastline protected" },
+    { title: "Urban Canopy Initiative", tag: "Urban", desc: "Bringing green spaces back to heavily polluted urban centers by planting millions of trees in partnership with city governments.", impactInsight: "20+ mega cities" }
+  ],
+  "ocean-action": [
+    { title: "Coral Rescue Network", tag: "Restoration", desc: "Deploying innovative coral gardening techniques and 3D printed reefs to restore 100+ degraded reef systems globally.", impactInsight: "100+ reef systems" },
+    { title: "Plastic-Free Seas", tag: "Action", desc: "Mobilizing thousands of volunteers and specialized vessels to intercept river plastic before it reaches the ocean.", impactInsight: "45K tons plastic removed" },
+    { title: "Blue Carbon Habitats", tag: "Conservation", desc: "Protecting and restoring seagrass meadows that absorb carbon up to 35 times faster than tropical rainforests.", impactInsight: "35 MPAs active" },
+    { title: "Sustainable Coasts", tag: "Community", desc: "Empowering local fishing communities with the tools and knowledge to manage their marine resources sustainably.", impactInsight: "120 communities supported" }
+  ],
+  "clean-energy": [
+    { title: "Solar Mini-Grids", tag: "Off-Grid", desc: "Deploying decentralized microgrids to power rural clinics, schools, and homes with 100% clean solar energy.", impactInsight: "450+ microgrids deployed" },
+    { title: "Clean Cooking Transition", tag: "Health", desc: "Replacing open-fire wood stoves with modern clean cookstoves, reducing household air pollution and deforestation.", impactInsight: "120K families supported" },
+    { title: "Community Energy Cooperatives", tag: "Ownership", desc: "Establishing locally-governed solar cooperatives that generate revenue and clean energy for villages.", impactInsight: "85 cooperatives established" },
+    { title: "Renewable Energy Skills Hub", tag: "Education", desc: "Training youth and women technicians to install, maintain, and manage clean energy installations.", impactInsight: "3,500 technicians trained" }
+  ],
+  "climate-adaptation": [
+    { title: "Community Early Warning Systems", tag: "Resilience", desc: "Setting up decentralized weather monitoring and alert networks in flood and cyclone prone river basins.", impactInsight: "320 communities protected" },
+    { title: "Floating Agriculture & Hydroponics", tag: "Innovation", desc: "Implementing adaptive farming techniques for low-lying coastal deltas facing waterlogging and salinity.", impactInsight: "15K farmers equipped" },
+    { title: "Resilient Habitat Infrastructure", tag: "Housing", desc: "Building climate-proof community centers and elevated water filtration stations.", impactInsight: "45 vulnerable zones upgraded" },
+    { title: "Local Adaptation Action Plans", tag: "Policy", desc: "Empowering grassroots councils to formulate, budget, and execute adaptation measures with international grants.", impactInsight: "$12M grants deployed" }
+  ],
+  "biodiversity": [
+    { title: "Community Ranger Network", tag: "Protection", desc: "Equipping and training local indigenous rangers with smart tracking tech to prevent poaching and habitat destruction.", impactInsight: "3,500 rangers active" },
+    { title: "Wildlife Migration Corridors", tag: "Conservation", desc: "Securing and reforesting ecological corridors connecting fragmented national parks and wildlife sanctuaries.", impactInsight: "5M hectares protected" },
+    { title: "Endangered Species Tracking", tag: "Science", desc: "Deploying camera traps, acoustic monitors, and bio-sensors to monitor threatened flora and fauna.", impactInsight: "85 species monitored" },
+    { title: "Living Landscapes Advocacy", tag: "Policy", desc: "Advocating for legal rights of nature and indigenous stewardship recognition at UN CBD summits.", impactInsight: "24 global treaties influenced" }
+  ],
+  "education": [
+    { title: "Green Schools Initiative", tag: "Schools", desc: "Equipping schools worldwide with solar power, eco-gardens, waste sorting hubs, and environmental science modules.", impactInsight: "15,000 schools enrolled" },
+    { title: "Teacher Climate Academies", tag: "Training", desc: "Providing professional development and curriculum materials to primary and secondary educators globally.", impactInsight: "50,000 teachers trained" },
+    { title: "Digital Eco-Curriculum Hub", tag: "Open Access", desc: "Open digital environmental learning tools in 20+ languages for millions of curious young minds.", impactInsight: "5M+ students reached" },
+    { title: "University Campus Sustainability League", tag: "Youth", desc: "Inter-university challenges and carbon footprint reduction audits driven by student coalitions.", impactInsight: "250 campuses active" }
+  ],
+  "research": [
+    { title: "Global Ecological Monitoring Stations", tag: "Field Science", desc: "Collecting continuous soil, water quality, canopy cover, and atmospheric data across vulnerable ecosystems.", impactInsight: "12 research stations" },
+    { title: "Policy Briefs & White Papers", tag: "Policy", desc: "Translating empirical field data into actionable recommendations for international climate delegates and ministries.", impactInsight: "45 policy briefs published" },
+    { title: "Open-Science Data Commons", tag: "Data", desc: "Publishing open datasets for global researchers, university students, and environmental journalists.", impactInsight: "180+ papers available" },
+    { title: "South-South Scientific Exchange", tag: "Collaboration", desc: "Sponsoring joint research fellowships between scientists from developing nations on delta adaptation.", impactInsight: "250+ scientists networked" }
+  ],
+  "youth": [
+    { title: "Young Environmental Leaders (YEL) Fellowship", tag: "Flagship", desc: "12-month intensive program equipping promising leaders with seed funds, mentorship, and project tools.", impactInsight: "2,500 fellows graduated" },
+    { title: "Youth COP Delegation Support", tag: "Global Voice", desc: "Accrediting and preparing youth leaders to participate actively in UN climate negotiation panels.", impactInsight: "60 nations represented" },
+    { title: "ESN Youth Innovation Fund", tag: "Micro-grants", desc: "Micro-grants of $500–$5,000 directly to grassroots youth projects combating pollution and restoring nature.", impactInsight: "$2.5M in micro-grants" },
+    { title: "Digital Leadership Academy", tag: "Skills", desc: "Online masterclasses in project design, environmental communication, coalition building, and legal advocacy.", impactInsight: "48,000+ members" }
+  ]
+};
+
 export function getInitialPrograms(): ProgramData[] {
   return [
     {
@@ -87,7 +147,8 @@ export function getInitialPrograms(): ProgramData[] {
       highlights: ["2.4M Trees Planted", "Community Nurseries", "Land Tenure Support"],
       reach: "80+ Countries Active",
       image: "/canada journey.jpeg",
-      stats: DEFAULT_PROGRAM_STATS["forest-restoration"]
+      stats: DEFAULT_PROGRAM_STATS["forest-restoration"],
+      initiatives: DEFAULT_PROGRAM_INITIATIVES["forest-restoration"]
     },
     {
       id: 2, slug: "ocean-action", title: "Ocean & Coastal Action", category: "Ecosystems", iconName: "Waves", color: "#2196F3",
@@ -95,7 +156,8 @@ export function getInitialPrograms(): ProgramData[] {
       highlights: ["Reef Monitoring Network", "Coastal Clean-ups", "Marine Protected Areas"],
       reach: "32 Marine Projects",
       image: "/Representing Bangladesh's Coastal Communities on the Global Stage.jpeg",
-      stats: DEFAULT_PROGRAM_STATS["ocean-action"]
+      stats: DEFAULT_PROGRAM_STATS["ocean-action"],
+      initiatives: DEFAULT_PROGRAM_INITIATIVES["ocean-action"]
     },
     {
       id: 3, slug: "clean-energy", title: "Climate-Smart Energy Access", category: "Energy", iconName: "Sun", color: "#FFC107",
@@ -103,7 +165,8 @@ export function getInitialPrograms(): ProgramData[] {
       highlights: ["Solar Mini-grids", "Cookstove Programs", "Energy Policy"],
       reach: "120K+ Households",
       image: "/canada conference.jpeg",
-      stats: DEFAULT_PROGRAM_STATS["clean-energy"]
+      stats: DEFAULT_PROGRAM_STATS["clean-energy"],
+      initiatives: DEFAULT_PROGRAM_INITIATIVES["clean-energy"]
     },
     {
       id: 4, slug: "climate-adaptation", title: "Climate Adaptation & Resilience", category: "Community", iconName: "ShieldAlert", color: "#F44336",
@@ -111,7 +174,8 @@ export function getInitialPrograms(): ProgramData[] {
       highlights: ["Community Plans", "Resilience Grants", "Capacity Building"],
       reach: "12K+ Communities",
       image: "/Speaking on Climate Adaptation and Resilience in South Asia- CEPCA 2024, Ottawa, Canada.jpeg",
-      stats: DEFAULT_PROGRAM_STATS["climate-adaptation"]
+      stats: DEFAULT_PROGRAM_STATS["climate-adaptation"],
+      initiatives: DEFAULT_PROGRAM_INITIATIVES["climate-adaptation"]
     },
     {
       id: 5, slug: "biodiversity", title: "Biodiversity & Wildlife", category: "Ecosystems", iconName: "Bug", color: "#9C27B0",
@@ -119,7 +183,8 @@ export function getInitialPrograms(): ProgramData[] {
       highlights: ["Species Monitoring", "Corridor Projects", "Anti-Poaching"],
       reach: "85 Species Monitored",
       image: "/Commonwealth Secretariat at COP27.jpeg",
-      stats: DEFAULT_PROGRAM_STATS["biodiversity"]
+      stats: DEFAULT_PROGRAM_STATS["biodiversity"],
+      initiatives: DEFAULT_PROGRAM_INITIATIVES["biodiversity"]
     },
     {
       id: 6, slug: "education", title: "Environmental Education", category: "Knowledge", iconName: "GraduationCap", color: "#00BCD4",
@@ -127,7 +192,8 @@ export function getInitialPrograms(): ProgramData[] {
       highlights: ["Green Schools Initiative", "Teacher Training", "Digital Curriculum"],
       reach: "5M+ Students Annually",
       image: "/meeting time.jpeg",
-      stats: DEFAULT_PROGRAM_STATS["education"]
+      stats: DEFAULT_PROGRAM_STATS["education"],
+      initiatives: DEFAULT_PROGRAM_INITIATIVES["education"]
     },
     {
       id: 7, slug: "research", title: "Environmental Research", category: "Knowledge", iconName: "Microscope", color: "#607D8B",
@@ -135,7 +201,8 @@ export function getInitialPrograms(): ProgramData[] {
       highlights: ["180+ Publications", "Policy Dialogues", "Open Data"],
       reach: "180+ Publications",
       image: "/represent bangladesh.jpeg",
-      stats: DEFAULT_PROGRAM_STATS["research"]
+      stats: DEFAULT_PROGRAM_STATS["research"],
+      initiatives: DEFAULT_PROGRAM_INITIATIVES["research"]
     },
     {
       id: 8, slug: "youth", title: "Youth Development", category: "People", iconName: "UsersRound", color: "#FF9800",
@@ -143,7 +210,8 @@ export function getInitialPrograms(): ProgramData[] {
       highlights: ["YEL Fellowship Program", "Leadership Academies", "Youth Innovation Fund"],
       reach: "48K+ Youth Engaged",
       image: "/Climate Reality Leadership Corps Training | Representing Bangladesh.jpeg",
-      stats: DEFAULT_PROGRAM_STATS["youth"]
+      stats: DEFAULT_PROGRAM_STATS["youth"],
+      initiatives: DEFAULT_PROGRAM_INITIATIVES["youth"]
     }
   ];
 }
@@ -159,7 +227,8 @@ const blankProgram: Omit<ProgramData, "id"> = {
     { value: "", label: "" },
     { value: "", label: "" },
     { value: "", label: "" }
-  ]
+  ],
+  initiatives: []
 };
 
 export function resolveIcon(name: string) {
@@ -207,7 +276,10 @@ export function ProgramsView() {
     while (fullStats.length < 4) {
       fullStats.push({ value: "", label: "" });
     }
-    setForm({ ...rest, stats: fullStats });
+    const defaultInitiatives = DEFAULT_PROGRAM_INITIATIVES[p.slug] || [];
+    const existingInitiatives = rest.initiatives && rest.initiatives.length > 0 ? rest.initiatives : defaultInitiatives;
+
+    setForm({ ...rest, stats: fullStats, initiatives: existingInitiatives });
     setEditId(id);
     setShowForm(true);
   };
@@ -233,6 +305,23 @@ export function ProgramsView() {
     ])];
     newStats[index] = { ...newStats[index], [field]: val };
     setForm({ ...form, stats: newStats });
+  };
+
+  const handleInitiativeChange = (index: number, field: keyof ProgramInitiative, val: string) => {
+    const list = [...(form.initiatives || [])];
+    list[index] = { ...list[index], [field]: val };
+    setForm({ ...form, initiatives: list });
+  };
+
+  const addInitiative = () => {
+    const list = [...(form.initiatives || [])];
+    list.push({ title: "", tag: "Action", desc: "", impactInsight: "" });
+    setForm({ ...form, initiatives: list });
+  };
+
+  const removeInitiative = (index: number) => {
+    const list = [...(form.initiatives || [])].filter((_, i) => i !== index);
+    setForm({ ...form, initiatives: list });
   };
 
   const filtered = (programs || []).filter((p) => {
@@ -369,6 +458,94 @@ export function ProgramsView() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                </div>
+
+                <div className="sm:col-span-2 pt-4 border-t border-gray-100">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <label className="text-xs font-bold text-gray-800 block">
+                        Core Program Initiatives & Action Tracks
+                      </label>
+                      <p className="text-[11px] text-gray-400">
+                        Initiatives displayed under this program on the public website with title, tag, description, and impact insight.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={addInitiative}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-[#0B5D3F] hover:bg-emerald-100 border border-emerald-200 transition-colors"
+                    >
+                      <Plus size={13} /> Add Initiative
+                    </button>
+                  </div>
+                  
+                  <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+                    {(form.initiatives || []).length === 0 ? (
+                      <div className="text-xs text-gray-400 italic p-4 text-center bg-gray-50 rounded-xl">
+                        No initiatives added yet. Click "+ Add Initiative" above to add program action tracks.
+                      </div>
+                    ) : (
+                      (form.initiatives || []).map((init, idx) => (
+                        <div key={idx} className="bg-[#F6FBF8] p-3.5 rounded-2xl border border-gray-200/80 relative">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-[11px] font-bold text-gray-500 uppercase">Initiative #{idx + 1}</span>
+                            <button
+                              type="button"
+                              onClick={() => removeInitiative(idx)}
+                              className="text-gray-400 hover:text-red-500 p-1 rounded-lg transition-colors"
+                              title="Remove initiative"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-2.5">
+                            <div className="sm:col-span-2">
+                              <label className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Initiative Title</label>
+                              <input
+                                type="text"
+                                value={init.title || ""}
+                                onChange={(e) => handleInitiativeChange(idx, "title", e.target.value)}
+                                placeholder="e.g. Coral Rescue Network"
+                                className="w-full px-3 py-1.5 rounded-xl bg-white border border-gray-200 text-xs font-semibold text-gray-800 focus:outline-none focus:border-[#4CAF50]"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Tag / Category</label>
+                              <input
+                                type="text"
+                                value={init.tag || ""}
+                                onChange={(e) => handleInitiativeChange(idx, "tag", e.target.value)}
+                                placeholder="e.g. Restoration"
+                                className="w-full px-3 py-1.5 rounded-xl bg-white border border-gray-200 text-xs text-gray-700 focus:outline-none focus:border-[#4CAF50]"
+                              />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                            <div className="sm:col-span-2">
+                              <label className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Description</label>
+                              <input
+                                type="text"
+                                value={init.desc || ""}
+                                onChange={(e) => handleInitiativeChange(idx, "desc", e.target.value)}
+                                placeholder="Brief description of the initiative goals..."
+                                className="w-full px-3 py-1.5 rounded-xl bg-white border border-gray-200 text-xs text-gray-700 focus:outline-none focus:border-[#4CAF50]"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Impact Insight Number</label>
+                              <input
+                                type="text"
+                                value={init.impactInsight || ""}
+                                onChange={(e) => handleInitiativeChange(idx, "impactInsight", e.target.value)}
+                                placeholder="e.g. 100+ reef systems"
+                                className="w-full px-3 py-1.5 rounded-xl bg-white border border-gray-200 text-xs text-emerald-800 font-semibold focus:outline-none focus:border-[#4CAF50]"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               </div>

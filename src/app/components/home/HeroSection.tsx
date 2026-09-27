@@ -279,31 +279,6 @@ export function HeroSection() {
         <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[calc(100vh-160px)]">
           {/* LEFT: Text Column */}
           <div className="flex flex-col justify-center">
-            {/* Live Interconnected Global Reps Indicator */}
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="mb-4"
-            >
-              <Link
-                to="/global-representatives"
-                className="inline-flex items-center gap-2.5 bg-white/10 hover:bg-white/15 border border-white/20 hover:border-[#4CAF50]/60 text-white text-xs font-semibold px-4 py-1.5 rounded-full shadow-lg shadow-black/20 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] group"
-              >
-                <span className="flex h-2 w-2 relative">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#4CAF50] opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#4CAF50]"></span>
-                </span>
-                <span className="text-[#81C784] font-bold">
-                  {repsCount} Global Representatives
-                </span>
-                <span className="text-white/40">·</span>
-                <span className="text-white/80">
-                  {nationsCount} Nations
-                </span>
-                <ArrowRight size={12} className="text-[#81C784] group-hover:translate-x-1 transition-transform ml-0.5" />
-              </Link>
-            </motion.div>
 
             {/* Tag pill */}
             <AnimatePresence mode="wait">

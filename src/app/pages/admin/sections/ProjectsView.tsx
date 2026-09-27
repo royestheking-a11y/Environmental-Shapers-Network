@@ -9,6 +9,11 @@ import { ImageUploadField } from "../../../components/ui/ImageUploadField";
 
 type ProjectStatus = "Active" | "Planning" | "Completed" | "On Hold";
 
+export interface ProjectApproach {
+  title: string;
+  desc: string;
+}
+
 export interface Project {
   id: number;
   name: string;
@@ -26,19 +31,126 @@ export interface Project {
   impact: string;
   volunteers: number;
   color: string;
+  // Extended fields for Point 7 & Point 1 (Interconnection & Impact Dashboard Insights):
+  tagline?: string;
+  challenge?: string;
+  sdgs?: string;
+  programSlug?: string;
+  initiativeTitle?: string;
+  impactTrees?: number;
+  impactCO2?: number;
+  impactCommunities?: number;
+  impactBeneficiaries?: number;
+  approach?: ProjectApproach[];
 }
 
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 import { logAdminActivity } from "../../../../lib/activityLogger";
+import { DEFAULT_PROGRAM_INITIATIVES } from "./ProgramsView";
+
+export const PROGRAM_OPTIONS = [
+  { slug: "forest-restoration", label: "Forest Restoration" },
+  { slug: "ocean-action", label: "Ocean & Coastal Action" },
+  { slug: "clean-energy", label: "Climate-Smart Energy Access" },
+  { slug: "climate-adaptation", label: "Climate Adaptation & Resilience" },
+  { slug: "biodiversity", label: "Biodiversity & Wildlife" },
+  { slug: "education", label: "Environmental Education" },
+  { slug: "research", label: "Environmental Research" },
+  { slug: "youth", label: "Youth Development" },
+];
 
 export function getInitialProjects(): Project[] {
   return [
-    { id: 1, name: "Amazon Reforestation Hub", country: "Brazil", region: "South America", status: "Active", budget: 240000, progress: 72, category: "Forest Restoration", description: "Large-scale community reforestation covering 50,000 hectares in the Amazon.", lead: "Carlos Rodriguez", startDate: "Jan 1, 2026", img: "/meeting time.jpeg", theme: "SDG 15", impact: "350K trees planted", volunteers: 1200, color: "#0B5D3F" },
-    { id: 2, name: "Sundarbans Mangrove Restore", country: "Bangladesh", region: "South Asia", status: "Active", budget: 180000, progress: 85, category: "Coastal Ecosystems", description: "Mangrove restoration and biodiversity protection in the Sundarbans delta.", lead: "Rizwan Ahmed", startDate: "Mar 1, 2025", img: "/represent bangladesh.jpeg", theme: "SDG 14", impact: "120 km² restored", volunteers: 800, color: "#4CAF50" },
-    { id: 3, name: "Solar Villages Initiative", country: "Kenya", region: "East Africa", status: "Active", budget: 320000, progress: 45, category: "Renewable Energy", description: "Bringing solar energy to 200 off-grid villages across sub-Saharan Africa.", lead: "Amara Osei", startDate: "Jun 1, 2026", img: "/Speaking on Climate Adaptation and Resilience in South Asia- CEPCA 2024, Ottawa, Canada.jpeg", theme: "SDG 7", impact: "200 villages", volunteers: 450, color: "#D6A95A" },
-    { id: 4, name: "Pacific Coral Guardian", country: "Fiji", region: "Pacific", status: "Completed", budget: 150000, progress: 100, category: "Marine Conservation", description: "Coral reef restoration and marine biodiversity monitoring.", lead: "Priya Sharma", startDate: "Jan 1, 2024", img: "/canada conference.jpeg", theme: "SDG 14", impact: "45 coral reefs", volunteers: 320, color: "#173B63" },
-    { id: 5, name: "Himalayan Watershed Revival", country: "Nepal", region: "South Asia", status: "Planning", budget: 90000, progress: 12, category: "Water Security", description: "Restoring watershed ecosystems to improve freshwater availability.", lead: "Priya Sharma", startDate: "Sep 1, 2026", img: "https://images.unsplash.com/photo-1656740978556-ae767a923f5e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600", theme: "SDG 6", impact: "150K families", volunteers: 2100, color: "#0B5D3F" },
-    { id: 6, name: "Sahel Dryland Greening", country: "Niger", region: "West Africa", status: "On Hold", budget: 60000, progress: 30, category: "Agroforestry", description: "Farmer-led natural regeneration to combat desertification in the Sahel.", lead: "Amara Osei", startDate: "Apr 1, 2025", img: "https://images.unsplash.com/photo-1656740978404-874f95b253b7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600", theme: "SDG 15", impact: "30K trees planted", volunteers: 200, color: "#D6A95A" },
+    {
+      id: 1, name: "Amazon Reforestation Hub", country: "Brazil", region: "South America", status: "Active", budget: 240000, progress: 72,
+      category: "Forest Restoration", programSlug: "forest-restoration", initiativeTitle: "Amazon Revival",
+      tagline: "Restoring the lungs of the planet, one native tree at a time.",
+      description: "Large-scale community reforestation covering 50,000 hectares in the Brazilian Amazon in partnership with indigenous guardians.",
+      challenge: "Over 17% of the Brazilian Amazon has been cleared in the past five decades, causing biodiversity loss and releasing gigatons of stored carbon.",
+      lead: "Carlos Rodriguez", startDate: "Jan 1, 2026", img: "/meeting time.jpeg", theme: "SDG 15",
+      impact: "350K trees planted", volunteers: 1200, color: "#0B5D3F", sdgs: "SDG 13, SDG 15, SDG 1, SDG 8",
+      impactTrees: 350000, impactCO2: 21875, impactCommunities: 48, impactBeneficiaries: 12000,
+      approach: [
+        { title: "Community-Led Planting", desc: "Indigenous groups lead planting and nursery operations, ensuring long-term stewardship." },
+        { title: "Native Species Diversity", desc: "Over 200 native species planted per hectare to maximize resilience." },
+        { title: "Satellite & Drone Monitoring", desc: "Real-time monitoring ensuring sapling survival rates above 88%." }
+      ]
+    },
+    {
+      id: 2, name: "Sundarbans Mangrove Restore", country: "Bangladesh", region: "South Asia", status: "Active", budget: 180000, progress: 85,
+      category: "Coastal Ecosystems", programSlug: "ocean-action", initiativeTitle: "Mangrove Shield",
+      tagline: "Protecting South Asia's coastal shield from storm surges and sea-level rise.",
+      description: "Mangrove restoration and biodiversity protection in the Sundarbans delta to protect 4 million coastal residents.",
+      challenge: "Rising sea levels and intense cyclones like Amphan and Remal have damaged 25% of coastal mangrove buffer zones.",
+      lead: "Rizwan Ahmed", startDate: "Mar 1, 2025", img: "/represent bangladesh.jpeg", theme: "SDG 14",
+      impact: "120 km² restored", volunteers: 800, color: "#4CAF50", sdgs: "SDG 13, SDG 14, SDG 15",
+      impactTrees: 280000, impactCO2: 17500, impactCommunities: 65, impactBeneficiaries: 4000000,
+      approach: [
+        { title: "Tidal Hydrology Restoration", desc: "Restoring natural tidal channels for natural mangrove seed dispersal." },
+        { title: "Community Forest Guards", desc: "350 trained local guards protecting restored reserves." },
+        { title: "Blue Carbon Certification", desc: "Establishing certified carbon baselines for sustainable local revenue." }
+      ]
+    },
+    {
+      id: 3, name: "Solar Villages Initiative", country: "Kenya", region: "East Africa", status: "Active", budget: 320000, progress: 45,
+      category: "Renewable Energy", programSlug: "clean-energy", initiativeTitle: "Solar Mini-Grids",
+      tagline: "Powering remote off-grid clinics, schools, and homes with community clean energy.",
+      description: "Bringing solar micro-grids to 200 off-grid villages across sub-Saharan Africa, replacing fossil fuel dependence.",
+      challenge: "Over 60% of rural families lack access to electricity, relying on polluting kerosene lamps and diesel generators.",
+      lead: "Amara Osei", startDate: "Jun 1, 2026", img: "/Speaking on Climate Adaptation and Resilience in South Asia- CEPCA 2024, Ottawa, Canada.jpeg", theme: "SDG 7",
+      impact: "200 villages powered", volunteers: 450, color: "#D6A95A", sdgs: "SDG 7, SDG 13, SDG 3",
+      impactTrees: 0, impactCO2: 14500, impactCommunities: 200, impactBeneficiaries: 120000,
+      approach: [
+        { title: "Decentralized Micro-grids", desc: "Solar photovoltaic systems with smart metering for reliable power." },
+        { title: "Women Technician Training", desc: "Training local women to install, maintain, and manage solar hardware." },
+        { title: "Clean Cooking Integration", desc: "Deploying energy-efficient electric cookstoves alongside power access." }
+      ]
+    },
+    {
+      id: 4, name: "Pacific Coral Guardian", country: "Fiji", region: "Pacific", status: "Completed", budget: 150000, progress: 100,
+      category: "Marine Conservation", programSlug: "ocean-action", initiativeTitle: "Coral Rescue Network",
+      tagline: "Racing against warming oceans to save the Pacific's living reefs.",
+      description: "Coral reef restoration and marine biodiversity monitoring across 45 sensitive Pacific island sites.",
+      challenge: "Marine heatwaves and ocean acidification have bleached over 50% of shallow Pacific coral habitats.",
+      lead: "Priya Sharma", startDate: "Jan 1, 2024", img: "/canada conference.jpeg", theme: "SDG 14",
+      impact: "45 coral reefs restored", volunteers: 320, color: "#173B63", sdgs: "SDG 14, SDG 13, SDG 17",
+      impactTrees: 0, impactCO2: 8200, impactCommunities: 28, impactBeneficiaries: 45000,
+      approach: [
+        { title: "Heat-Resilient Coral Nurseries", desc: "Growing thermally tolerant coral fragments in deep water nurseries." },
+        { title: "Citizen Diver Monitoring", desc: "Training 320 volunteer divers to record reef recovery and bleaching." },
+        { title: "Marine Protected Areas", desc: "Securing 8 community-governed marine protected zones." }
+      ]
+    },
+    {
+      id: 5, name: "Himalayan Watershed Revival", country: "Nepal", region: "South Asia", status: "Planning", budget: 90000, progress: 12,
+      category: "Water Security", programSlug: "climate-adaptation", initiativeTitle: "Community Early Warning Systems",
+      tagline: "Safeguarding the freshwater sources of 150,000 Himalayan families.",
+      description: "Restoring watershed ecosystems to improve freshwater availability and reduce landslide hazards in high-altitude valleys.",
+      challenge: "Glacial retreat and degraded catchment forests have dried up 70% of natural spring water sources.",
+      lead: "Priya Sharma", startDate: "Sep 1, 2026", img: "https://images.unsplash.com/photo-1656740978556-ae767a923f5e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600", theme: "SDG 6",
+      impact: "150K families supported", volunteers: 2100, color: "#0B5D3F", sdgs: "SDG 6, SDG 13, SDG 15",
+      impactTrees: 120000, impactCO2: 7500, impactCommunities: 72, impactBeneficiaries: 150000,
+      approach: [
+        { title: "Catchment Tree Planting", desc: "Planting alpine broadleaf trees to retain moisture and stabilize hillsides." },
+        { title: "Spring-box Water Harvesting", desc: "Constructing natural filtration and storage tanks for dry seasons." },
+        { title: "Glacial Flood Early Warning", desc: "Automated stream gauges alerting downstream villages to sudden surges." }
+      ]
+    },
+    {
+      id: 6, name: "Sahel Dryland Greening", country: "Niger", region: "West Africa", status: "On Hold", budget: 60000, progress: 30,
+      category: "Agroforestry", programSlug: "forest-restoration", initiativeTitle: "Great Green Wall Support",
+      tagline: "Farmer-led natural regeneration holding back the Sahara Desert.",
+      description: "Farmer-managed natural regeneration to combat desertification and restore arable soil in the Sahel.",
+      challenge: "Drought and desertification advance southward at 2 km annually, destroying fertile croplands.",
+      lead: "Amara Osei", startDate: "Apr 1, 2025", img: "https://images.unsplash.com/photo-1656740978404-874f95b253b7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600", theme: "SDG 15",
+      impact: "30K trees protected", volunteers: 200, color: "#D6A95A", sdgs: "SDG 15, SDG 2, SDG 13",
+      impactTrees: 30000, impactCO2: 1875, impactCommunities: 22, impactBeneficiaries: 18000,
+      approach: [
+        { title: "Farmer-Managed Regeneration", desc: "Pruning and nurturing existing underground root systems into full trees." },
+        { title: "Water-Catchment Half Moons", desc: "Earthen contour dikes holding scarce rainwater in the soil." },
+        { title: "Inter-cropping Resilience", desc: "Growing drought-tolerant legumes under acacia shade canopies." }
+      ]
+    },
   ];
 }
 
@@ -53,7 +165,15 @@ const blankProject: Omit<Project, "id"> = {
   name: "", country: "", region: "", status: "Planning",
   budget: 0, progress: 0, category: "Forest Restoration",
   description: "", lead: "", startDate: "",
-  img: "", theme: "", impact: "", volunteers: 0, color: "#0B5D3F"
+  img: "", theme: "", impact: "", volunteers: 0, color: "#0B5D3F",
+  tagline: "", challenge: "", sdgs: "SDG 13, SDG 15",
+  programSlug: "forest-restoration", initiativeTitle: "Amazon Revival",
+  impactTrees: 0, impactCO2: 0, impactCommunities: 0, impactBeneficiaries: 0,
+  approach: [
+    { title: "Community Stewardship", desc: "Local teams and grassroots leadership direct on-the-ground action." },
+    { title: "Science-Based Monitoring", desc: "Verifiable metrics tracking survival and carbon outcomes." },
+    { title: "Sustainable Livelihoods", desc: "Creating green employment and economic resilience for families." }
+  ]
 };
 
 function downloadCSV(projects: Project[]) {
@@ -106,11 +226,39 @@ export function ProjectsView() {
 
   const startEdit = (p: Project) => {
     const { id, ...rest } = p;
-    setForm(rest);
+    setForm({
+      ...rest,
+      tagline: p.tagline || "",
+      challenge: p.challenge || "",
+      sdgs: p.sdgs || "SDG 13, SDG 15",
+      programSlug: p.programSlug || "forest-restoration",
+      initiativeTitle: p.initiativeTitle || "",
+      impactTrees: p.impactTrees || 0,
+      impactCO2: p.impactCO2 || 0,
+      impactCommunities: p.impactCommunities || 0,
+      impactBeneficiaries: p.impactBeneficiaries || 0,
+      approach: p.approach && p.approach.length > 0 ? p.approach : [
+        { title: "Community Stewardship", desc: "Local teams and grassroots leadership direct on-the-ground action." },
+        { title: "Science-Based Monitoring", desc: "Verifiable metrics tracking survival and carbon outcomes." },
+        { title: "Sustainable Livelihoods", desc: "Creating green employment and economic resilience for families." }
+      ]
+    });
     setEditId(id);
     setShowForm(true);
     setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
   };
+
+  const handleApproachChange = (index: number, field: "title" | "desc", val: string) => {
+    const list = [...(form.approach || [
+      { title: "", desc: "" },
+      { title: "", desc: "" },
+      { title: "", desc: "" }
+    ])];
+    list[index] = { ...list[index], [field]: val };
+    setForm({ ...form, approach: list });
+  };
+
+  const currentProgramInitiatives = DEFAULT_PROGRAM_INITIATIVES[form.programSlug || "forest-restoration"] || [];
 
   const doDelete = () => {
     if (deleteConfirmId === null) return;
@@ -236,6 +384,178 @@ export function ProjectsView() {
                 <div className="sm:col-span-2">
                   <label className="text-xs font-bold text-gray-600 mb-1.5 block">Description</label>
                   <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none resize-none" placeholder="Project description..." />
+                </div>
+
+                {/* Program & Initiative Interconnection */}
+                <div className="sm:col-span-2 p-4 bg-[#F0FDF4] border border-emerald-200/80 rounded-2xl">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="w-2 h-2 rounded-full bg-[#0B5D3F]" />
+                    <label className="text-xs font-bold text-[#0B5D3F] uppercase tracking-wider">
+                      Program & Initiative Interconnection
+                    </label>
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[11px] font-bold text-gray-700 block mb-1">Parent Core Program *</label>
+                      <select
+                        value={form.programSlug || "forest-restoration"}
+                        onChange={(e) => {
+                          const slug = e.target.value;
+                          const inits = DEFAULT_PROGRAM_INITIATIVES[slug] || [];
+                          setForm({
+                            ...form,
+                            programSlug: slug,
+                            initiativeTitle: inits[0]?.title || ""
+                          });
+                        }}
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-emerald-300 text-xs font-semibold text-gray-800 focus:outline-none"
+                      >
+                        {PROGRAM_OPTIONS.map((po) => (
+                          <option key={po.slug} value={po.slug}>{po.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-bold text-gray-700 block mb-1">Linked Program Initiative</label>
+                      <input
+                        type="text"
+                        list="initiative-options"
+                        value={form.initiativeTitle || ""}
+                        onChange={(e) => setForm({ ...form, initiativeTitle: e.target.value })}
+                        placeholder="Select or enter initiative track..."
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-emerald-300 text-xs font-medium text-gray-800 focus:outline-none"
+                      />
+                      <datalist id="initiative-options">
+                        {currentProgramInitiatives.map((init) => (
+                          <option key={init.title} value={init.title} />
+                        ))}
+                      </datalist>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Impact Dashboard Insights (Numeric Inputs for aggregation) */}
+                <div className="sm:col-span-2 p-4 bg-[#F8FAFC] border border-slate-200 rounded-2xl">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                      Impact Dashboard Insights (Live Aggregation Numbers)
+                    </label>
+                    <span className="text-[10px] font-medium text-slate-500">Auto-sums into final Impact Dashboard</span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div>
+                      <label className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Trees Planted</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={form.impactTrees || 0}
+                        onChange={(e) => setForm({ ...form, impactTrees: Number(e.target.value) })}
+                        placeholder="e.g. 350000"
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-[#0B5D3F] focus:outline-none focus:border-[#4CAF50]"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-gray-500 uppercase block mb-1">CO₂ Reduced (MT)</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={form.impactCO2 || 0}
+                        onChange={(e) => setForm({ ...form, impactCO2: Number(e.target.value) })}
+                        placeholder="e.g. 21875"
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-[#173B63] focus:outline-none focus:border-[#4CAF50]"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Communities</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={form.impactCommunities || 0}
+                        onChange={(e) => setForm({ ...form, impactCommunities: Number(e.target.value) })}
+                        placeholder="e.g. 48"
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-emerald-700 focus:outline-none focus:border-[#4CAF50]"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Beneficiaries</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={form.impactBeneficiaries || 0}
+                        onChange={(e) => setForm({ ...form, impactBeneficiaries: Number(e.target.value) })}
+                        placeholder="e.g. 12000"
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-gray-800 focus:outline-none focus:border-[#4CAF50]"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="text-xs font-bold text-gray-600 mb-1.5 block">Project Tagline</label>
+                  <input
+                    type="text"
+                    value={form.tagline || ""}
+                    onChange={(e) => setForm({ ...form, tagline: e.target.value })}
+                    placeholder="Short inspiring tagline e.g. Restoring the lungs of the planet..."
+                    className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="text-xs font-bold text-gray-600 mb-1.5 block">Target SDGs (Comma-separated)</label>
+                  <input
+                    type="text"
+                    value={form.sdgs || ""}
+                    onChange={(e) => setForm({ ...form, sdgs: e.target.value })}
+                    placeholder="e.g. SDG 13, SDG 15, SDG 1, SDG 8"
+                    className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="text-xs font-bold text-gray-600 mb-1.5 block">The Ecological Challenge</label>
+                  <textarea
+                    value={form.challenge || ""}
+                    onChange={(e) => setForm({ ...form, challenge: e.target.value })}
+                    rows={2}
+                    className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none resize-none"
+                    placeholder="Details about the environmental challenge this project addresses..."
+                  />
+                </div>
+
+                {/* 3 Strategic Approach Pillars */}
+                <div className="sm:col-span-2 pt-2 border-t border-gray-100">
+                  <label className="text-xs font-bold text-gray-800 block mb-2">Project Approach (3 Strategic Pillars)</label>
+                  <div className="space-y-3">
+                    {[0, 1, 2].map((idx) => {
+                      const appItem = (form.approach && form.approach[idx]) || { title: "", desc: "" };
+                      return (
+                        <div key={idx} className="p-3 bg-[#F6FBF8] rounded-xl border border-gray-200/80">
+                          <span className="text-[10px] font-bold text-gray-500 uppercase block mb-1.5">Pillar #{idx + 1}</span>
+                          <div className="grid sm:grid-cols-3 gap-2">
+                            <div>
+                              <input
+                                type="text"
+                                value={appItem.title || ""}
+                                onChange={(e) => handleApproachChange(idx, "title", e.target.value)}
+                                placeholder={`Pillar ${idx + 1} Title`}
+                                className="w-full px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-xs font-bold text-gray-800 focus:outline-none"
+                              />
+                            </div>
+                            <div className="sm:col-span-2">
+                              <input
+                                type="text"
+                                value={appItem.desc || ""}
+                                onChange={(e) => handleApproachChange(idx, "desc", e.target.value)}
+                                placeholder={`Description of Pillar ${idx + 1}...`}
+                                className="w-full px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-xs text-gray-700 focus:outline-none"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
               <div className="flex gap-3 mt-6">

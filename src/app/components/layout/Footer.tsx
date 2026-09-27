@@ -90,19 +90,19 @@ const footerLinks = {
   ],
 };
 
-const socials = [
-  { icon: Twitter, href: "#", label: "Twitter" },
-  { icon: Facebook, href: "#", label: "Facebook" },
-  { icon: Instagram, href: "#", label: "Instagram" },
-  { icon: Linkedin, href: "#", label: "LinkedIn" },
-  { icon: Youtube, href: "#", label: "YouTube" },
-];
-
 export function Footer() {
   const settings = useSettings();
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  const socials = [
+    { icon: Facebook, href: settings.facebookUrl || "https://facebook.com/EnvironmentalShapersNetwork", label: "Facebook" },
+    { icon: Instagram, href: settings.instagramUrl || "https://instagram.com/esnglobal", label: "Instagram" },
+    { icon: Linkedin, href: settings.linkedinUrl || "https://linkedin.com/company/environmental-shapers-network", label: "LinkedIn" },
+    { icon: Twitter, href: settings.twitterUrl || "https://twitter.com/esnglobal", label: "Twitter" },
+    { icon: Youtube, href: settings.youtubeUrl || "https://youtube.com/@esnglobal", label: "YouTube" },
+  ];
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -203,6 +203,8 @@ export function Footer() {
                 <a
                   key={s.label}
                   href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label={s.label}
                   className="w-10 h-10 rounded-xl bg-white/10 hover:bg-[#4CAF50] flex items-center justify-center transition-all duration-300 hover:scale-110"
                 >

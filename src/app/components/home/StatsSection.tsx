@@ -4,6 +4,10 @@ import { getInitialStats, StatItem } from "../../pages/admin/sections/StatsAdmin
 import { useFirestoreData } from "../../../lib/useFirestore";
 import { resolveIcon } from "../../pages/admin/sections/ProgramsView";
 
+import { getInitialProjects, Project } from "../../pages/admin/sections/ProjectsView";
+import { getInitialCampaigns, Campaign } from "../../pages/admin/sections/CampaignsView";
+import { getInitialEvents, ESNEvent } from "../../pages/admin/sections/EventsView";
+
 export { type StatItem };
 
 function formatNumber(n: number): string {
@@ -46,21 +50,64 @@ export function StatsSection() {
   const sectionRef = useRef(null);
   const inView = useInView(sectionRef, { once: true, margin: "-100px" });
   const [statsRaw] = useFirestoreData<StatItem[]>("esn_stats_admin", getInitialStats());
-  const rawList = statsRaw && statsRaw.length > 0 ? statsRaw : getInitialStats();
+  const [projectsRaw] = useFirestoreData<Project[]>("esn_projects_admin", getInitialProjects());
+  const [campaignsRaw] = useFirestoreData<Campaign[]>("esn_campaigns_admin", getInitialCampaigns());
+  const [eventsRaw] = useFirestoreData<ESNEvent[]>("esn_events", getInitialEvents());
 
-  // Dynamically calculate CO2 sequestered based on trees planted (0.0625 MT CO2 per tree)
+  const rawList = statsRaw && statsRaw.length > 0 ? statsRaw : getInitialStats();
+  const projects = projectsRaw && projectsRaw.length > 0 ? projectsRaw : getInitialProjects();
+  const campaigns = campaignsRaw && campaignsRaw.length > 0 ? campaignsRaw : getInitialCampaigns();
+  const events = eventsRaw && eventsRaw.length > 0 ? eventsRaw : getInitialEvents();
+
+  // Dynamic aggregation from all connected activities (Projects, Campaigns, Events)
+  const projTrees = projects.reduce((s, p) => s + (Number(p.impactTrees) || 0), 0);
+  const campTrees = campaigns.reduce((s, c) => s + (Number(c.impactTrees) || 0), 0);
+  const eventTrees = events.reduce((s, e) => s + (Number(e.impactTrees) || 0), 0);
+  const additionalTrees = projTrees + campTrees + eventTrees;
+
+  const projCO2 = projects.reduce((s, p) => s + (Number(p.impactCO2) || 0), 0);
+  const campCO2 = campaigns.reduce((s, c) => s + (Number(c.impactCO2) || 0), 0);
+  const additionalCO2 = projCO2 + campCO2;
+
+  const projComm = projects.reduce((s, p) => s + (Number(p.impactCommunities) || 0), 0);
+  const campComm = campaigns.reduce((s, c) => s + (Number(c.impactCommunities) || 0), 0);
+  const eventComm = events.reduce((s, e) => s + (Number(e.impactCommunities) || 0), 0);
+  const additionalComm = projComm + campComm + eventComm;
+
+  const liveActiveProjects = projects.filter(p => !p.status || p.status.toLowerCase() === "active").length;
+
   const treeStat = rawList.find(s => s.label.toLowerCase().includes("tree") || s.iconName === "TreePine");
-  const treeCount = treeStat ? treeStat.value : 2400000;
-  const calculatedCO2 = Math.round(treeCount * 0.0625);
+  const baseTreeCount = treeStat ? treeStat.value : 2400000;
+  const totalTrees = baseTreeCount + additionalTrees;
+  const totalCO2 = Math.round(totalTrees * 0.0625) + additionalCO2;
 
   const stats = rawList.map(stat => {
-    if (stat.label.toLowerCase().includes("co₂") || stat.label.toLowerCase().includes("co2") || stat.label.toLowerCase().includes("carbon")) {
+    const l = stat.label.toLowerCase();
+    if (l.includes("tree") || stat.iconName === "TreePine") {
       return {
         ...stat,
-        value: calculatedCO2,
+        value: totalTrees,
+      };
+    }
+    if (l.includes("co₂") || l.includes("co2") || l.includes("carbon")) {
+      return {
+        ...stat,
+        value: totalCO2,
         suffix: " MT",
         label: "CO₂ Sequestered",
         description: "Metric tons of carbon sequestered",
+      };
+    }
+    if (l.includes("communit")) {
+      return {
+        ...stat,
+        value: stat.value + additionalComm,
+      };
+    }
+    if (l.includes("project")) {
+      return {
+        ...stat,
+        value: Math.max(stat.value, liveActiveProjects),
       };
     }
     return stat;

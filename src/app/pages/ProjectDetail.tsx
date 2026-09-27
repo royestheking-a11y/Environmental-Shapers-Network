@@ -411,17 +411,17 @@ export default function ProjectDetail() {
   const project = adminProj ? {
     id: adminProj.id,
     title: adminProj.name || staticProj?.title || "Environmental Project",
-    tagline: staticProj?.tagline || `${adminProj.category} Initiative in ${adminProj.country}`,
-    location: adminProj.country || staticProj?.location || "Global",
+    tagline: adminProj.tagline || staticProj?.tagline || `${adminProj.category} Initiative in ${adminProj.country}`,
+    location: adminProj.country ? `${adminProj.country}${adminProj.region ? `, ${adminProj.region}` : ""}` : (staticProj?.location || "Global"),
     category: adminProj.category || staticProj?.category || "Forest",
     status: adminProj.status || "Active",
     year: staticProj?.year || 2024,
-    theme: staticProj?.theme || "SDG 13",
+    theme: adminProj.theme || staticProj?.theme || "SDG 13",
     impact: adminProj.impact || staticProj?.impact || "Community Impact",
     volunteers: adminProj.volunteers || staticProj?.volunteers || 500,
     icon: staticProj?.icon || TreePine,
-    color: staticProj?.color || "#0B5D3F",
-    budget: staticProj?.budget || "$1.5M",
+    color: adminProj.color || staticProj?.color || "#0B5D3F",
+    budget: adminProj.budget ? `$${adminProj.budget.toLocaleString()}` : (staticProj?.budget || "$1.5M"),
     partners: staticProj?.partners || ["Global Environmental Fund", "Local Community Network", "ESN International"],
     img: adminProj.img || staticProj?.img || "https://images.unsplash.com/photo-1448375240586-882707db888b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400",
     galleryImgs: staticProj?.galleryImgs || [
@@ -429,25 +429,27 @@ export default function ProjectDetail() {
       "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800",
       "https://images.unsplash.com/photo-1426604966848-d7adac402bff?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800",
     ],
-    description: staticProj?.description || `This project is actively managed by the Environmental Shapers Network in ${adminProj.country}, driving community-based impact in ${adminProj.category}.`,
-    challenge: staticProj?.challenge || "Addressing urgent regional environmental degradation and climate vulnerability through direct community engagement.",
-    approach: staticProj?.approach || [
+    description: adminProj.description || staticProj?.description || `This project is actively managed by the Environmental Shapers Network in ${adminProj.country}, driving community-based impact in ${adminProj.category}.`,
+    challenge: adminProj.challenge || staticProj?.challenge || "Addressing urgent regional environmental degradation and climate vulnerability through direct community engagement.",
+    approach: (adminProj.approach && adminProj.approach.length > 0 && adminProj.approach[0]?.title) ? adminProj.approach : (staticProj?.approach || [
       { title: "Community Stewardship", desc: "Equipping local leaders with skills and tools to protect native ecosystems." },
       { title: "Science-Based Monitoring", desc: "Tracking biodiversity, tree canopy, and carbon sequestration with verifiable metrics." },
       { title: "Sustainable Livelihoods", desc: "Empowering families through green job creation and eco-friendly economic alternatives." }
-    ],
-    stats: staticProj?.stats || [
-      { value: adminProj.impact || "50K+", label: "Direct Impact", icon: TreePine },
+    ]),
+    stats: [
+      { value: adminProj.impactTrees ? `${(adminProj.impactTrees / 1000).toFixed(0)}K` : (adminProj.impact || "50K+"), label: adminProj.impactTrees ? "Trees Planted" : "Direct Impact", icon: TreePine },
+      { value: adminProj.impactCO2 ? `${adminProj.impactCO2.toLocaleString()} MT` : (adminProj.impactCommunities ? `${adminProj.impactCommunities}+` : "100%"), label: adminProj.impactCO2 ? "CO₂ Reduced" : (adminProj.impactCommunities ? "Communities" : "Verified"), icon: Droplets },
       { value: String(adminProj.volunteers || "500+"), label: "Volunteers", icon: Users },
       { value: adminProj.country || "Active", label: "Region", icon: MapPin },
-      { value: "100%", label: "Community Owned", icon: Heart },
     ],
-    sdgs: staticProj?.sdgs || ["SDG 13", "SDG 15", "SDG 17"],
+    sdgs: adminProj.sdgs ? adminProj.sdgs.split(',').map(s => s.trim()) : (staticProj?.sdgs || ["SDG 13", "SDG 15", "SDG 17"]),
     timeline: staticProj?.timeline || [
       { year: "2024", event: "Project initiation and local community baseline assessments" },
       { year: "2025", event: "Full scale rollout, stakeholder partnerships, and field implementation" },
       { year: "2026", event: "Continuous monitoring, impact verification, and global reporting" },
-    ]
+    ],
+    programSlug: adminProj.programSlug,
+    initiativeTitle: adminProj.initiativeTitle,
   } : staticProj;
 
   if (!project) {
@@ -587,7 +589,6 @@ export default function ProjectDetail() {
               <div className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-5">Project Details</div>
               {[
                 { label: "Status", value: project.status, colored: true },
-                { label: "Budget", value: project.budget },
                 { label: "Started", value: String(project.year) },
                 { label: "Category", value: project.category },
                 { label: "Theme", value: project.theme },

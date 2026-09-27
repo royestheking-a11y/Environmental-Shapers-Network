@@ -1,14 +1,18 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Facebook, Instagram, Youtube, X, Share2, MessageCircle } from "lucide-react";
+import { Facebook, Instagram, Youtube, Linkedin, Twitter, X, Share2, MessageCircle } from "lucide-react";
+import { useSettings } from "../../utils/useSettings";
 
 export function FloatingSocials() {
   const [isOpen, setIsOpen] = useState(false);
+  const settings = useSettings();
 
   const socials = [
-    { name: "Facebook", icon: Facebook, href: "https://facebook.com", color: "hover:text-[#1877F2]", bg: "hover:bg-[#1877F2]/10" },
-    { name: "Instagram", icon: Instagram, href: "https://instagram.com", color: "hover:text-[#E4405F]", bg: "hover:bg-[#E4405F]/10" },
-    { name: "Youtube", icon: Youtube, href: "https://youtube.com", color: "hover:text-[#FF0000]", bg: "hover:bg-[#FF0000]/10" }
+    { name: "Facebook", icon: Facebook, href: settings.facebookUrl || "https://facebook.com/EnvironmentalShapersNetwork", color: "hover:text-[#1877F2]", bg: "hover:bg-[#1877F2]/10" },
+    { name: "Instagram", icon: Instagram, href: settings.instagramUrl || "https://instagram.com/esnglobal", color: "hover:text-[#E4405F]", bg: "hover:bg-[#E4405F]/10" },
+    { name: "LinkedIn", icon: Linkedin, href: settings.linkedinUrl || "https://linkedin.com/company/environmental-shapers-network", color: "hover:text-[#0A66C2]", bg: "hover:bg-[#0A66C2]/10" },
+    { name: "Twitter / X", icon: Twitter, href: settings.twitterUrl || "https://twitter.com/esnglobal", color: "hover:text-[#1DA1F2]", bg: "hover:bg-[#1DA1F2]/10" },
+    { name: "Youtube", icon: Youtube, href: settings.youtubeUrl || "https://youtube.com/@esnglobal", color: "hover:text-[#FF0000]", bg: "hover:bg-[#FF0000]/10" }
   ];
 
   return (

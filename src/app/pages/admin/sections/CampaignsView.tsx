@@ -25,19 +25,64 @@ export interface Campaign {
   lead: string;
   image: string;
   color: string;
+  // Interconnection & Impact Dashboard Insights (Point 1):
+  programSlug?: string;
+  initiativeTitle?: string;
+  impactTrees?: number;
+  impactCO2?: number;
+  impactCommunities?: number;
+  impactBeneficiaries?: number;
 }
 
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 import { logAdminActivity } from "../../../../lib/activityLogger";
+import { DEFAULT_PROGRAM_INITIATIVES } from "./ProgramsView";
+import { PROGRAM_OPTIONS } from "./ProjectsView";
 
 export function getInitialCampaigns(): Campaign[] {
   return [
-    { id: 1, title: "Plant A Million Trees", category: "Forest Restoration", status: "active", goal: 1000000, raised: 847000, volunteers: 4200, startDate: "Jan 1, 2026", endDate: "Dec 31, 2026", description: "Restoring degraded lands through community-driven tree planting.", sdgs: ["SDG 13", "SDG 15"], lead: "Rizwan Ahmed", image: "/Climate Reality Leadership Corps Training | Representing Bangladesh.jpeg", color: "#0B5D3F" },
-    { id: 2, title: "Clean Ocean Initiative", category: "Marine Conservation", status: "active", goal: 500000, raised: 312000, volunteers: 2800, startDate: "Mar 1, 2026", endDate: "Nov 30, 2026", description: "Removing plastic waste from coastlines globally.", sdgs: ["SDG 14", "SDG 6"], lead: "Carlos Rodriguez", image: "/Commonwealth Secretariat at COP27.jpeg", color: "#173B63" },
-    { id: 3, title: "Youth Climate Action", category: "Climate Advocacy", status: "active", goal: 250000, raised: 198000, volunteers: 8900, startDate: "Feb 1, 2026", endDate: "Sep 30, 2026", description: "Mobilizing youth leaders in 50+ countries.", sdgs: ["SDG 13", "SDG 4"], lead: "Priya Sharma", image: "/Speaking on Climate Adaptation and Resilience in South Asia- CEPCA 2024, Ottawa, Canada.jpeg", color: "#0B5D3F" },
-    { id: 4, title: "Solar Villages Africa", category: "Renewable Energy", status: "active", goal: 320000, raised: 189000, volunteers: 450, startDate: "Apr 1, 2026", endDate: "Mar 31, 2027", description: "Bringing solar power to off-grid communities.", sdgs: ["SDG 7", "SDG 11"], lead: "Amara Osei", image: "/meeting time.jpeg", color: "#D6A95A" },
-    { id: 5, title: "Biodiversity Hackathon 2025", category: "Innovation", status: "completed", goal: 50000, raised: 51200, volunteers: 800, startDate: "Jun 1, 2025", endDate: "Jun 30, 2025", description: "48-hour tech sprint for biodiversity solutions.", sdgs: ["SDG 15"], lead: "Admin Team", image: "/canada journey.jpeg", color: "#4CAF50" },
-    { id: 6, title: "Himalayan Watershed Revival", category: "Water Security", status: "draft", goal: 180000, raised: 0, volunteers: 0, startDate: "Sep 1, 2026", endDate: "Aug 31, 2027", description: "Restoring watershed ecosystems in the Himalayas.", sdgs: ["SDG 6", "SDG 15"], lead: "Priya Sharma", image: "/represent bangladesh.jpeg", color: "#173B63" },
+    {
+      id: 1, title: "Plant A Million Trees", category: "Forest Restoration", status: "active", goal: 1000000, raised: 847000, volunteers: 4200,
+      startDate: "Jan 1, 2026", endDate: "Dec 31, 2026", description: "Restoring degraded lands through community-driven tree planting.",
+      sdgs: ["SDG 13", "SDG 15"], lead: "Rizwan Ahmed", image: "/Climate Reality Leadership Corps Training | Representing Bangladesh.jpeg", color: "#0B5D3F",
+      programSlug: "forest-restoration", initiativeTitle: "Amazon Revival",
+      impactTrees: 847000, impactCO2: 52937, impactCommunities: 140, impactBeneficiaries: 250000
+    },
+    {
+      id: 2, title: "Clean Ocean Initiative", category: "Marine Conservation", status: "active", goal: 500000, raised: 312000, volunteers: 2800,
+      startDate: "Mar 1, 2026", endDate: "Nov 30, 2026", description: "Removing plastic waste from coastlines globally.",
+      sdgs: ["SDG 14", "SDG 6"], lead: "Carlos Rodriguez", image: "/Commonwealth Secretariat at COP27.jpeg", color: "#173B63",
+      programSlug: "ocean-action", initiativeTitle: "Plastic-Free Seas",
+      impactTrees: 0, impactCO2: 12000, impactCommunities: 85, impactBeneficiaries: 180000
+    },
+    {
+      id: 3, title: "Youth Climate Action", category: "Climate Advocacy", status: "active", goal: 250000, raised: 198000, volunteers: 8900,
+      startDate: "Feb 1, 2026", endDate: "Sep 30, 2026", description: "Mobilizing youth leaders in 50+ countries.",
+      sdgs: ["SDG 13", "SDG 4"], lead: "Priya Sharma", image: "/Speaking on Climate Adaptation and Resilience in South Asia- CEPCA 2024, Ottawa, Canada.jpeg", color: "#0B5D3F",
+      programSlug: "youth", initiativeTitle: "Young Environmental Leaders (YEL) Fellowship",
+      impactTrees: 45000, impactCO2: 2812, impactCommunities: 320, impactBeneficiaries: 89000
+    },
+    {
+      id: 4, title: "Solar Villages Africa", category: "Renewable Energy", status: "active", goal: 320000, raised: 189000, volunteers: 450,
+      startDate: "Apr 1, 2026", endDate: "Mar 31, 2027", description: "Bringing solar power to off-grid communities.",
+      sdgs: ["SDG 7", "SDG 11"], lead: "Amara Osei", image: "/meeting time.jpeg", color: "#D6A95A",
+      programSlug: "clean-energy", initiativeTitle: "Solar Mini-Grids",
+      impactTrees: 0, impactCO2: 15400, impactCommunities: 120, impactBeneficiaries: 65000
+    },
+    {
+      id: 5, title: "Biodiversity Hackathon 2025", category: "Innovation", status: "completed", goal: 50000, raised: 51200, volunteers: 800,
+      startDate: "Jun 1, 2025", endDate: "Jun 30, 2025", description: "48-hour tech sprint for biodiversity solutions.",
+      sdgs: ["SDG 15"], lead: "Admin Team", image: "/canada journey.jpeg", color: "#4CAF50",
+      programSlug: "biodiversity", initiativeTitle: "Endangered Species Tracking",
+      impactTrees: 0, impactCO2: 1200, impactCommunities: 15, impactBeneficiaries: 8000
+    },
+    {
+      id: 6, title: "Himalayan Watershed Revival", category: "Water Security", status: "draft", goal: 180000, raised: 0, volunteers: 0,
+      startDate: "Sep 1, 2026", endDate: "Aug 31, 2027", description: "Restoring watershed ecosystems in the Himalayas.",
+      sdgs: ["SDG 6", "SDG 15"], lead: "Priya Sharma", image: "/represent bangladesh.jpeg", color: "#173B63",
+      programSlug: "climate-adaptation", initiativeTitle: "Community Early Warning Systems",
+      impactTrees: 50000, impactCO2: 3125, impactCommunities: 40, impactBeneficiaries: 45000
+    },
   ];
 }
 
@@ -52,6 +97,8 @@ const blankCampaign: Omit<Campaign, "id"> = {
   title: "", category: "Forest Restoration", status: "draft",
   goal: 0, raised: 0, volunteers: 0, startDate: "", endDate: "",
   description: "", sdgs: [], lead: "", image: "", color: "#0B5D3F",
+  programSlug: "forest-restoration", initiativeTitle: "Amazon Revival",
+  impactTrees: 0, impactCO2: 0, impactCommunities: 0, impactBeneficiaries: 0,
 };
 
 function QRGrid({ size = 120 }: { size?: number }) {
@@ -117,11 +164,19 @@ export function CampaignsView() {
       raised: Number(rest.raised || 0),
       volunteers: Number(rest.volunteers || 0),
       sdgs: rest.sdgs || [],
+      programSlug: c.programSlug || "forest-restoration",
+      initiativeTitle: c.initiativeTitle || "",
+      impactTrees: Number(c.impactTrees || 0),
+      impactCO2: Number(c.impactCO2 || 0),
+      impactCommunities: Number(c.impactCommunities || 0),
+      impactBeneficiaries: Number(c.impactBeneficiaries || 0),
     });
     setEditId(id);
     setShowForm(true);
     setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
   };
+
+  const currentProgramInitiatives = DEFAULT_PROGRAM_INITIATIVES[form.programSlug || "forest-restoration"] || [];
 
   const confirmDelete = (id: number) => setDeleteConfirmId(id);
   const doDelete = () => {
@@ -269,6 +324,110 @@ export function CampaignsView() {
                 <div className="sm:col-span-2">
                   <label className="text-xs font-bold text-gray-600 mb-1.5 block">Description</label>
                   <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none resize-none" placeholder="Campaign description..." />
+                </div>
+
+                {/* Program & Initiative Interconnection */}
+                <div className="sm:col-span-2 p-4 bg-[#F0FDF4] border border-emerald-200/80 rounded-2xl">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="w-2 h-2 rounded-full bg-[#0B5D3F]" />
+                    <label className="text-xs font-bold text-[#0B5D3F] uppercase tracking-wider">
+                      Program & Initiative Interconnection
+                    </label>
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[11px] font-bold text-gray-700 block mb-1">Parent Core Program *</label>
+                      <select
+                        value={form.programSlug || "forest-restoration"}
+                        onChange={(e) => {
+                          const slug = e.target.value;
+                          const inits = DEFAULT_PROGRAM_INITIATIVES[slug] || [];
+                          setForm({
+                            ...form,
+                            programSlug: slug,
+                            initiativeTitle: inits[0]?.title || ""
+                          });
+                        }}
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-emerald-300 text-xs font-semibold text-gray-800 focus:outline-none"
+                      >
+                        {PROGRAM_OPTIONS.map((po) => (
+                          <option key={po.slug} value={po.slug}>{po.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-bold text-gray-700 block mb-1">Linked Program Initiative</label>
+                      <input
+                        type="text"
+                        list="campaign-init-options"
+                        value={form.initiativeTitle || ""}
+                        onChange={(e) => setForm({ ...form, initiativeTitle: e.target.value })}
+                        placeholder="Select or enter initiative track..."
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-emerald-300 text-xs font-medium text-gray-800 focus:outline-none"
+                      />
+                      <datalist id="campaign-init-options">
+                        {currentProgramInitiatives.map((init) => (
+                          <option key={init.title} value={init.title} />
+                        ))}
+                      </datalist>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Impact Dashboard Insights (Numeric Inputs for aggregation) */}
+                <div className="sm:col-span-2 p-4 bg-[#F8FAFC] border border-slate-200 rounded-2xl">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                      Impact Dashboard Insights (Live Aggregation Numbers)
+                    </label>
+                    <span className="text-[10px] font-medium text-slate-500">Auto-sums into final Impact Dashboard</span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div>
+                      <label className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Trees Planted</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={form.impactTrees || 0}
+                        onChange={(e) => setForm({ ...form, impactTrees: Number(e.target.value) })}
+                        placeholder="e.g. 50000"
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-[#0B5D3F] focus:outline-none focus:border-[#4CAF50]"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-gray-500 uppercase block mb-1">CO₂ Reduced (MT)</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={form.impactCO2 || 0}
+                        onChange={(e) => setForm({ ...form, impactCO2: Number(e.target.value) })}
+                        placeholder="e.g. 3125"
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-[#173B63] focus:outline-none focus:border-[#4CAF50]"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Communities</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={form.impactCommunities || 0}
+                        onChange={(e) => setForm({ ...form, impactCommunities: Number(e.target.value) })}
+                        placeholder="e.g. 35"
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-emerald-700 focus:outline-none focus:border-[#4CAF50]"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Beneficiaries</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={form.impactBeneficiaries || 0}
+                        onChange={(e) => setForm({ ...form, impactBeneficiaries: Number(e.target.value) })}
+                        placeholder="e.g. 15000"
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-gray-800 focus:outline-none focus:border-[#4CAF50]"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className="flex gap-3 mt-6">

@@ -452,17 +452,24 @@ function GenericProgramPage({ d }: { d: any }) {
         <div>
           <div className="text-center mb-10">
             <div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider mb-2">Initiatives</div>
-            <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 2.5vw, 2rem)", fontWeight: 800 }} className="text-gray-900">Our Core Programs</h2>
+            <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 2.5vw, 2rem)", fontWeight: 800 }} className="text-gray-900">Program Initiatives & Action Tracks</h2>
           </div>
           <div className="grid md:grid-cols-2 gap-6">
             {d.cards.map((c: any, i: number) => (
-              <motion.div key={c.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-                className="bg-white rounded-2xl p-7 border border-gray-100 hover:border-[#4CAF50]/30 hover:shadow-lg transition-all">
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="text-xs font-bold bg-[#4CAF50]/15 text-[#0B5D3F] px-3 py-1 rounded-full">{c.tag}</span>
+              <motion.div key={c.title || i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+                className="bg-white rounded-2xl p-7 border border-gray-100 hover:border-[#4CAF50]/30 hover:shadow-lg transition-all flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between gap-3 mb-4">
+                    <span className="text-xs font-bold bg-[#4CAF50]/15 text-[#0B5D3F] px-3 py-1 rounded-full">{c.tag}</span>
+                    {c.impactInsight && (
+                      <span className="text-xs font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
+                        {c.impactInsight}
+                      </span>
+                    )}
+                  </div>
+                  <div className="font-bold text-gray-900 mb-3 text-lg">{c.title}</div>
+                  <p className="text-sm text-gray-500 leading-relaxed">{c.desc}</p>
                 </div>
-                <div className="font-bold text-gray-900 mb-3 text-lg">{c.title}</div>
-                <p className="text-sm text-gray-500 leading-relaxed">{c.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -701,11 +708,13 @@ export default function ProgramPage() {
         "Transparent ecological tracking and data verification",
         "Cross-border collaboration and policy support"
       ]),
-      cards: baseProgram?.cards || [
-        { title: `${dbProgram.title} Field Action`, tag: "Operations", desc: `Direct on-the-ground execution and field deployments across partner communities.` },
-        { title: "Capacity Building & Training", tag: "Education", desc: `Empowering local teams with open-source tools, technical skills, and resources.` },
-        { title: "Policy & Multi-Stakeholder Coalition", tag: "Policy", desc: `Aligning program goals with regional environmental targets and SDG frameworks.` }
-      ],
+      cards: (dbProgram.initiatives && dbProgram.initiatives.length > 0)
+        ? dbProgram.initiatives
+        : (baseProgram?.cards || [
+            { title: `${dbProgram.title} Field Action`, tag: "Operations", desc: `Direct on-the-ground execution and field deployments across partner communities.` },
+            { title: "Capacity Building & Training", tag: "Education", desc: `Empowering local teams with open-source tools, technical skills, and resources.` },
+            { title: "Policy & Multi-Stakeholder Coalition", tag: "Policy", desc: `Aligning program goals with regional environmental targets and SDG frameworks.` }
+          ]),
       stories: baseProgram?.stories || [
         { name: "Program Participant", role: "Field Coordinator", quote: "Working within this initiative has transformed our local capacity to protect and regenerate our environment.", country: "Global" }
       ],
