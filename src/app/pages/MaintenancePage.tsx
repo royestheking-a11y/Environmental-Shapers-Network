@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Leaf, Clock, Mail, Globe, ArrowRight, Lock } from "lucide-react";
-import { Link } from "react-router";
+import { Leaf, Clock, Mail, Globe, ArrowRight } from "lucide-react";
 import { useSettings } from "../utils/useSettings";
 
 // Falling leaf animation
@@ -148,23 +147,6 @@ export function MaintenancePage() {
           <div className="flex items-center gap-2">
             <Globe size={14} />
             {settings.siteName} will be back shortly. Thank you for your patience.
-          </div>
-
-          <div className="flex items-center gap-4 text-xs text-white/40 mt-2">
-            <Link
-              to="/admin"
-              className="inline-flex items-center gap-1.5 hover:text-white/80 transition-colors py-1 px-3 rounded-lg bg-white/5 border border-white/10"
-            >
-              <Lock size={12} className="text-[#4CAF50]" /> Admin Portal
-            </Link>
-            {typeof window !== "undefined" && Boolean(localStorage.getItem("esn_admin_user")) && (
-              <a
-                href="/?preview=true"
-                className="inline-flex items-center gap-1 text-[#81C784] hover:underline"
-              >
-                Preview Live Site as Admin →
-              </a>
-            )}
           </div>
         </motion.div>
       </motion.div>
