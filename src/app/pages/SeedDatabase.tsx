@@ -33,6 +33,10 @@ import {
   initialGlobalPresenceData
 } from "./admin/sections/AboutPageAdminView";
 import { getInitialCampaigns as getInitialNewsletters } from "./admin/sections/NewsletterView";
+import { defaultAuditReports, defaultReportsSettings } from "./admin/sections/ReportsAdminView";
+import { defaultCampusChapters, defaultCampusChaptersSettings } from "./admin/sections/CampusChaptersAdminView";
+import { defaultGlobalRepsSettings, defaultRepPillars } from "./admin/sections/GlobalRepsAdminView";
+import { defaultKnowledgeSettings, defaultKnowledgeResources } from "./admin/sections/KnowledgeHubAdminView";
 import { getSavedSettings } from "../utils/useSettings";
 
 export default function SeedDatabase() {
@@ -74,6 +78,14 @@ export default function SeedDatabase() {
         await saveFirestoreData("esn_about_vision_mission", initialVisionMissionData);
         await saveFirestoreData("esn_about_global_presence", initialGlobalPresenceData);
         await saveFirestoreData("esn_newsletters", getInitialNewsletters());
+        await saveFirestoreData("esn_reports_admin", defaultAuditReports);
+        await saveFirestoreData("esn_reports_settings", defaultReportsSettings);
+        await saveFirestoreData("esn_campus_chapters_list", defaultCampusChapters);
+        await saveFirestoreData("esn_campus_chapters_settings", defaultCampusChaptersSettings);
+        await saveFirestoreData("esn_global_representatives_settings", defaultGlobalRepsSettings);
+        await saveFirestoreData("esn_global_representatives_pillars", defaultRepPillars);
+        await saveFirestoreData("esn_knowledge_hub_settings", defaultKnowledgeSettings);
+        await saveFirestoreData("esn_knowledge_hub_resources", defaultKnowledgeResources);
         const initialSettings = await getSavedSettings();
         await saveFirestoreData("esn_settings", initialSettings);
 

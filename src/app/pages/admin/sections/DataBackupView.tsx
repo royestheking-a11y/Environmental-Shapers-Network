@@ -129,7 +129,15 @@ export function DataBackupView() {
       "esn_apps_partner",
       "esn_settings",
       "esn_activity_logs",
-      "esn_notifications"
+      "esn_notifications",
+      "esn_reports_admin",
+      "esn_reports_settings",
+      "esn_campus_chapters_settings",
+      "esn_campus_chapters_list",
+      "esn_global_representatives_settings",
+      "esn_global_representatives_pillars",
+      "esn_knowledge_hub_settings",
+      "esn_knowledge_hub_resources"
     ];
 
     const snapshot: Record<string, any> = {

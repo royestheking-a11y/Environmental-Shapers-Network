@@ -232,7 +232,7 @@ export function Footer() {
             <div className="mt-6 flex flex-col gap-2 text-sm text-gray-400 bg-white/5 p-4 rounded-xl border border-white/10">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4">
                 <span className="text-gray-500">Organization:</span>
-                <span className="text-white font-medium text-left sm:text-right">Environmental Shapers Network</span>
+                <span className="text-white font-medium text-left sm:text-right">{settings.siteName || "Environmental Shapers Network"}</span>
               </div>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4">
                 <span className="text-gray-500">Charity ID:</span>

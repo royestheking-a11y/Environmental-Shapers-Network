@@ -145,7 +145,7 @@ export default function Campaigns() {
                 <p className="text-sm text-gray-500 leading-relaxed mb-4 line-clamp-2">{c.description}</p>
                 <div className="flex items-center gap-2 text-sm text-[#0B5D3F] font-bold">
                   <Target size={14} />
-                  Goal Achieved — ${c.raised.toLocaleString()} raised
+                  Goal Achieved — Impact Milestone Completed
                 </div>
               </div>
             </motion.div>
