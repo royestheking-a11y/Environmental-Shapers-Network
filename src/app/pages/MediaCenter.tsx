@@ -6,6 +6,7 @@ import {
   Calendar, Globe2, FileText, X, ExternalLink, Filter, Sparkles, MapPin, Eye
 } from "lucide-react";
 import { useFirestoreData } from "../../lib/useFirestore";
+import { ImageWithFallback } from "../components/ui/ImageWithFallback";
 import { MediaItem } from "./admin/sections/MediaLibraryView";
 import { initialTeamMembers, AboutTeamMember } from "./admin/sections/AboutPageAdminView";
 
@@ -102,9 +103,9 @@ const mediaGallery = [
 ];
 
 const spokespeople = [
-  { name: "Dr. Amara Diallo", title: "Executive Director", expertise: "Climate policy, biodiversity, international NGO governance, UN negotiations", image: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" },
-  { name: "Priya Nair", title: "Chief Programs Officer", expertise: "Forest restoration, nature-based solutions, South/Southeast Asia ecosystems", image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" },
-  { name: "Marcus Osei", title: "Head of Global Communications", expertise: "Media relations, investigative environmental reporting, COP delegations", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400" },
+  { name: "Dr. Amara Diallo", title: "Executive Director", expertise: "Climate policy, biodiversity, international NGO governance, UN negotiations", image: "" },
+  { name: "Priya Nair", title: "Chief Programs Officer", expertise: "Forest restoration, nature-based solutions, South/Southeast Asia ecosystems", image: "" },
+  { name: "Marcus Osei", title: "Head of Global Communications", expertise: "Media relations, investigative environmental reporting, COP delegations", image: "" },
 ];
 
 const catColors: Record<string, string> = { Milestone: "#0B5D3F", Announcement: "#4CAF50", Partnership: "#173B63", Award: "#D6A95A", Report: "#5B8DB8", Expansion: "#00838F" };
@@ -128,7 +129,7 @@ export default function MediaCenter() {
           name: m.name,
           title: m.role,
           expertise: m.tags && m.tags.length > 0 ? `${m.tags.join(", ")} · ${m.bio.slice(0, 95)}...` : `${m.bio.slice(0, 110)}...`,
-          image: m.img || "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+          image: m.img || "",
         }));
       }
     }
@@ -450,7 +451,15 @@ export default function MediaCenter() {
                 className="bg-white rounded-3xl p-6 border border-gray-100 hover:border-[#4CAF50]/30 hover:shadow-xl transition-all flex flex-col justify-between"
               >
                 <div>
-                  <img src={sp.image} alt={sp.name} className="w-18 h-18 rounded-2xl object-cover mb-4 border-2 border-white shadow-md" />
+                  <div className="w-16 h-16 rounded-2xl overflow-hidden mb-4 border-2 border-white shadow-md bg-gradient-to-br from-[#0B5D3F]/15 via-[#F6FBF8] to-[#173B63]/15 flex items-center justify-center">
+                    {sp.image ? (
+                      <ImageWithFallback src={sp.image} alt={sp.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-[#0B5D3F] font-black text-xl tracking-wider">
+                        {sp.name.split(" ").map((n: string) => n[0]).slice(0, 2).join("").toUpperCase()}
+                      </span>
+                    )}
+                  </div>
                   <div className="font-bold text-gray-900 text-lg mb-0.5">{sp.name}</div>
                   <div className="text-xs text-[#4CAF50] font-bold mb-3">{sp.title}</div>
                   <div className="text-xs text-gray-600 leading-relaxed mb-6">{sp.expertise}</div>
