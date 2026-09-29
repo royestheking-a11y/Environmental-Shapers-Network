@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router";
 import { motion } from "motion/react";
 import { MapPin, Phone, Mail, Globe, Send, Clock, MessageSquare, CheckCircle2, Leaf, Users } from "lucide-react";
 import { useSettings } from "../utils/useSettings";
@@ -6,9 +7,30 @@ import { fetchFirestoreData, saveFirestoreData } from "../../lib/useFirestore";
 
 export default function Contact() {
   const settings = useSettings();
-  const [form, setForm] = useState({ firstName: "", lastName: "", email: "", organization: "", subject: "", message: "" });
+  const [searchParams] = useSearchParams();
+  const subjectParam = searchParams.get("subject") || "";
+  const eventParam = searchParams.get("event") || "";
+
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    organization: "",
+    subject: subjectParam || (eventParam ? "Event Registration" : ""),
+    message: eventParam ? `I would like to inquire / register for the event: "${eventParam}". Please provide further details.` : ""
+  });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (subjectParam || eventParam) {
+      setForm(prev => ({
+        ...prev,
+        subject: subjectParam || (eventParam ? "Event Registration" : prev.subject),
+        message: eventParam && !prev.message ? `I would like to inquire / register for the event: "${eventParam}". Please provide further details.` : prev.message
+      }));
+    }
+  }, [subjectParam, eventParam]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,6 +144,8 @@ export default function Contact() {
                           className="w-full px-4 py-3 rounded-xl bg-[#F6FBF8] border border-gray-200 focus:outline-none focus:border-[#4CAF50] transition-all text-gray-700"
                         >
                           <option value="">Select a topic</option>
+                          <option>Event Registration</option>
+                          <option>Events & Calendar Inquiry</option>
                           <option>Partnership Inquiry</option>
                           <option>Volunteer Application</option>
                           <option>Donation & CSR</option>

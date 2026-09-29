@@ -8,6 +8,7 @@ import {
 import { ImageWithFallback } from "../components/ui/ImageWithFallback";
 import { useFirestoreData } from "../../lib/useFirestore";
 import { getInitialProjects, Project } from "./admin/sections/ProjectsView";
+import { getInitialCampaigns, Campaign } from "./admin/sections/CampaignsView";
 
 const projectsData = [
   {
@@ -404,6 +405,7 @@ const projectsData = [
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const [adminProjects] = useFirestoreData<Project[]>("esn_projects_admin", getInitialProjects());
+  const [allCampaigns] = useFirestoreData<Campaign[]>("esn_campaigns_admin", getInitialCampaigns());
   
   const adminProj = adminProjects.find((p) => String(p.id) === id);
   const staticProj = projectsData.find((p) => String(p.id) === id);
@@ -415,42 +417,53 @@ export default function ProjectDetail() {
     location: adminProj.country ? `${adminProj.country}${adminProj.region ? `, ${adminProj.region}` : ""}` : (staticProj?.location || "Global"),
     category: adminProj.category || staticProj?.category || "Forest",
     status: adminProj.status || "Active",
-    year: staticProj?.year || 2024,
-    theme: adminProj.theme || staticProj?.theme || "SDG 13",
+    year: adminProj.year ?? staticProj?.year ?? 2024,
+    theme: adminProj.theme || staticProj?.theme || "SDG 15",
     impact: adminProj.impact || staticProj?.impact || "Community Impact",
-    volunteers: adminProj.volunteers || staticProj?.volunteers || 500,
+    volunteers: adminProj.volunteers !== undefined ? adminProj.volunteers : (staticProj?.volunteers ?? 500),
     icon: staticProj?.icon || TreePine,
     color: adminProj.color || staticProj?.color || "#0B5D3F",
     budget: adminProj.budget ? `$${adminProj.budget.toLocaleString()}` : (staticProj?.budget || "$1.5M"),
-    partners: staticProj?.partners || ["Global Environmental Fund", "Local Community Network", "ESN International"],
+    partners: (adminProj.partners && adminProj.partners.length > 0) ? adminProj.partners : (staticProj?.partners || ["WWF Brazil", "Amazon Conservation Association", "Brazilian Ministry of Environment"]),
     img: adminProj.img || staticProj?.img || "https://images.unsplash.com/photo-1448375240586-882707db888b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400",
-    galleryImgs: staticProj?.galleryImgs || [
+    galleryImgs: (adminProj.galleryImgs && adminProj.galleryImgs.length > 0) ? adminProj.galleryImgs : (staticProj?.galleryImgs || [
       adminProj.img || "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800",
       "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800",
       "https://images.unsplash.com/photo-1426604966848-d7adac402bff?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800",
-    ],
+    ]),
     description: adminProj.description || staticProj?.description || `This project is actively managed by the Environmental Shapers Network in ${adminProj.country}, driving community-based impact in ${adminProj.category}.`,
     challenge: adminProj.challenge || staticProj?.challenge || "Addressing urgent regional environmental degradation and climate vulnerability through direct community engagement.",
-    approach: (adminProj.approach && adminProj.approach.length > 0 && adminProj.approach[0]?.title) ? adminProj.approach : (staticProj?.approach || [
-      { title: "Community Stewardship", desc: "Equipping local leaders with skills and tools to protect native ecosystems." },
-      { title: "Science-Based Monitoring", desc: "Tracking biodiversity, tree canopy, and carbon sequestration with verifiable metrics." },
-      { title: "Sustainable Livelihoods", desc: "Empowering families through green job creation and eco-friendly economic alternatives." }
-    ]),
+    approach: (adminProj.approach && adminProj.approach.length > 0 && adminProj.approach.some(a => a.title?.trim()))
+      ? adminProj.approach.filter(a => a.title?.trim())
+      : (staticProj?.approach || [
+          { title: "Community Stewardship", desc: "Equipping local leaders with skills and tools to protect native ecosystems." },
+          { title: "Science-Based Monitoring", desc: "Tracking biodiversity, tree canopy, and carbon sequestration with verifiable metrics." },
+          { title: "Sustainable Livelihoods", desc: "Empowering families through green job creation and eco-friendly economic alternatives." }
+        ]),
     stats: [
-      { value: adminProj.impactTrees ? `${(adminProj.impactTrees / 1000).toFixed(0)}K` : (adminProj.impact || "50K+"), label: adminProj.impactTrees ? "Trees Planted" : "Direct Impact", icon: TreePine },
-      { value: adminProj.impactCO2 ? `${adminProj.impactCO2.toLocaleString()} MT` : (adminProj.impactCommunities ? `${adminProj.impactCommunities}+` : "100%"), label: adminProj.impactCO2 ? "CO₂ Reduced" : (adminProj.impactCommunities ? "Communities" : "Verified"), icon: Droplets },
-      { value: String(adminProj.volunteers || "500+"), label: "Volunteers", icon: Users },
-      { value: adminProj.country || "Active", label: "Region", icon: MapPin },
+      { value: adminProj.impact || (adminProj.impactTrees ? `${(adminProj.impactTrees / 1000).toFixed(0)}K trees planted` : "50K+ trees"), label: "Direct Impact", icon: TreePine },
+      { value: adminProj.impactCO2 ? `${adminProj.impactCO2.toLocaleString()} MT` : (adminProj.impactCommunities ? `${adminProj.impactCommunities} Villages` : "100%"), label: adminProj.impactCO2 ? "CO₂ Reduced" : (adminProj.impactCommunities ? "Communities" : "Verified"), icon: Droplets },
+      { value: String(adminProj.volunteers !== undefined ? adminProj.volunteers : 500), label: "Volunteers", icon: Users },
+      { value: adminProj.country || "Region", label: "Region", icon: MapPin },
     ],
-    sdgs: adminProj.sdgs ? adminProj.sdgs.split(',').map(s => s.trim()) : (staticProj?.sdgs || ["SDG 13", "SDG 15", "SDG 17"]),
-    timeline: staticProj?.timeline || [
+    sdgs: adminProj.sdgs ? adminProj.sdgs.split(',').map(s => s.trim()).filter(Boolean) : (staticProj?.sdgs || ["SDG 13", "SDG 15"]),
+    timeline: (adminProj.timeline && adminProj.timeline.length > 0) ? adminProj.timeline : (staticProj?.timeline || [
       { year: "2024", event: "Project initiation and local community baseline assessments" },
       { year: "2025", event: "Full scale rollout, stakeholder partnerships, and field implementation" },
       { year: "2026", event: "Continuous monitoring, impact verification, and global reporting" },
-    ],
-    programSlug: adminProj.programSlug,
-    initiativeTitle: adminProj.initiativeTitle,
-  } : staticProj;
+    ]),
+    programSlug: adminProj.programSlug as string | undefined,
+    initiativeTitle: adminProj.initiativeTitle as string | undefined,
+  } : (staticProj ? {
+    ...staticProj,
+    programSlug: undefined as string | undefined,
+    initiativeTitle: undefined as string | undefined,
+  } : null);
+
+  const connectedCampaigns = (allCampaigns || []).filter((c) =>
+    project && ((c.projectId && c.projectId === project.id) ||
+    (c.projectName && c.projectName.toLowerCase() === project.title.toLowerCase()))
+  );
 
   if (!project) {
     return (
@@ -487,6 +500,15 @@ export default function ProjectDetail() {
               <span className={`text-xs font-bold px-3 py-1.5 rounded-full ${project.status === "Active" ? "bg-[#4CAF50] text-white" : "bg-gray-500 text-white"}`}>{project.status}</span>
               <span className="bg-[#D6A95A] text-white text-xs font-bold px-3 py-1.5 rounded-full">{project.theme}</span>
               <span className="bg-white/20 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full">{project.category}</span>
+              {project.programSlug && (
+                <Link
+                  to={`/programs/${project.programSlug}`}
+                  className="bg-[#0B5D3F]/90 hover:bg-[#0B5D3F] border border-emerald-400/40 text-emerald-100 hover:text-white text-xs font-bold px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1 shadow-sm"
+                >
+                  <span>Program: {project.category}</span>
+                  <ChevronRight size={12} />
+                </Link>
+              )}
             </div>
             <h1 className="text-white mb-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.8rem, 5vw, 3.2rem)", fontWeight: 900 }}>{project.title}</h1>
             <p className="text-white/80 text-lg mb-5 max-w-2xl">{project.tagline}</p>
@@ -531,23 +553,70 @@ export default function ProjectDetail() {
               <p className="text-gray-700 leading-relaxed">{project.challenge}</p>
             </motion.section>
 
-            {/* Approach */}
-            <motion.section initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-              <div className="text-[#4CAF50] text-xs font-bold uppercase tracking-wider mb-2">Approach</div>
-              <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: "1.5rem" }} className="text-gray-900 mb-6">How We Work</h2>
-              <div className="grid sm:grid-cols-2 gap-4">
-                {project.approach.map((a, i) => (
-                  <motion.div key={a.title} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
-                    className="bg-white rounded-2xl p-5 border border-gray-100 hover:border-[#4CAF50]/30 hover:shadow-md transition-all">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-7 h-7 rounded-full bg-[#0B5D3F] text-white text-xs font-bold flex items-center justify-center shrink-0">{i + 1}</div>
-                      <div className="font-bold text-gray-900 text-sm">{a.title}</div>
+            {/* Approach / How We Work */}
+            {project.approach && project.approach.length > 0 && (
+              <motion.section initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+                <div className="text-[#4CAF50] text-xs font-bold uppercase tracking-wider mb-2">Approach</div>
+                <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: "1.5rem" }} className="text-gray-900 mb-6">How We Work</h2>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {project.approach.map((a, i) => (
+                    <motion.div key={a.title || i} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
+                      className="bg-white rounded-2xl p-5 border border-gray-100 hover:border-[#4CAF50]/30 hover:shadow-md transition-all">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-7 h-7 rounded-full bg-[#0B5D3F] text-white text-xs font-bold flex items-center justify-center shrink-0">{i + 1}</div>
+                        <div className="font-bold text-gray-900 text-sm">{a.title}</div>
+                      </div>
+                      <p className="text-sm text-gray-500 leading-relaxed pl-9">{a.desc}</p>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.section>
+            )}
+
+            {/* Connected Campaigns */}
+            {connectedCampaigns.length > 0 && (
+              <motion.section initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+                <div className="text-[#4CAF50] text-xs font-bold uppercase tracking-wider mb-2">Mobilization</div>
+                <div className="flex items-center justify-between mb-5">
+                  <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: "1.5rem" }} className="text-gray-900">
+                    Connected Campaigns
+                  </h2>
+                  <Link to="/campaigns" className="text-xs font-bold text-[#0B5D3F] hover:text-[#4CAF50] flex items-center gap-1 transition-colors">
+                    View All Campaigns <ArrowRight size={12} />
+                  </Link>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {connectedCampaigns.map((camp) => (
+                    <div key={camp.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition-all group flex flex-col">
+                      <div className="relative h-40 overflow-hidden">
+                        <ImageWithFallback src={camp.image} alt={camp.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-[11px] font-bold text-[#0B5D3F]">
+                          {camp.category}
+                        </div>
+                        <div className="absolute top-3 right-3">
+                          <span className="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full capitalize">{camp.status}</span>
+                        </div>
+                      </div>
+                      <div className="p-5 flex flex-col flex-1">
+                        <h4 className="font-bold text-gray-900 text-sm mb-1.5">{camp.title}</h4>
+                        <p className="text-xs text-gray-500 line-clamp-2 mb-4 leading-relaxed">{camp.description}</p>
+                        <div className="mt-auto pt-3 border-t border-gray-50 flex items-center justify-between">
+                          <span className="text-xs text-gray-500 flex items-center gap-1">
+                            <Users size={12} /> {camp.volunteers.toLocaleString()} volunteers
+                          </span>
+                          <Link
+                            to={`/donate?campaign=${encodeURIComponent(camp.title)}`}
+                            className="inline-flex items-center gap-1 text-xs font-bold text-white bg-[#0B5D3F] hover:bg-[#0a5237] px-3.5 py-1.5 rounded-xl transition-all"
+                          >
+                            <Heart size={11} fill="currentColor" /> Support
+                          </Link>
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-sm text-gray-500 leading-relaxed pl-9">{a.desc}</p>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.section>
+                  ))}
+                </div>
+              </motion.section>
+            )}
 
             {/* Gallery */}
             <motion.section initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
@@ -599,6 +668,32 @@ export default function ProjectDetail() {
                   <span className={`text-xs font-semibold text-right max-w-[60%] ${colored && value === "Active" ? "text-[#4CAF50]" : colored ? "text-gray-500" : "text-gray-700"}`}>{value}</span>
                 </div>
               ))}
+
+              {connectedCampaigns.length > 0 && (
+                <div className="flex items-start justify-between py-2.5 border-b border-gray-50">
+                  <span className="text-xs text-gray-400 shrink-0">Campaigns</span>
+                  <Link
+                    to="/campaigns"
+                    className="text-xs font-bold text-[#0B5D3F] hover:text-[#4CAF50] text-right flex items-center gap-1 justify-end hover:underline"
+                  >
+                    <span>{connectedCampaigns.length} Connected</span>
+                    <ChevronRight size={12} />
+                  </Link>
+                </div>
+              )}
+
+              {project.programSlug && (
+                <div className="flex items-start justify-between py-2.5 border-b border-gray-50">
+                  <span className="text-xs text-gray-400 shrink-0">Parent Program</span>
+                  <Link
+                    to={`/programs/${project.programSlug}`}
+                    className="text-xs font-bold text-[#0B5D3F] hover:text-[#4CAF50] text-right flex items-center gap-1 justify-end hover:underline"
+                  >
+                    <span>{project.category}</span>
+                    <ChevronRight size={12} />
+                  </Link>
+                </div>
+              )}
 
               <div className="mt-5">
                 <div className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">SDG Alignment</div>

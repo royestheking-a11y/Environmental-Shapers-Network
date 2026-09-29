@@ -1,8 +1,22 @@
 import { YouthDevelopmentSection } from "../components/home/YouthDevelopmentSection";
-import { ArrowRight, CheckCircle, Users, Globe2, BookOpen } from "lucide-react";
+import { ArrowRight, CheckCircle, Users, Globe2, BookOpen, MapPin, ChevronRight, TreePine } from "lucide-react";
 import { Link } from "react-router";
+import { useFirestoreData } from "../../lib/useFirestore";
+import { getInitialProjects, Project } from "./admin/sections/ProjectsView";
+import { ImageWithFallback } from "../components/ui/ImageWithFallback";
+import { useMemo } from "react";
 
 export default function YouthEngagement() {
+  const [allProjects] = useFirestoreData<Project[]>("esn_projects_admin", getInitialProjects());
+
+  const youthProjects = useMemo(() => {
+    if (!allProjects) return [];
+    return allProjects.filter((p) => {
+      const cat = (p.category || "").toLowerCase();
+      const slug = (p.programSlug || "").toLowerCase();
+      return slug === "youth" || cat.includes("youth") || cat.includes("education");
+    });
+  }, [allProjects]);
   return (
     <div>
       {/* Hero Section */}
@@ -86,6 +100,74 @@ export default function YouthEngagement() {
           </div>
         </div>
       </section>
+
+      {/* Active Youth Projects */}
+      {youthProjects.length > 0 && (
+        <section className="py-20 bg-[#F8FCF9] border-t border-emerald-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+              <div>
+                <span className="text-[#0B5D3F] text-xs font-bold uppercase tracking-[0.2em] block mb-2">Field Deployments</span>
+                <h2 className="text-3xl md:text-4xl font-bold text-[#0A3D2A]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  Active Youth Action Projects
+                </h2>
+                <p className="text-gray-600 text-sm mt-1 max-w-xl">
+                  Community-based grassroots projects initiated and led by youth leaders across the globe.
+                </p>
+              </div>
+              <Link to="/projects" className="inline-flex items-center gap-1.5 text-sm font-bold text-[#0B5D3F] hover:text-[#4CAF50] transition-colors shrink-0">
+                View All Projects <ArrowRight size={15} />
+              </Link>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {youthProjects.map((p) => (
+                <Link
+                  key={p.id}
+                  to={`/projects/${p.id}`}
+                  className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-[#4CAF50]/40 hover:shadow-xl transition-all flex flex-col h-full"
+                >
+                  <div className="relative h-48 overflow-hidden bg-gray-100">
+                    <ImageWithFallback
+                      src={p.img}
+                      alt={p.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                      <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full text-white shadow-sm ${
+                        p.status === "Active" ? "bg-[#4CAF50]" : "bg-[#D6A95A]"
+                      }`}>
+                        {p.status}
+                      </span>
+                    </div>
+                    <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-black/60 backdrop-blur-sm text-white px-2.5 py-1 rounded-lg text-xs">
+                      <MapPin size={12} className="text-[#4CAF50]" />
+                      <span>{p.country}{p.region ? `, ${p.region}` : ""}</span>
+                    </div>
+                  </div>
+                  <div className="p-6 flex-1 flex flex-col justify-between">
+                    <div>
+                      <div className="text-[11px] font-bold text-[#0B5D3F] uppercase tracking-wider mb-2">{p.category}</div>
+                      <h3 className="font-black text-gray-900 text-lg mb-2 group-hover:text-[#0B5D3F] transition-colors line-clamp-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                        {p.name}
+                      </h3>
+                      <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed mb-4">
+                        {p.tagline || p.description}
+                      </p>
+                    </div>
+                    <div className="pt-4 border-t border-gray-100 flex items-center justify-between text-xs">
+                      <span className="font-bold text-gray-700">{p.impact || `${p.volunteers} Volunteers`}</span>
+                      <span className="text-[#0B5D3F] font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                        View Project <ChevronRight size={14} />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Cross-Link Opportunities: Global Representatives & Audited Impact */}
       <section className="py-20 bg-[#F6FBF8] border-t border-gray-100">

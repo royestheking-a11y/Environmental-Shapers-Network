@@ -8,22 +8,6 @@ import { ImageWithFallback } from "../components/ui/ImageWithFallback";
 import { useFirestoreData } from "../../lib/useFirestore";
 import { getInitialStats, StatItem } from "./admin/sections/StatsAdminView";
 
-function ProgressBar({ goal, raised, color }: { goal: number; raised: number; color: string }) {
-  const pct = Math.min(100, Math.round((raised / (goal || 1)) * 100));
-  return (
-    <div>
-      <div className="flex justify-between text-xs mb-1.5">
-        <span className="text-gray-500">{pct}% completed</span>
-        <span className="text-emerald-700 font-medium">Community Target</span>
-      </div>
-      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-        <motion.div initial={{ width: 0 }} whileInView={{ width: `${pct}%` }} viewport={{ once: true }} transition={{ duration: 1.2, ease: "easeOut" }}
-          className="h-full rounded-full" style={{ backgroundColor: color }} />
-      </div>
-    </div>
-  );
-}
-
 export default function Campaigns() {
   const [allCampaigns] = useFirestoreData<Campaign[]>("esn_campaigns_admin", getInitialCampaigns());
   const [statsData] = useFirestoreData<StatItem[]>("esn_stats_admin", getInitialStats());
@@ -51,10 +35,10 @@ export default function Campaigns() {
               Active Campaigns
             </div>
             <h1 className="text-white mb-5" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(2rem, 5vw, 3.5rem)", fontWeight: 900 }}>
-              Join the Movement.<br />Fund Real Change.
+              Join the Movement.<br />Drive Real Impact.
             </h1>
             <p className="text-white/70 text-lg max-w-xl mx-auto mb-10">
-              Every campaign is a targeted effort to solve a specific environmental crisis. Your contribution directly funds on-the-ground action.
+              Every campaign is a targeted community effort delivering measurable on-the-ground outcomes in our global environmental projects.
             </p>
             <div className="flex items-center justify-center gap-10 flex-wrap">
               {[
@@ -79,8 +63,6 @@ export default function Campaigns() {
         <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 2vw, 1.8rem)", fontWeight: 800 }} className="text-gray-900 mb-8">Active Campaigns</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
           {filteredCampaigns.map((campaign, i) => {
-            const progress = Math.min(100, Math.round((campaign.raised / (campaign.goal || 1)) * 100));
-            const Icon = resolveIcon("Target");
             return (
               <motion.div
                 key={campaign.id}
@@ -96,7 +78,7 @@ export default function Campaigns() {
                     {campaign.category}
                   </div>
                   <div className="absolute top-4 right-4">
-                    <span className="bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full capitalize">{campaign.status}</span>
+                    <span className="bg-emerald-600 text-white text-xs font-bold px-2.5 py-1 rounded-full capitalize">{campaign.status}</span>
                   </div>
                 </div>
                 <div className="p-6 flex flex-col flex-grow">
@@ -104,13 +86,36 @@ export default function Campaigns() {
                   <p className="text-gray-500 text-sm mb-6 line-clamp-2">{campaign.description}</p>
                   
                   <div className="mt-auto">
-                    <div className="flex justify-between text-sm mb-2">
-                      <span className="font-bold text-gray-900">{progress}% Milestone Achieved</span>
-                      <span className="text-[#0B5D3F] font-semibold text-xs bg-emerald-50 px-2 py-0.5 rounded-md">{campaign.category}</span>
-                    </div>
-                    <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden mb-6">
-                      <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${progress}%`, backgroundColor: campaign.color }} />
-                    </div>
+                    {/* Connected Project Link */}
+                    {campaign.projectName && campaign.projectId ? (
+                      <div className="mb-5 bg-[#F6FBF8] border border-emerald-100 rounded-2xl p-3 flex items-center justify-between">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-8 h-8 rounded-xl bg-[#0B5D3F] text-white flex items-center justify-center shrink-0">
+                            <Target size={14} />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-800">Connected Project</div>
+                            <Link
+                              to={`/projects/${campaign.projectId}`}
+                              className="text-xs font-bold text-gray-900 hover:text-[#0B5D3F] transition-colors flex items-center gap-1 truncate"
+                            >
+                              <span className="truncate">{campaign.projectName}</span>
+                              <ArrowRight size={11} className="shrink-0" />
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mb-5 bg-[#F6FBF8] border border-gray-100 rounded-2xl p-3 flex items-center gap-2.5 text-xs font-medium text-gray-500">
+                        <div className="w-8 h-8 rounded-xl bg-gray-100 text-[#0B5D3F] flex items-center justify-center shrink-0">
+                          <Megaphone size={14} />
+                        </div>
+                        <div>
+                          <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Campaign Scope</div>
+                          <div className="text-xs font-bold text-gray-700">Global Standalone Movement</div>
+                        </div>
+                      </div>
+                    )}
                     
                     <div className="grid grid-cols-2 gap-4 py-4 border-y border-gray-50 mb-6">
                       <div>
@@ -118,8 +123,8 @@ export default function Campaigns() {
                         <div className="font-bold text-gray-900">{campaign.volunteers?.toLocaleString() || 0}</div>
                       </div>
                       <div>
-                        <div className="text-xs text-gray-400 mb-1">Ends</div>
-                        <div className="font-bold text-gray-900">{campaign.endDate}</div>
+                        <div className="text-xs text-gray-400 mb-1">Duration</div>
+                        <div className="font-bold text-gray-900">{campaign.endDate || "Ongoing"}</div>
                       </div>
                     </div>
                     
@@ -129,7 +134,7 @@ export default function Campaigns() {
                         className="flex-1 py-3 rounded-xl text-white font-bold text-sm text-center shadow-md hover:opacity-95 transition-all flex items-center justify-center gap-1.5"
                         style={{ backgroundColor: campaign.color }}
                       >
-                        <Heart size={14} fill="currentColor" /> Donate Now
+                        <Heart size={14} fill="currentColor" /> Support Campaign
                       </Link>
                     </div>
                   </div>
@@ -158,7 +163,7 @@ export default function Campaigns() {
                 <p className="text-sm text-gray-500 leading-relaxed mb-4 line-clamp-2">{c.description}</p>
                 <div className="flex items-center gap-2 text-sm text-[#0B5D3F] font-bold">
                   <Target size={14} />
-                  Goal Achieved — Impact Milestone Completed
+                  Campaign Completed — Impact Milestones Delivered
                 </div>
               </div>
             </motion.div>

@@ -8,23 +8,6 @@ import { useFirestoreData } from "../../../lib/useFirestore";
 import { resolveIcon } from "../../pages/admin/sections/ProgramsView";
 import { ImageWithFallback } from "../ui/ImageWithFallback";
 
-function ProgressBar({ value, max, color }: { value: number; max: number; color: string }) {
-  const percent = Math.min((value / max) * 100, 100);
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true });
-  return (
-    <div ref={ref} className="h-2 bg-gray-100 rounded-full overflow-hidden">
-      <motion.div
-        initial={{ width: 0 }}
-        animate={inView ? { width: `${percent}%` } : {}}
-        transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 }}
-        className="h-full rounded-full"
-        style={{ backgroundColor: color }}
-      />
-    </div>
-  );
-}
-
 export function CampaignsSection() {
   const [campaignsRaw] = useFirestoreData<Campaign[]>("esn_campaigns_admin", getInitialCampaigns());
   const campaigns = campaignsRaw ? campaignsRaw.slice(0, 3) : [];
@@ -108,17 +91,36 @@ export function CampaignsSection() {
                   </h4>
                   <p className="text-gray-500 text-sm mb-5 leading-relaxed line-clamp-2">{campaign.description}</p>
 
-                  {/* Progress */}
-                  <div className="mb-5">
-                    <div className="flex justify-between text-xs font-semibold mb-2">
-                      <span className="text-gray-600">{((campaign.raised / campaign.goal) * 100).toFixed(0)}% of goal reached</span>
+                  {/* Connected Project Link */}
+                  {campaign.projectName && campaign.projectId ? (
+                    <div className="mb-5 bg-[#F6FBF8] border border-emerald-100 rounded-2xl p-3 flex items-center justify-between">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-8 h-8 rounded-xl bg-[#0B5D3F] text-white flex items-center justify-center shrink-0">
+                          <Target size={14} />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-800">Connected Project</div>
+                          <Link
+                            to={`/projects/${campaign.projectId}`}
+                            className="text-xs font-bold text-gray-900 hover:text-[#0B5D3F] transition-colors flex items-center gap-1 truncate"
+                          >
+                            <span className="truncate">{campaign.projectName}</span>
+                            <ArrowRight size={11} className="shrink-0" />
+                          </Link>
+                        </div>
+                      </div>
                     </div>
-                    <ProgressBar value={campaign.raised} max={campaign.goal} color={campaign.color} />
-                    <div className="flex justify-between text-xs text-gray-400 mt-1.5">
-                      <span>${campaign.raised.toLocaleString()} raised</span>
-                      <span>Goal: ${campaign.goal.toLocaleString()}</span>
+                  ) : (
+                    <div className="mb-5 bg-[#F6FBF8] border border-gray-100 rounded-2xl p-3 flex items-center gap-2.5 text-xs font-medium text-gray-500">
+                      <div className="w-8 h-8 rounded-xl bg-gray-100 text-[#0B5D3F] flex items-center justify-center shrink-0">
+                        <Target size={14} />
+                      </div>
+                      <div>
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Campaign Scope</div>
+                        <div className="text-xs font-bold text-gray-700">Global Standalone Initiative</div>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Stats Row */}
                   <div className="flex items-center justify-between mb-5 py-3 border-t border-gray-50">

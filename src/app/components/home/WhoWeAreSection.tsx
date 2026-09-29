@@ -43,7 +43,7 @@ export function WhoWeAreSection() {
     s.label.toLowerCase().includes("country") ||
     s.label.toLowerCase().includes("partner")
   );
-  const countriesCount = countriesStat ? `${countriesStat.value}${countriesStat.suffix || "+"}` : "80+";
+  const countriesCount = countriesStat ? `${countriesStat.value}${countriesStat.suffix !== undefined ? countriesStat.suffix : "+"}` : "80+";
   const yearsCount = Math.max(new Date().getFullYear() - 2019, 7);
 
   const features = (featuresRaw && featuresRaw.length > 0 ? featuresRaw : defaultFeatures).map((f) => ({

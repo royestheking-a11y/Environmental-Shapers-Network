@@ -5,7 +5,8 @@ import { ArrowRight, Users, BookOpen, Calendar, ChevronRight, Globe2, CheckCircl
 import { ImageWithFallback } from "../components/ui/ImageWithFallback";
 import { useFirestoreData } from "../../lib/useFirestore";
 import { getInitialPrograms, resolveIcon, ProgramData } from "./admin/sections/ProgramsView";
-import { getInitialEvents, ESNEvent } from "./admin/sections/EventsView";
+import { getInitialEvents, ESNEvent, DEFAULT_EVENTS_PAGE_SETTINGS, EventsPageSettings } from "./admin/sections/EventsView";
+import { getInitialProjects, Project } from "./admin/sections/ProjectsView";
 
 const programData: Record<string, {
   slug: string;
@@ -424,8 +425,28 @@ function HeroBlock({ heroImage, label, tagline, icon: Icon, breadcrumb }: any) {
 }
 
 function GenericProgramPage({ d }: { d: any }) {
-
   const Icon = d.icon;
+  const [allProjects] = useFirestoreData<Project[]>("esn_projects_admin", getInitialProjects());
+
+  const programProjects = useMemo(() => {
+    if (!allProjects || allProjects.length === 0) return [];
+    return allProjects.filter((p) => {
+      if (p.programSlug && p.programSlug === d.slug) return true;
+      // Fallback matching by category or name keywords
+      const cat = (p.category || "").toLowerCase();
+      const slug = (d.slug || "").toLowerCase();
+      if (slug.includes("forest") && (cat.includes("forest") || cat.includes("agroforestry"))) return true;
+      if (slug.includes("ocean") && (cat.includes("ocean") || cat.includes("marine") || cat.includes("coastal"))) return true;
+      if (slug.includes("energy") && cat.includes("energy")) return true;
+      if (slug.includes("adaptation") && (cat.includes("adaptation") || cat.includes("water"))) return true;
+      if (slug.includes("biodiversity") && (cat.includes("biodiversity") || cat.includes("wildlife"))) return true;
+      if (slug.includes("education") && cat.includes("education")) return true;
+      if (slug.includes("research") && cat.includes("research")) return true;
+      if (slug.includes("youth") && cat.includes("youth")) return true;
+      return false;
+    });
+  }, [allProjects, d.slug]);
+
   return (
     <div className="bg-[#F6FBF8]">
       <HeroBlock heroImage={d.heroImage} label={d.label} tagline={d.tagline} icon={Icon} breadcrumb="ESN Programs" />
@@ -474,6 +495,98 @@ function GenericProgramPage({ d }: { d: any }) {
             ))}
           </div>
         </div>
+
+        {/* Active Projects Under This Program */}
+        <div>
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+            <div>
+              <div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider mb-2">On-The-Ground Operations</div>
+              <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 2.5vw, 2rem)", fontWeight: 800 }} className="text-gray-900">
+                Projects Under {d.label}
+              </h2>
+              <p className="text-gray-500 text-sm mt-1 max-w-xl">
+                Active grassroots deployments and field projects operating directly under this program umbrella.
+              </p>
+            </div>
+            <Link to="/projects" className="inline-flex items-center gap-1.5 text-sm font-bold text-[#0B5D3F] hover:text-[#4CAF50] transition-colors shrink-0">
+              View All Projects <ArrowRight size={15} />
+            </Link>
+          </div>
+
+          {programProjects.length > 0 ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {programProjects.map((p, idx) => (
+                <motion.div
+                  key={p.id}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.08 }}
+                >
+                  <Link
+                    to={`/projects/${p.id}`}
+                    className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-[#4CAF50]/40 hover:shadow-xl transition-all flex flex-col h-full"
+                  >
+                    <div className="relative h-48 overflow-hidden bg-gray-100">
+                      <ImageWithFallback
+                        src={p.img}
+                        alt={p.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                        <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full text-white shadow-sm ${
+                          p.status === "Active" ? "bg-[#4CAF50]" : p.status === "Completed" ? "bg-[#173B63]" : "bg-[#D6A95A]"
+                        }`}>
+                          {p.status}
+                        </span>
+                      </div>
+                      <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-black/60 backdrop-blur-sm text-white px-2.5 py-1 rounded-lg text-xs">
+                        <MapPin size={12} className="text-[#4CAF50]" />
+                        <span>{p.country}{p.region ? `, ${p.region}` : ""}</span>
+                      </div>
+                    </div>
+                    <div className="p-6 flex-1 flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <span className="text-[11px] font-bold text-[#0B5D3F] uppercase tracking-wider">{p.category}</span>
+                          {p.theme && (
+                            <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                              {p.theme}
+                            </span>
+                          )}
+                        </div>
+                        <h3 className="font-black text-gray-900 text-lg mb-2 group-hover:text-[#0B5D3F] transition-colors line-clamp-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                          {p.name}
+                        </h3>
+                        <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed mb-4">
+                          {p.tagline || p.description}
+                        </p>
+                      </div>
+                      <div className="pt-4 border-t border-gray-100 flex items-center justify-between text-xs">
+                        <span className="font-bold text-gray-700">{p.impact || `${p.progress}% completed`}</span>
+                        <span className="text-[#0B5D3F] font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                          View Project <ChevronRight size={14} />
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl p-10 border border-gray-100 text-center">
+              <TreePine size={36} className="text-gray-300 mx-auto mb-3" />
+              <h4 className="font-bold text-gray-700 text-base mb-1">New Projects in Development</h4>
+              <p className="text-xs text-gray-400 max-w-md mx-auto mb-4">
+                Field projects for {d.label} are currently being onboarded and community baseline studies prepared.
+              </p>
+              <Link to="/projects" className="inline-flex items-center gap-2 text-xs font-bold text-[#0B5D3F] bg-emerald-50 px-4 py-2 rounded-xl hover:bg-emerald-100 transition-colors">
+                Explore All Active Projects <ArrowRight size={13} />
+              </Link>
+            </div>
+          )}
+        </div>
+
         <div>
           <div className="text-center mb-10">
             <div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider mb-2">Voices</div>
@@ -588,8 +701,9 @@ function InsightsPage() {
 }
 
 function EventsPage() {
-  const d = eventsData;
-  const Icon = d.icon;
+  const [pageSettings] = useFirestoreData<EventsPageSettings>("esn_events_page_settings", DEFAULT_EVENTS_PAGE_SETTINGS);
+  const d = pageSettings || DEFAULT_EVENTS_PAGE_SETTINGS;
+  const Icon = Calendar;
   const [eventsList] = useFirestoreData<ESNEvent[]>("esn_events", getInitialEvents());
   const typeColors: Record<string, string> = { Summit: "#0B5D3F", Campaign: "#4CAF50", Hackathon: "#173B63", Forum: "#1565C0", Delegation: "#E65100", Gala: "#D6A95A" };
   
@@ -603,59 +717,99 @@ function EventsPage() {
         location: `${e.location} (${e.mode})`,
         image: e.image,
       }))
-    : d.upcoming;
+    : (DEFAULT_EVENTS_PAGE_SETTINGS as any).upcoming || [];
 
   return (
     <div className="bg-[#F6FBF8]">
-      <HeroBlock heroImage={d.heroImage} label={d.label} tagline={d.tagline} icon={Icon} breadcrumb="ESN Programs" />
+      <HeroBlock
+        heroImage={d.heroImage || DEFAULT_EVENTS_PAGE_SETTINGS.heroImage}
+        label={d.label || "Events & Campaigns"}
+        tagline={d.tagline || DEFAULT_EVENTS_PAGE_SETTINGS.tagline}
+        icon={Icon}
+        breadcrumb={d.badge || "ESN Programs"}
+      />
       <div className="max-w-6xl mx-auto px-6 py-16 flex flex-col gap-16">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-          {d.stats.map((s, i) => <StatCard key={s.label} {...s} i={i} />)}
+          {(d.stats && d.stats.length > 0 ? d.stats : DEFAULT_EVENTS_PAGE_SETTINGS.stats).map((s, i) => (
+            <StatCard key={s.label + i} {...s} i={i} />
+          ))}
         </div>
         <div>
           <div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider mb-2">About</div>
-          <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 2.5vw, 2rem)", fontWeight: 800 }} className="text-gray-900 mb-5">Building the Movement Together</h2>
-          <p className="text-gray-600 leading-relaxed max-w-2xl">{d.description}</p>
+          <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 2.5vw, 2rem)", fontWeight: 800 }} className="text-gray-900 mb-5">
+            {d.aboutHeading || "Building the Movement Together"}
+          </h2>
+          <p className="text-gray-600 leading-relaxed max-w-2xl">{d.description || DEFAULT_EVENTS_PAGE_SETTINGS.description}</p>
         </div>
         <div>
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider mb-1">Calendar 2026</div>
-              <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 2vw, 1.8rem)", fontWeight: 800 }} className="text-gray-900">Upcoming Events</h2>
-            </div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+            <Link to="/contact?subject=Event%20Registration" className="group/header block">
+              <div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5 group-hover/header:text-[#388E3C] transition-colors">
+                Calendar 2026
+                <ArrowRight size={13} className="opacity-0 group-hover/header:opacity-100 group-hover/header:translate-x-1 transition-all" />
+              </div>
+              <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 2vw, 1.8rem)", fontWeight: 800 }} className="text-gray-900 group-hover/header:text-[#0B5D3F] transition-colors">
+                Upcoming Events
+              </h2>
+            </Link>
+            <Link
+              to="/contact?subject=Event%20Registration"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold text-[#0B5D3F] bg-[#0B5D3F]/10 hover:bg-[#0B5D3F] hover:text-white transition-all w-fit"
+            >
+              Contact Our Events Team <ArrowRight size={14} />
+            </Link>
           </div>
           <div className="grid md:grid-cols-2 gap-5">
             {displayEvents.map((e: any, i) => (
-              <motion.div key={e.title + i} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
-                className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all group">
-                {e.image && (
-                  <div className="h-40 rounded-xl overflow-hidden mb-4 border border-gray-100/80">
-                    <ImageWithFallback src={e.image} alt={e.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+              <motion.div
+                key={e.title + i}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
+                className="h-full"
+              >
+                <Link
+                  to={`/contact?subject=Event%20Registration&event=${encodeURIComponent(e.title)}`}
+                  className="bg-white rounded-2xl p-6 border border-gray-100 hover:border-[#4CAF50]/40 hover:shadow-xl transition-all group flex flex-col justify-between h-full cursor-pointer"
+                >
+                  <div>
+                    {e.image && (
+                      <div className="h-44 rounded-xl overflow-hidden mb-4 border border-gray-100/80">
+                        <ImageWithFallback src={e.image} alt={e.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      </div>
+                    )}
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ backgroundColor: (typeColors[e.type] || "#0B5D3F") + "15", color: typeColors[e.type] || "#0B5D3F" }}>
+                          {e.type}
+                        </span>
+                        {e.status === "postponed" && (
+                          <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                            Postponed
+                          </span>
+                        )}
+                        {e.status === "cancelled" && (
+                          <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">
+                            Cancelled
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-xs font-semibold text-[#4CAF50] bg-[#4CAF50]/10 px-3 py-1 rounded-full shrink-0">{e.seats}</span>
+                    </div>
+                    <div className="font-bold text-gray-900 text-lg mb-3 group-hover:text-[#0B5D3F] transition-colors">{e.title}</div>
+                    <div className="flex items-center gap-4 text-xs text-gray-400 mb-4">
+                      <span className="flex items-center gap-1.5"><Calendar size={13} className="text-[#4CAF50]" /> {e.date}</span>
+                      <span className="flex items-center gap-1.5"><MapPin size={13} className="text-[#4CAF50]" /> {e.location}</span>
+                    </div>
                   </div>
-                )}
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ backgroundColor: (typeColors[e.type] || "#0B5D3F") + "15", color: typeColors[e.type] || "#0B5D3F" }}>
-                      {e.type}
+                  <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs font-bold text-[#0B5D3F] group-hover:text-[#4CAF50] transition-colors">
+                    <span>Contact Our Events Team</span>
+                    <span className="inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                      Inquire & Register <ArrowRight size={13} />
                     </span>
-                    {e.status === "postponed" && (
-                      <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
-                        Postponed
-                      </span>
-                    )}
-                    {e.status === "cancelled" && (
-                      <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">
-                        Cancelled
-                      </span>
-                    )}
                   </div>
-                  <span className="text-xs font-semibold text-[#4CAF50] bg-[#4CAF50]/10 px-3 py-1 rounded-full">{e.seats}</span>
-                </div>
-                <div className="font-bold text-gray-900 mb-3 group-hover:text-[#0B5D3F] transition-colors">{e.title}</div>
-                <div className="flex items-center gap-4 text-xs text-gray-400">
-                  <span className="flex items-center gap-1"><Calendar size={12} /> {e.date}</span>
-                  <span className="flex items-center gap-1"><MapPin size={12} /> {e.location}</span>
-                </div>
+                </Link>
               </motion.div>
             ))}
           </div>
@@ -665,7 +819,7 @@ function EventsPage() {
           <Calendar size={32} className="text-[#4CAF50] mx-auto mb-4" />
           <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 3vw, 2rem)", fontWeight: 800 }} className="text-white mb-4">Register for an Event</h3>
           <p className="text-white/70 mb-8 max-w-lg mx-auto">Host, sponsor, or attend ESN events worldwide. Contact us to learn about partnership and participation opportunities.</p>
-          <Link to="/contact" className="inline-flex items-center gap-2 bg-[#4CAF50] hover:bg-[#43a047] text-white px-7 py-3.5 rounded-full font-semibold transition-all hover:scale-105">
+          <Link to="/contact?subject=Event%20Registration" className="inline-flex items-center gap-2 bg-[#4CAF50] hover:bg-[#43a047] text-white px-7 py-3.5 rounded-full font-semibold transition-all hover:scale-105 shadow-md">
             Contact Our Events Team <ArrowRight size={16} />
           </Link>
         </motion.div>

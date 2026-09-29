@@ -103,6 +103,7 @@ export function DataBackupView() {
       "esn_whoweare_admin",
       "esn_whoweare_story",
       "esn_hero_admin",
+      "esn_hero_collage",
       "esn_stats_admin",
       "esn_mission_admin",
       "esn_mission_section_admin",

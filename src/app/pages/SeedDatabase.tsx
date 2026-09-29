@@ -6,7 +6,7 @@ import { getInitialMissionValues, getInitialMissionSection } from "./admin/secti
 import { getInitialStats } from "./admin/sections/StatsAdminView";
 import { getInitialThematicAreas } from "./admin/sections/ThematicAreasView";
 import { getInitialTestimonials } from "./admin/sections/TestimonialsView";
-import { getInitialHeroSlides } from "./admin/sections/HeroAdminView";
+import { getInitialHeroSlides, getInitialHeroCollageCards } from "./admin/sections/HeroAdminView";
 import { getInitialFAQs } from "./admin/sections/FAQAdminView";
 import { getInitialYouthInitiatives, getInitialYouthStats } from "./admin/sections/YouthAdminView";
 import { getInitialResearchAreas } from "./admin/sections/ResearchAdminView";
@@ -51,6 +51,7 @@ export default function SeedDatabase() {
         await saveFirestoreData("esn_thematic_areas_admin", getInitialThematicAreas());
         await saveFirestoreData("esn_testimonials_admin", getInitialTestimonials());
         await saveFirestoreData("esn_hero_admin", getInitialHeroSlides());
+        await saveFirestoreData("esn_hero_collage", getInitialHeroCollageCards());
         await saveFirestoreData("esn_faq_admin", getInitialFAQs());
         await saveFirestoreData("esn_youth_initiatives_admin", getInitialYouthInitiatives());
         await saveFirestoreData("esn_youth_stats", getInitialYouthStats());

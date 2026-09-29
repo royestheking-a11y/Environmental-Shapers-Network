@@ -31,6 +31,31 @@ export interface ESNEvent {
   impactBeneficiaries?: number;
 }
 
+export interface EventsPageSettings {
+  label: string;
+  badge: string;
+  tagline: string;
+  aboutHeading: string;
+  description: string;
+  heroImage: string;
+  stats: { value: string; label: string }[];
+}
+
+export const DEFAULT_EVENTS_PAGE_SETTINGS: EventsPageSettings = {
+  label: "Events & Campaigns",
+  badge: "ESN Programs",
+  tagline: "Mobilizing Action Through Powerful Collective Moments",
+  aboutHeading: "Building the Movement Together",
+  description: "ESN hosts and supports a year-round calendar of events, campaigns, and mobilization opportunities that bring together communities, organizations, governments, and individuals to take action for the environment.",
+  heroImage: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1400",
+  stats: [
+    { value: "120+", label: "Events Per Year" },
+    { value: "2.8M+", label: "Campaign Participants" },
+    { value: "190+", label: "Countries Reached" },
+    { value: "48", label: "Major Summits" },
+  ],
+};
+
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 import { logAdminActivity } from "../../../../lib/activityLogger";
 import { DEFAULT_PROGRAM_INITIATIVES } from "./ProgramsView";
@@ -136,6 +161,10 @@ function QRGrid({ size = 120 }: { size?: number }) {
 
 export function EventsView() {
   const [events, setEvents, loading] = useFirestoreData<ESNEvent[]>("esn_events", getInitialEvents());
+  const [pageSettings, setPageSettings] = useFirestoreData<EventsPageSettings>("esn_events_page_settings", DEFAULT_EVENTS_PAGE_SETTINGS);
+  const [showPageSettingsModal, setShowPageSettingsModal] = useState(false);
+  const [settingsForm, setSettingsForm] = useState<EventsPageSettings>(DEFAULT_EVENTS_PAGE_SETTINGS);
+  const [pageSettingsSaved, setPageSettingsSaved] = useState(false);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<"All" | EventStatus>("All");
   const [showForm, setShowForm] = useState(false);
@@ -144,6 +173,23 @@ export function EventsView() {
   const [detail, setDetail] = useState<ESNEvent | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const [showQR, setShowQR] = useState<ESNEvent | null>(null);
+
+  const openPageSettings = () => {
+    setSettingsForm(pageSettings || DEFAULT_EVENTS_PAGE_SETTINGS);
+    setShowPageSettingsModal(true);
+    setPageSettingsSaved(false);
+  };
+
+  const savePageSettings = async () => {
+    setPageSettings(settingsForm);
+    await saveFirestoreData("esn_events_page_settings", settingsForm);
+    logAdminActivity("Updated Events Page CMS", "Events", "Updated Events & Campaigns page banner, heading, description, and stats.", "success");
+    setPageSettingsSaved(true);
+    setTimeout(() => {
+      setShowPageSettingsModal(false);
+      setPageSettingsSaved(false);
+    }, 1200);
+  };
 
   const save = async (list: ESNEvent[]) => {
     setEvents(list);
@@ -207,17 +253,25 @@ export function EventsView() {
   return (
     <div className="flex flex-col gap-7">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h3 className="font-black text-gray-900" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Events Manager</h3>
           <p className="text-sm text-gray-400 mt-0.5">{events.length} events total · {counts.upcoming} upcoming · {counts.ongoing} live</p>
         </div>
-        <button
-          onClick={() => { setForm(blankEvent); setEditId(null); setShowForm(true); }}
-          className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all"
-        >
-          <Plus size={16} /> Create Event
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={openPageSettings}
+            className="flex items-center gap-2 bg-white text-[#0B5D3F] border border-[#0B5D3F]/25 hover:border-[#0B5D3F] px-4 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0B5D3F]/5 transition-all shadow-sm"
+          >
+            <Edit3 size={15} /> Page Banner & Content
+          </button>
+          <button
+            onClick={() => { setForm(blankEvent); setEditId(null); setShowForm(true); }}
+            className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all shadow-sm"
+          >
+            <Plus size={16} /> Create Event
+          </button>
+        </div>
       </div>
 
       {/* Stat pills */}
@@ -618,6 +672,153 @@ export function EventsView() {
                     className="w-full flex items-center justify-center gap-2 border border-red-200 text-red-500 py-3 rounded-xl font-semibold text-sm hover:bg-red-50 transition-all"
                   >
                     <Trash2 size={16} /> Delete Event
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Page Banner & Content Settings Modal */}
+      <AnimatePresence>
+        {showPageSettingsModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 sm:p-8">
+              <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-6">
+                <div>
+                  <h3 className="font-black text-gray-900 text-lg" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    Events & Campaigns Page Settings
+                  </h3>
+                  <p className="text-xs text-gray-400 mt-0.5">Customize the public page banner, breadcrumb badge, headline, and impact stats</p>
+                </div>
+                <button onClick={() => setShowPageSettingsModal(false)} className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors">
+                  <X size={16} />
+                </button>
+              </div>
+
+              {pageSettingsSaved && (
+                <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                  Events & Campaigns page settings updated successfully!
+                </div>
+              )}
+
+              <div className="flex flex-col gap-5">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-bold text-gray-700 block mb-1">Badge Text (e.g. ESN Programs)</label>
+                    <input
+                      type="text"
+                      value={settingsForm.badge}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, badge: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]"
+                      placeholder="e.g. ESN Programs"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-700 block mb-1">Page Title / Heading</label>
+                    <input
+                      type="text"
+                      value={settingsForm.label}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, label: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]"
+                      placeholder="e.g. Events & Campaigns"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-gray-700 block mb-1">Tagline / Subheading</label>
+                  <input
+                    type="text"
+                    value={settingsForm.tagline}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, tagline: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]"
+                    placeholder="e.g. Mobilizing Action Through Powerful Collective Moments"
+                  />
+                </div>
+
+                <div>
+                  <ImageUploadField
+                    label="Hero Banner Image"
+                    value={settingsForm.heroImage}
+                    onChange={(url) => setSettingsForm({ ...settingsForm, heroImage: url })}
+                    folder="events"
+                    aspectRatio="video"
+                    helpText="High-resolution banner photo for the top of the Events & Campaigns page"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-gray-700 block mb-1">About Section Heading</label>
+                  <input
+                    type="text"
+                    value={settingsForm.aboutHeading}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, aboutHeading: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]"
+                    placeholder="e.g. Building the Movement Together"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-gray-700 block mb-1">About Description</label>
+                  <textarea
+                    rows={3}
+                    value={settingsForm.description}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, description: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]"
+                    placeholder="Describe the events and campaigns mission..."
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-gray-700 block mb-2">4 Highlight Stats Counters</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {(settingsForm.stats || []).map((s, idx) => (
+                      <div key={idx} className="p-3 bg-[#F6FBF8] rounded-xl border border-gray-200 flex flex-col gap-2">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase">Stat #{idx + 1}</span>
+                        <input
+                          type="text"
+                          value={s.value}
+                          onChange={(e) => {
+                            const newStats = [...settingsForm.stats];
+                            newStats[idx] = { ...newStats[idx], value: e.target.value };
+                            setSettingsForm({ ...settingsForm, stats: newStats });
+                          }}
+                          className="w-full px-2 py-1.5 rounded-lg border border-gray-200 text-xs font-bold focus:outline-none focus:border-[#4CAF50]"
+                          placeholder="e.g. 120+"
+                        />
+                        <input
+                          type="text"
+                          value={s.label}
+                          onChange={(e) => {
+                            const newStats = [...settingsForm.stats];
+                            newStats[idx] = { ...newStats[idx], label: e.target.value };
+                            setSettingsForm({ ...settingsForm, stats: newStats });
+                          }}
+                          className="w-full px-2 py-1.5 rounded-lg border border-gray-200 text-[11px] focus:outline-none focus:border-[#4CAF50]"
+                          placeholder="e.g. Events Per Year"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+                  <button
+                    type="button"
+                    onClick={() => setShowPageSettingsModal(false)}
+                    className="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-xs font-semibold hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={savePageSettings}
+                    className="px-6 py-2.5 rounded-xl bg-[#0B5D3F] text-white text-xs font-bold hover:bg-[#0a5237] transition-all shadow-md"
+                  >
+                    Save Changes
                   </button>
                 </div>
               </div>

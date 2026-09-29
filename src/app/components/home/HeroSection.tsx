@@ -8,7 +8,7 @@ const rightImages = [
   "/canada journey.jpeg",
 ];
 
-import { getInitialHeroSlides, DEFAULT_HERO_IMAGES } from "../../pages/admin/sections/HeroAdminView";
+import { getInitialHeroSlides, DEFAULT_HERO_IMAGES, getInitialHeroCollageCards, HeroCollageCard } from "../../pages/admin/sections/HeroAdminView";
 import { defaultGlobalRepsSettings, GlobalRepsSettings } from "../../pages/admin/sections/GlobalRepsAdminView";
 import { useFirestoreData } from "../../../lib/useFirestore";
 
@@ -93,8 +93,55 @@ function FallingLeaf({ delay, x }: { delay: number; x: number }) {
   );
 }
 
+function getHeroCardConfig(card: HeroCollageCard, index: number) {
+  const pos = card.position || (index === 0 ? "top-right" : index === 1 ? "bottom-left" : index === 2 ? "center" : "extra");
+
+  if (pos === "top-right" || (index === 0 && !card.position)) {
+    return {
+      className: "absolute top-8 right-0 w-60 h-72 rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10 z-[1]",
+      rotation: card.rotation !== undefined ? card.rotation : -4,
+      delay: 0.2,
+      hasGradient: true,
+    };
+  }
+  if (pos === "bottom-left" || (index === 1 && !card.position)) {
+    return {
+      className: "absolute bottom-8 left-0 w-56 h-64 rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10 z-[2]",
+      rotation: card.rotation !== undefined ? card.rotation : 4,
+      delay: 0.4,
+      hasGradient: true,
+    };
+  }
+  if (pos === "center" || (index === 2 && !card.position)) {
+    return {
+      className: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-52 h-56 rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10 z-10",
+      rotation: card.rotation !== undefined ? card.rotation : 0,
+      delay: 0.6,
+      hasGradient: false,
+    };
+  }
+  if (pos === "top-left" || index === 3) {
+    return {
+      className: "absolute top-4 left-6 w-48 h-56 rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10 z-[3]",
+      rotation: card.rotation !== undefined ? card.rotation : -2,
+      delay: 0.5,
+      hasGradient: true,
+    };
+  }
+  return {
+    className: "absolute bottom-4 right-10 w-48 h-56 rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10 z-[3]",
+    rotation: card.rotation !== undefined ? card.rotation : 2,
+    delay: 0.7,
+    hasGradient: true,
+  };
+}
+
 export function HeroSection() {
   const [slides, setSlides, loading] = useFirestoreData<any[]>("esn_hero_admin", getInitialHeroSlides());
+  const [collageCards] = useFirestoreData<HeroCollageCard[]>(
+    "esn_hero_collage",
+    getInitialHeroCollageCards()
+  );
   const [repsSettings] = useFirestoreData<GlobalRepsSettings>(
     "esn_global_representatives_settings",
     defaultGlobalRepsSettings
@@ -370,73 +417,39 @@ export function HeroSection() {
 
           {/* RIGHT: Image collage */}
           <div className="hidden lg:flex relative h-[520px] items-center justify-center">
-            {/* Interconnected Global Reps Floating Highlight */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.85 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.9, duration: 0.6 }}
-              className="absolute top-2 left-2 z-20 bg-[#0a1a0e]/85 backdrop-blur-xl border border-white/20 rounded-2xl p-3 shadow-2xl flex items-center gap-2.5 text-white max-w-[220px]"
-            >
-              <div className="w-8 h-8 rounded-xl bg-[#0B5D3F] flex items-center justify-center text-white shrink-0 border border-[#4CAF50]/40">
-                <Globe2 size={16} className="text-[#81C784]" />
-              </div>
-              <div className="min-w-0">
-                <div className="text-[10px] uppercase font-bold tracking-wider text-[#81C784]">
-                  {activeReps.badge || "Global Leadership"}
-                </div>
-                <div className="text-xs font-black truncate text-white">
-                  {repsCount} Country Reps
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Main large image */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, rotate: -3 }}
-              animate={{ opacity: 1, scale: 1, rotate: -3 }}
-              transition={{ delay: 0.2, duration: 0.8 }}
-              className="absolute top-8 right-0 w-60 h-72 rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10"
-              style={{ rotate: -4 }}
-            >
-              <img
-                src={activeReps.image || "/Speaking on Climate Adaptation and Resilience in South Asia- CEPCA 2024, Ottawa, Canada.jpeg"}
-                alt="Global Representation"
-                className="w-full h-full object-cover"
-                decoding="async"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0B5D3F]/30 to-transparent" />
-            </motion.div>
-
-            {/* Second image */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, rotate: 4 }}
-              animate={{ opacity: 1, scale: 1, rotate: 4 }}
-              transition={{ delay: 0.4, duration: 0.8 }}
-              className="absolute bottom-8 left-0 w-56 h-64 rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10"
-            >
-              <img
-                src="/Representing Bangladesh's Coastal Communities on the Global Stage.jpeg"
-                alt="Representing Coastal Communities"
-                className="w-full h-full object-cover"
-                decoding="async"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0B5D3F]/30 to-transparent" />
-            </motion.div>
-
-            {/* Center image (larger) */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.8 }}
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-52 h-56 rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10 z-10"
-            >
-              <img
-                src="/meeting time.jpeg"
-                alt="Meeting and collaboration"
-                className="w-full h-full object-cover"
-                decoding="async"
-              />
-            </motion.div>
+            {collageCards && collageCards.length > 0 ? (
+              collageCards.map((card, idx) => {
+                const config = getHeroCardConfig(card, idx);
+                return (
+                  <motion.div
+                    key={card.id || idx}
+                    initial={{ opacity: 0, scale: 0.9, rotate: config.rotation }}
+                    animate={{ opacity: 1, scale: 1, rotate: config.rotation }}
+                    whileHover={{ scale: 1.04, rotate: config.rotation, zIndex: 30 }}
+                    transition={{ delay: config.delay, duration: 0.8 }}
+                    className={config.className}
+                    style={{ rotate: config.rotation }}
+                  >
+                    <img
+                      src={card.image || "/meeting time.jpeg"}
+                      alt={card.title || `Hero Visual Card ${idx + 1}`}
+                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                      decoding="async"
+                    />
+                    {config.hasGradient && (
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0B5D3F]/35 to-transparent pointer-events-none" />
+                    )}
+                    {card.title && (
+                      <div className="absolute bottom-2.5 left-2.5 right-2.5 pointer-events-none">
+                        <span className="inline-block text-[10px] font-semibold text-white/95 bg-black/45 backdrop-blur-md px-2.5 py-1 rounded-full truncate max-w-full border border-white/10 shadow-sm">
+                          {card.title}
+                        </span>
+                      </div>
+                    )}
+                  </motion.div>
+                );
+              })
+            ) : null}
 
             {/* Spinning badge — moved to empty bottom-right area */}
             <motion.div
@@ -447,8 +460,6 @@ export function HeroSection() {
             >
               <SpinningBadge />
             </motion.div>
-
-
           </div>
         </div>
 

@@ -80,6 +80,7 @@ export const ESN_FIRESTORE_COLLECTIONS = [
   "esn_about_vision_mission",
   "esn_about_global_presence",
   "esn_hero_admin",
+  "esn_hero_collage",
   "esn_whoweare_admin",
   "esn_whoweare_story",
   "esn_mission_admin",
@@ -126,6 +127,7 @@ export const ESN_FIRESTORE_COLLECTIONS = [
   "esn_knowledge_hub_settings",
   "esn_knowledge_hub_resources",
   "esn_awards_admin",
+  "esn_impact_kpis",
   "esn_backups"
 ];
 

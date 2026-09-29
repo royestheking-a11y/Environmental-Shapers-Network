@@ -4,16 +4,15 @@ import { getInitialStats, StatItem } from "../../pages/admin/sections/StatsAdmin
 import { useFirestoreData } from "../../../lib/useFirestore";
 import { resolveIcon } from "../../pages/admin/sections/ProgramsView";
 
-import { getInitialProjects, Project } from "../../pages/admin/sections/ProjectsView";
-import { getInitialCampaigns, Campaign } from "../../pages/admin/sections/CampaignsView";
-import { getInitialEvents, ESNEvent } from "../../pages/admin/sections/EventsView";
-
 export { type StatItem };
 
 function formatNumber(n: number): string {
-  if (n >= 1000000) return (n / 1000000).toFixed(1) + "M";
-  if (n >= 1000) return (n / 1000).toFixed(0) + "K";
-  return n.toLocaleString();
+  if (isNaN(n) || n === null || n === undefined) return "0";
+  const abs = Math.abs(n);
+  const sign = n < 0 ? "-" : "";
+  if (abs >= 1000000) return sign + (abs / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
+  if (abs >= 1000) return sign + (abs / 1000).toFixed(0) + "K";
+  return sign + abs.toLocaleString();
 }
 
 function AnimatedCounter({ target, suffix }: { target: number; suffix: string }) {
@@ -23,17 +22,21 @@ function AnimatedCounter({ target, suffix }: { target: number; suffix: string })
 
   useEffect(() => {
     if (!inView) return;
-    const duration = 2000;
-    const steps = 60;
+    if (isNaN(target)) {
+      setCount(0);
+      return;
+    }
+    const duration = 1500;
+    const steps = 40;
     const increment = target / steps;
     let current = 0;
     const timer = setInterval(() => {
       current += increment;
-      if (current >= target) {
+      if ((increment >= 0 && current >= target) || (increment < 0 && current <= target)) {
         setCount(target);
         clearInterval(timer);
       } else {
-        setCount(Math.floor(current));
+        setCount(Math.round(current));
       }
     }, duration / steps);
     return () => clearInterval(timer);
@@ -50,68 +53,8 @@ export function StatsSection() {
   const sectionRef = useRef(null);
   const inView = useInView(sectionRef, { once: true, margin: "-100px" });
   const [statsRaw] = useFirestoreData<StatItem[]>("esn_stats_admin", getInitialStats());
-  const [projectsRaw] = useFirestoreData<Project[]>("esn_projects_admin", getInitialProjects());
-  const [campaignsRaw] = useFirestoreData<Campaign[]>("esn_campaigns_admin", getInitialCampaigns());
-  const [eventsRaw] = useFirestoreData<ESNEvent[]>("esn_events", getInitialEvents());
 
-  const rawList = statsRaw && statsRaw.length > 0 ? statsRaw : getInitialStats();
-  const projects = projectsRaw && projectsRaw.length > 0 ? projectsRaw : getInitialProjects();
-  const campaigns = campaignsRaw && campaignsRaw.length > 0 ? campaignsRaw : getInitialCampaigns();
-  const events = eventsRaw && eventsRaw.length > 0 ? eventsRaw : getInitialEvents();
-
-  // Dynamic aggregation from all connected activities (Projects, Campaigns, Events)
-  const projTrees = projects.reduce((s, p) => s + (Number(p.impactTrees) || 0), 0);
-  const campTrees = campaigns.reduce((s, c) => s + (Number(c.impactTrees) || 0), 0);
-  const eventTrees = events.reduce((s, e) => s + (Number(e.impactTrees) || 0), 0);
-  const additionalTrees = projTrees + campTrees + eventTrees;
-
-  const projCO2 = projects.reduce((s, p) => s + (Number(p.impactCO2) || 0), 0);
-  const campCO2 = campaigns.reduce((s, c) => s + (Number(c.impactCO2) || 0), 0);
-  const additionalCO2 = projCO2 + campCO2;
-
-  const projComm = projects.reduce((s, p) => s + (Number(p.impactCommunities) || 0), 0);
-  const campComm = campaigns.reduce((s, c) => s + (Number(c.impactCommunities) || 0), 0);
-  const eventComm = events.reduce((s, e) => s + (Number(e.impactCommunities) || 0), 0);
-  const additionalComm = projComm + campComm + eventComm;
-
-  const liveActiveProjects = projects.filter(p => !p.status || p.status.toLowerCase() === "active").length;
-
-  const treeStat = rawList.find(s => s.label.toLowerCase().includes("tree") || s.iconName === "TreePine");
-  const baseTreeCount = treeStat ? treeStat.value : 2400000;
-  const totalTrees = baseTreeCount + additionalTrees;
-  const totalCO2 = Math.round(totalTrees * 0.0625) + additionalCO2;
-
-  const stats = rawList.map(stat => {
-    const l = stat.label.toLowerCase();
-    if (l.includes("tree") || stat.iconName === "TreePine") {
-      return {
-        ...stat,
-        value: totalTrees,
-      };
-    }
-    if (l.includes("co₂") || l.includes("co2") || l.includes("carbon")) {
-      return {
-        ...stat,
-        value: totalCO2,
-        suffix: " MT",
-        label: "CO₂ Sequestered",
-        description: "Metric tons of carbon sequestered",
-      };
-    }
-    if (l.includes("communit")) {
-      return {
-        ...stat,
-        value: stat.value + additionalComm,
-      };
-    }
-    if (l.includes("project")) {
-      return {
-        ...stat,
-        value: Math.max(stat.value, liveActiveProjects),
-      };
-    }
-    return stat;
-  });
+  const stats = statsRaw && statsRaw.length > 0 ? statsRaw : getInitialStats();
 
   return (
     <section ref={sectionRef} className="py-16 bg-white relative overflow-hidden border-t border-gray-100">
@@ -121,28 +64,30 @@ export function StatsSection() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-flow-col lg:auto-cols-fr gap-4 sm:gap-6">
           {stats.map((stat, i) => {
             const Icon = resolveIcon(stat.iconName);
             return (
               <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 40 }}
+                key={stat.id ?? i}
+                initial={{ opacity: 0, y: 30 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="group text-center p-6 rounded-2xl bg-[#F6FBF8] hover:bg-white hover:shadow-xl hover:shadow-[#0B5D3F]/10 border border-transparent hover:border-[#0B5D3F]/10 transition-all duration-300 hover:-translate-y-1"
+                transition={{ duration: 0.4, delay: i * 0.08 }}
+                className="group text-center p-4 sm:p-5 lg:p-5 xl:p-6 rounded-2xl bg-[#F6FBF8] hover:bg-white hover:shadow-xl hover:shadow-[#0B5D3F]/10 border border-transparent hover:border-[#0B5D3F]/10 transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between"
               >
-                <div className={`w-14 h-14 ${stat.bgColor} rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                  <Icon size={26} className={stat.color} />
+                <div>
+                  <div className={`w-12 h-12 sm:w-14 sm:h-14 ${stat.bgColor || "bg-[#0B5D3F]/10"} rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                    <Icon size={24} className={stat.color || "text-[#0B5D3F]"} />
+                  </div>
+                  <div
+                    className={`text-2xl sm:text-3xl font-black ${stat.color || "text-[#0B5D3F]"} mb-1 tracking-tight`}
+                    style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                  >
+                    <AnimatedCounter target={Number(stat.value) || 0} suffix={stat.suffix || ""} />
+                  </div>
+                  <div className="text-xs sm:text-sm font-bold text-gray-800 mb-1 leading-snug line-clamp-2">{stat.label}</div>
                 </div>
-                <div
-                  className={`text-3xl font-black ${stat.color} mb-1`}
-                  style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                >
-                  <AnimatedCounter target={stat.value} suffix={stat.suffix} />
-                </div>
-                <div className="text-sm font-bold text-gray-800 mb-1">{stat.label}</div>
-                <div className="text-xs text-gray-400 leading-tight">{stat.description}</div>
+                <div className="text-[11px] sm:text-xs text-gray-400 leading-tight mt-1 line-clamp-3">{stat.description}</div>
               </motion.div>
             );
           })}

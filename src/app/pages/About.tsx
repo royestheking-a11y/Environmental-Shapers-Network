@@ -88,9 +88,9 @@ export default function About() {
     s.label.toLowerCase().includes("chapter")
   );
 
-  const formattedTrees = treeStat ? `${formatNumber(treeStat.value)}${treeStat.suffix || "+"}` : "2.4M+";
-  const formattedCountries = countriesStat ? `${formatNumber(countriesStat.value)}${countriesStat.suffix || "+"}` : "190+";
-  const formattedCommunities = communitiesStat ? `${formatNumber(communitiesStat.value)}${communitiesStat.suffix || "+"}` : "12K+";
+  const formattedTrees = treeStat ? `${formatNumber(treeStat.value)}${treeStat.suffix !== undefined ? treeStat.suffix : "+"}` : "2.4M+";
+  const formattedCountries = countriesStat ? `${formatNumber(countriesStat.value)}${countriesStat.suffix !== undefined ? countriesStat.suffix : "+"}` : "190+";
+  const formattedCommunities = communitiesStat ? `${formatNumber(communitiesStat.value)}${communitiesStat.suffix !== undefined ? communitiesStat.suffix : "+"}` : "12K+";
 
   const currentYear = new Date().getFullYear();
   const yearsOfImpactNumber = Math.max(currentYear - 2019, 7);

@@ -4,7 +4,7 @@ import {
   Megaphone, Plus, Search, Target, Users, Calendar, Edit3,
   Trash2, Eye, Heart, TreePine, Droplets, Wind, X,
   TrendingUp, CheckCircle2, Clock, AlertCircle, Share2, QrCode,
-  AlertTriangle, Copy, Check
+  AlertTriangle, Copy, Check, Globe2
 } from "lucide-react";
 import { ImageUploadField } from "../../../components/ui/ImageUploadField";
 
@@ -15,8 +15,8 @@ export interface Campaign {
   title: string;
   category: string;
   status: CampaignStatus;
-  goal: number;
-  raised: number;
+  goal?: number;
+  raised?: number;
   volunteers: number;
   startDate: string;
   endDate: string;
@@ -25,7 +25,10 @@ export interface Campaign {
   lead: string;
   image: string;
   color: string;
-  // Interconnection & Impact Dashboard Insights (Point 1):
+  // Connected Project:
+  projectId?: number;
+  projectName?: string;
+  // Interconnection & Impact Dashboard Insights:
   programSlug?: string;
   initiativeTitle?: string;
   impactTrees?: number;
@@ -37,49 +40,55 @@ export interface Campaign {
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 import { logAdminActivity } from "../../../../lib/activityLogger";
 import { DEFAULT_PROGRAM_INITIATIVES } from "./ProgramsView";
-import { PROGRAM_OPTIONS } from "./ProjectsView";
+import { PROGRAM_OPTIONS, getInitialProjects, Project } from "./ProjectsView";
 
 export function getInitialCampaigns(): Campaign[] {
   return [
     {
-      id: 1, title: "Plant A Million Trees", category: "Forest Restoration", status: "active", goal: 1000000, raised: 847000, volunteers: 4200,
+      id: 1, title: "Plant A Million Trees", category: "Forest Restoration", status: "active", volunteers: 4200,
       startDate: "Jan 1, 2026", endDate: "Dec 31, 2026", description: "Restoring degraded lands through community-driven tree planting.",
       sdgs: ["SDG 13", "SDG 15"], lead: "Rizwan Ahmed", image: "/Climate Reality Leadership Corps Training | Representing Bangladesh.jpeg", color: "#0B5D3F",
+      projectId: 1, projectName: "Amazon Reforestation Hub",
       programSlug: "forest-restoration", initiativeTitle: "Amazon Revival",
       impactTrees: 847000, impactCO2: 52937, impactCommunities: 140, impactBeneficiaries: 250000
     },
     {
-      id: 2, title: "Clean Ocean Initiative", category: "Marine Conservation", status: "active", goal: 500000, raised: 312000, volunteers: 2800,
+      id: 2, title: "Clean Ocean Initiative", category: "Marine Conservation", status: "active", volunteers: 2800,
       startDate: "Mar 1, 2026", endDate: "Nov 30, 2026", description: "Removing plastic waste from coastlines globally.",
       sdgs: ["SDG 14", "SDG 6"], lead: "Carlos Rodriguez", image: "/Commonwealth Secretariat at COP27.jpeg", color: "#173B63",
+      projectId: 8, projectName: "Mediterranean Marine Reserve",
       programSlug: "ocean-action", initiativeTitle: "Plastic-Free Seas",
       impactTrees: 0, impactCO2: 12000, impactCommunities: 85, impactBeneficiaries: 180000
     },
     {
-      id: 3, title: "Youth Climate Action", category: "Climate Advocacy", status: "active", goal: 250000, raised: 198000, volunteers: 8900,
+      id: 3, title: "Youth Climate Action", category: "Climate Advocacy", status: "active", volunteers: 8900,
       startDate: "Feb 1, 2026", endDate: "Sep 30, 2026", description: "Mobilizing youth leaders in 50+ countries.",
       sdgs: ["SDG 13", "SDG 4"], lead: "Priya Sharma", image: "/Speaking on Climate Adaptation and Resilience in South Asia- CEPCA 2024, Ottawa, Canada.jpeg", color: "#0B5D3F",
+      projectId: 3, projectName: "Sahel Green Belt Initiative",
       programSlug: "youth", initiativeTitle: "Young Environmental Leaders (YEL) Fellowship",
       impactTrees: 45000, impactCO2: 2812, impactCommunities: 320, impactBeneficiaries: 89000
     },
     {
-      id: 4, title: "Solar Villages Africa", category: "Renewable Energy", status: "active", goal: 320000, raised: 189000, volunteers: 450,
+      id: 4, title: "Solar Villages Africa", category: "Renewable Energy", status: "active", volunteers: 450,
       startDate: "Apr 1, 2026", endDate: "Mar 31, 2027", description: "Bringing solar power to off-grid communities.",
       sdgs: ["SDG 7", "SDG 11"], lead: "Amara Osei", image: "/meeting time.jpeg", color: "#D6A95A",
+      projectId: 9, projectName: "Wind Farm Community Project",
       programSlug: "clean-energy", initiativeTitle: "Solar Mini-Grids",
       impactTrees: 0, impactCO2: 15400, impactCommunities: 120, impactBeneficiaries: 65000
     },
     {
-      id: 5, title: "Biodiversity Hackathon 2025", category: "Innovation", status: "completed", goal: 50000, raised: 51200, volunteers: 800,
+      id: 5, title: "Biodiversity Hackathon 2025", category: "Innovation", status: "completed", volunteers: 800,
       startDate: "Jun 1, 2025", endDate: "Jun 30, 2025", description: "48-hour tech sprint for biodiversity solutions.",
       sdgs: ["SDG 15"], lead: "Admin Team", image: "/canada journey.jpeg", color: "#4CAF50",
+      projectId: 4, projectName: "Borneo Peatland Protection",
       programSlug: "biodiversity", initiativeTitle: "Endangered Species Tracking",
       impactTrees: 0, impactCO2: 1200, impactCommunities: 15, impactBeneficiaries: 8000
     },
     {
-      id: 6, title: "Himalayan Watershed Revival", category: "Water Security", status: "draft", goal: 180000, raised: 0, volunteers: 0,
+      id: 6, title: "Himalayan Watershed Revival", category: "Water Security", status: "draft", volunteers: 0,
       startDate: "Sep 1, 2026", endDate: "Aug 31, 2027", description: "Restoring watershed ecosystems in the Himalayas.",
       sdgs: ["SDG 6", "SDG 15"], lead: "Priya Sharma", image: "/represent bangladesh.jpeg", color: "#173B63",
+      projectId: 6, projectName: "Himalayan Glacial Lake Outburst Defense",
       programSlug: "climate-adaptation", initiativeTitle: "Community Early Warning Systems",
       impactTrees: 50000, impactCO2: 3125, impactCommunities: 40, impactBeneficiaries: 45000
     },
@@ -95,8 +104,9 @@ const statusConfig: Record<CampaignStatus, { label: string; color: string; icon:
 
 const blankCampaign: Omit<Campaign, "id"> = {
   title: "", category: "Forest Restoration", status: "draft",
-  goal: 0, raised: 0, volunteers: 0, startDate: "", endDate: "",
+  volunteers: 0, startDate: "", endDate: "",
   description: "", sdgs: [], lead: "", image: "", color: "#0B5D3F",
+  projectId: undefined, projectName: "",
   programSlug: "forest-restoration", initiativeTitle: "Amazon Revival",
   impactTrees: 0, impactCO2: 0, impactCommunities: 0, impactBeneficiaries: 0,
 };
@@ -119,6 +129,7 @@ function QRGrid({ size = 120 }: { size?: number }) {
 
 export function CampaignsView() {
   const [campaigns, setCampaigns, loading] = useFirestoreData<Campaign[]>("esn_campaigns_admin", getInitialCampaigns());
+  const [projects] = useFirestoreData<Project[]>("esn_projects_admin", getInitialProjects());
   
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<"All" | CampaignStatus>("All");
@@ -139,17 +150,17 @@ export function CampaignsView() {
     if (!form.title) return;
     const cleanForm: Omit<Campaign, "id"> = {
       ...form,
-      goal: Number(form.goal || 0),
-      raised: Number(form.raised || 0),
       volunteers: Number(form.volunteers || 0),
+      projectId: form.projectId ? Number(form.projectId) : undefined,
+      projectName: form.projectName || "",
       sdgs: Array.isArray(form.sdgs) ? form.sdgs : String(form.sdgs || "").split(",").map(s => s.trim()).filter(Boolean),
     };
     if (editId !== null) {
       save(campaigns.map((c) => c.id === editId ? { ...cleanForm, id: editId } : c));
-      logAdminActivity("Updated Campaign", "Campaigns", `Updated campaign "${cleanForm.title}" (Goal: $${cleanForm.goal.toLocaleString()}, Raised: $${cleanForm.raised.toLocaleString()}).`, "success");
+      logAdminActivity("Updated Campaign", "Campaigns", `Updated campaign "${cleanForm.title}"${cleanForm.projectName ? ` (Connected to ${cleanForm.projectName})` : ""}.`, "success");
     } else {
       save([{ ...cleanForm, id: Date.now() }, ...campaigns]);
-      logAdminActivity("Created Campaign", "Campaigns", `Launched campaign "${cleanForm.title}" with $${cleanForm.goal.toLocaleString()} goal.`, "success");
+      logAdminActivity("Created Campaign", "Campaigns", `Launched campaign "${cleanForm.title}"${cleanForm.projectName ? ` (Connected to ${cleanForm.projectName})` : ""}.`, "success");
     }
     setShowForm(false);
     setEditId(null);
@@ -160,10 +171,10 @@ export function CampaignsView() {
     const { id, ...rest } = c;
     setForm({
       ...rest,
-      goal: Number(rest.goal || 0),
-      raised: Number(rest.raised || 0),
       volunteers: Number(rest.volunteers || 0),
       sdgs: rest.sdgs || [],
+      projectId: c.projectId,
+      projectName: c.projectName || "",
       programSlug: c.programSlug || "forest-restoration",
       initiativeTitle: c.initiativeTitle || "",
       impactTrees: Number(c.impactTrees || 0),
@@ -206,8 +217,8 @@ export function CampaignsView() {
     return matchSearch && matchStatus;
   });
 
-  const totalRaised = campaigns.reduce((s, c) => s + c.raised, 0);
   const activeCampaigns = campaigns.filter(c => c.status === "active").length;
+  const connectedProjectsCount = campaigns.filter(c => c.projectId).length;
   const totalVolunteers = campaigns.reduce((s, c) => s + c.volunteers, 0);
   const campaignToDelete = campaigns.find(c => c.id === deleteConfirmId);
 
@@ -229,7 +240,7 @@ export function CampaignsView() {
         {[
           { label: "Total Campaigns", value: campaigns.length, icon: Megaphone, color: "#0B5D3F" },
           { label: "Active", value: activeCampaigns, icon: TrendingUp, color: "#4CAF50" },
-          { label: "Total Raised", value: `$${(totalRaised / 1000).toFixed(0)}K`, icon: Heart, color: "#173B63" },
+          { label: "Connected Projects", value: connectedProjectsCount, icon: Target, color: "#173B63" },
           { label: "Volunteers Mobilized", value: totalVolunteers.toLocaleString(), icon: Users, color: "#D6A95A" },
         ].map((s) => (
           <div key={s.label} className="bg-white rounded-2xl p-5 border border-gray-100 flex items-center gap-3">
@@ -261,8 +272,6 @@ export function CampaignsView() {
                 {[
                   { label: "Category", key: "category", type: "select", opts: ["Forest Restoration", "Marine Conservation", "Climate Advocacy", "Renewable Energy", "Water Security", "Biodiversity", "Innovation", "Community"] },
                   { label: "Status", key: "status", type: "select", opts: ["draft", "active", "paused", "completed"] },
-                  { label: "Fundraising Goal ($)", key: "goal", type: "number", placeholder: "e.g. 1000000" },
-                  { label: "Amount Raised ($)", key: "raised", type: "number", placeholder: "e.g. 847000" },
                   { label: "Volunteers Mobilized", key: "volunteers", type: "number", placeholder: "e.g. 4200" },
                   { label: "Campaign Lead", key: "lead", type: "text", placeholder: "e.g. Rizwan Ahmed" },
                   { label: "Start Date", key: "startDate", type: "text", placeholder: "e.g. Jan 1, 2026" },
@@ -280,26 +289,43 @@ export function CampaignsView() {
                   </div>
                 ))}
 
-                {/* Live Fundraising Progress Preview */}
-                <div className="sm:col-span-2 bg-[#F6FBF8] p-4 rounded-2xl border border-gray-100">
-                  <div className="flex justify-between items-center text-xs font-bold mb-1.5">
-                    <span className="text-gray-600 flex items-center gap-1.5">
-                      <TrendingUp size={14} className="text-[#4CAF50]" /> Live Fundraising Progress
-                    </span>
-                    <span className="text-[#0B5D3F] font-black text-sm">
-                      {form.goal > 0 ? Math.min(Math.round(((form.raised || 0) / form.goal) * 100), 100) : 0}%
-                    </span>
+                {/* Connected Project Selection */}
+                <div className="sm:col-span-2 p-4 bg-[#F0FDF4] border border-emerald-200/80 rounded-2xl">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <Target size={15} className="text-[#0B5D3F]" />
+                    <label className="text-xs font-bold text-[#0B5D3F] uppercase tracking-wider">
+                      Connected Project (Interconnection)
+                    </label>
                   </div>
-                  <div className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden mb-2">
-                    <div
-                      className="h-full bg-gradient-to-r from-[#0B5D3F] to-[#4CAF50] rounded-full transition-all duration-300"
-                      style={{ width: `${form.goal > 0 ? Math.min(Math.round(((form.raised || 0) / form.goal) * 100), 100) : 0}%` }}
-                    />
-                  </div>
-                  <div className="flex justify-between text-[11px] text-gray-500">
-                    <span>${Number(form.raised || 0).toLocaleString()} raised</span>
-                    <span>Goal: ${Number(form.goal || 0).toLocaleString()}</span>
-                  </div>
+                  <p className="text-xs text-gray-500 mb-3">
+                    Connect this campaign to a project so it appears on the project page and links directly to project activities.
+                  </p>
+                  <select
+                    value={form.projectId ? String(form.projectId) : ""}
+                    onChange={(e) => {
+                      const pid = e.target.value ? Number(e.target.value) : undefined;
+                      const matched = (projects || []).find(p => p.id === pid);
+                      setForm({
+                        ...form,
+                        projectId: pid,
+                        projectName: matched ? matched.name : "",
+                      });
+                    }}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-emerald-300 text-sm font-semibold text-gray-800 focus:outline-none focus:border-[#4CAF50]"
+                  >
+                    <option value="">None (Standalone / Global Movement Campaign)</option>
+                    {(projects || []).map((p) => (
+                      <option key={p.id} value={p.id}>
+                        #{p.id} - {p.name} ({p.country} · {p.category})
+                      </option>
+                    ))}
+                  </select>
+                  {form.projectName && (
+                    <div className="mt-2 text-xs text-emerald-800 flex items-center gap-1.5 font-medium">
+                      <CheckCircle2 size={13} className="text-emerald-600" />
+                      Campaign linked to: <span className="font-bold">{form.projectName}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="sm:col-span-2">
@@ -498,12 +524,9 @@ export function CampaignsView() {
       <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
         {filtered.map((c) => {
           const sc = statusConfig[c.status];
-          const pct = Math.min(Math.round((c.raised / c.goal) * 100), 100);
           return (
             <motion.div key={c.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl border border-gray-100 hover:shadow-xl hover:shadow-gray-100 hover:-translate-y-0.5 transition-all duration-300 overflow-hidden group">
-              <div className="h-1.5 w-full" style={{ backgroundColor: sc.color + "30" }}>
-                <div className="h-full transition-all duration-1000" style={{ width: `${pct}%`, backgroundColor: sc.color }} />
-              </div>
+              <div className="h-1.5 w-full" style={{ backgroundColor: sc.color }} />
               <div className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
@@ -516,19 +539,32 @@ export function CampaignsView() {
                     <h4 className="font-bold text-gray-900 text-sm leading-snug" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{c.title}</h4>
                   </div>
                 </div>
-                <div className="mb-4">
-                  <div className="flex justify-between text-xs mb-1.5">
-                    <span className="text-gray-500">Fundraising Progress</span>
-                    <span className="font-bold" style={{ color: sc.color }}>{pct}%</span>
+
+                {/* Connected Project Badge */}
+                {c.projectName ? (
+                  <div className="mb-4 bg-emerald-50/90 border border-emerald-100 rounded-xl p-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-7 h-7 rounded-lg bg-[#0B5D3F] text-white flex items-center justify-center shrink-0">
+                        <Target size={14} />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-[10px] uppercase font-bold text-[#0B5D3F]">Connected Project</div>
+                        <div className="text-xs font-bold text-gray-800 truncate">{c.projectName}</div>
+                      </div>
+                    </div>
+                    {c.projectId && (
+                      <span className="text-[10px] font-bold text-[#0B5D3F] bg-white px-2 py-0.5 rounded shadow-xs shrink-0 ml-2">
+                        #{c.projectId}
+                      </span>
+                    )}
                   </div>
-                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: sc.color }} />
+                ) : (
+                  <div className="mb-4 bg-gray-50 border border-gray-100 rounded-xl p-2.5 flex items-center gap-2 text-xs text-gray-500">
+                    <Globe2 size={13} className="text-[#0B5D3F]" />
+                    <span>Standalone Global Campaign</span>
                   </div>
-                  <div className="flex justify-between text-xs text-gray-400 mt-1.5">
-                    <span>${c.raised.toLocaleString()} raised</span>
-                    <span>Goal: ${c.goal.toLocaleString()}</span>
-                  </div>
-                </div>
+                )}
+
                 <div className="grid grid-cols-3 gap-2 py-3 border-t border-b border-gray-50 mb-4">
                   <div className="text-center">
                     <div className="text-sm font-black text-gray-800">{c.volunteers.toLocaleString()}</div>
@@ -589,8 +625,8 @@ export function CampaignsView() {
                 </div>
                 <div className="grid grid-cols-2 gap-3 mb-5">
                   {[
-                    ["Goal", `$${detail.goal.toLocaleString()}`],
-                    ["Raised", `$${detail.raised.toLocaleString()}`],
+                    ["Connected Project", detail.projectName || "None (Standalone)"],
+                    ["Status", statusConfig[detail.status]?.label || detail.status],
                     ["Volunteers", detail.volunteers.toLocaleString()],
                     ["Lead", detail.lead],
                     ["Start", detail.startDate],
@@ -598,7 +634,7 @@ export function CampaignsView() {
                   ].map(([l, v]) => (
                     <div key={l} className="bg-[#F6FBF8] rounded-xl p-3">
                       <div className="text-xs text-gray-400 mb-0.5">{l}</div>
-                      <div className="text-sm font-bold text-gray-800">{v}</div>
+                      <div className="text-sm font-bold text-gray-800 truncate" title={v}>{v}</div>
                     </div>
                   ))}
                 </div>

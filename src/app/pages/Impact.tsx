@@ -5,10 +5,7 @@ import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, R
 import { TreePine, Droplets, Wind, Globe2, Users, Target, TrendingUp, Award, Leaf, Calculator, ArrowRight, Sparkles, FileText } from "lucide-react";
 import { useFirestoreData } from "../../lib/useFirestore";
 import { getInitialStats, StatItem } from "./admin/sections/StatsAdminView";
-import { getInitialProjects, Project } from "./admin/sections/ProjectsView";
-import { getInitialCampaigns, Campaign } from "./admin/sections/CampaignsView";
-import { getInitialEvents, ESNEvent } from "./admin/sections/EventsView";
-import { getInitialCountryReps, CountryRepItem } from "./admin/sections/GlobalRepsAdminView";
+import { resolveIcon } from "./admin/sections/ProgramsView";
 
 const carbonData = [
   { month: "Jan", reduced: 8500 },
@@ -41,70 +38,32 @@ const sdgProgress = [
   { sdg: "SDG 7", label: "Clean Energy", progress: 45, color: "#D6A95A" },
 ];
 
-function formatCount(n: number): string {
-  if (n >= 1000000) return (n / 1000000).toFixed(1) + "M+";
-  if (n >= 1000) return (n / 1000).toFixed(0) + "K+";
-  return n.toLocaleString() + "+";
+function formatNumber(n: number): string {
+  if (isNaN(n) || n === null || n === undefined) return "0";
+  const abs = Math.abs(n);
+  const sign = n < 0 ? "-" : "";
+  if (abs >= 1000000) return sign + (abs / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
+  if (abs >= 1000) return sign + (abs / 1000).toFixed(0) + "K";
+  return sign + abs.toLocaleString();
 }
 
 export default function Impact() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
+  // Read ONE unified impact dataset from esn_stats_admin
   const [statsRaw] = useFirestoreData<StatItem[]>("esn_stats_admin", getInitialStats());
-  const [projectsRaw] = useFirestoreData<Project[]>("esn_projects_admin", getInitialProjects());
-  const [campaignsRaw] = useFirestoreData<Campaign[]>("esn_campaigns_admin", getInitialCampaigns());
-  const [eventsRaw] = useFirestoreData<ESNEvent[]>("esn_events", getInitialEvents());
+  const stats = statsRaw && statsRaw.length > 0 ? statsRaw : getInitialStats();
 
-  const rawList = statsRaw && statsRaw.length > 0 ? statsRaw : getInitialStats();
-  const projects = projectsRaw && projectsRaw.length > 0 ? projectsRaw : getInitialProjects();
-  const campaigns = campaignsRaw && campaignsRaw.length > 0 ? campaignsRaw : getInitialCampaigns();
-  const events = eventsRaw && eventsRaw.length > 0 ? eventsRaw : getInitialEvents();
+  // Find corresponding tree & CO2 stats for the calculation engine & charts
+  const treeStat = stats.find(s => s.label?.toLowerCase().includes("tree") || s.iconName === "TreePine") || stats[0];
+  const co2Stat = stats.find(s => s.label?.toLowerCase().includes("co2") || s.label?.toLowerCase().includes("co₂") || s.label?.toLowerCase().includes("carbon")) || stats[1];
 
-  // Dynamic aggregation from all connected activities (Projects, Campaigns, Events)
-  const projTrees = projects.reduce((s, p) => s + (Number(p.impactTrees) || 0), 0);
-  const campTrees = campaigns.reduce((s, c) => s + (Number(c.impactTrees) || 0), 0);
-  const eventTrees = events.reduce((s, e) => s + (Number(e.impactTrees) || 0), 0);
-  const additionalTrees = projTrees + campTrees + eventTrees;
+  const currentTreeCount = Number(treeStat?.value) || 2400000;
+  const currentCO2 = Number(co2Stat?.value) || Math.round(currentTreeCount * 0.0625);
 
-  const projCO2 = projects.reduce((s, p) => s + (Number(p.impactCO2) || 0), 0);
-  const campCO2 = campaigns.reduce((s, c) => s + (Number(c.impactCO2) || 0), 0);
-  const additionalCO2 = projCO2 + campCO2;
-
-  const projComm = projects.reduce((s, p) => s + (Number(p.impactCommunities) || 0), 0);
-  const campComm = campaigns.reduce((s, c) => s + (Number(c.impactCommunities) || 0), 0);
-  const eventComm = events.reduce((s, e) => s + (Number(e.impactCommunities) || 0), 0);
-  const additionalComm = projComm + campComm + eventComm;
-
-  const treeStat = rawList.find(s => s.label.toLowerCase().includes("tree") || s.iconName === "TreePine");
-  const baseTreeCount = treeStat ? treeStat.value : 2400000;
-  const currentTreeCount = baseTreeCount + additionalTrees;
-  const currentCO2 = Math.round(currentTreeCount * 0.0625) + additionalCO2;
-
-  const [countryReps] = useFirestoreData<CountryRepItem[]>("esn_country_representatives", getInitialCountryReps());
-
-  const baseCommStat = rawList.find(s => s.label.toLowerCase().includes("communit"))?.value || 12000;
-  const totalCommunities = baseCommStat + additionalComm;
-
-  const baseCountryStat = rawList.find(s => s.label.toLowerCase().includes("countr") || s.label.toLowerCase().includes("nation"))?.value || 80;
-  const dynamicCountryCount = (countryReps && countryReps.length > 0)
-    ? countryReps.length
-    : (baseCountryStat || 12);
-
-  const liveActiveProjects = projects.filter(p => !p.status || p.status.toLowerCase() === "active").length;
-  const projectsStat = rawList.find(s => s.label.toLowerCase().includes("project"));
-  const totalProjects = projectsStat ? projectsStat.value : 470;
-  const projectsSuffix = projectsStat?.suffix ?? "+";
-  const projectsDesc = (projectsStat?.description && projectsStat.description.length > 0 && !projectsStat.description.toLowerCase().includes("environmental initiatives"))
-    ? projectsStat.description
-    : `${liveActiveProjects} active initiatives`;
-
-  const awardsStat = rawList.find(s => s.label.toLowerCase().includes("award"));
-  const baseAwardsStat = awardsStat ? awardsStat.value : 24;
-  const awardsSuffix = awardsStat?.suffix ?? "";
-  const awardsDesc = (awardsStat?.description && awardsStat.description.length > 0 && !awardsStat.description.toLowerCase().includes("global recognitions"))
-    ? awardsStat.description
-    : "+3 this year";
+  const countryStat = stats.find(s => s.label?.toLowerCase().includes("countr") || s.label?.toLowerCase().includes("nation") || s.label?.toLowerCase().includes("partner") || s.iconName === "Globe2");
+  const dynamicCountryCount = countryStat ? `${formatNumber(Number(countryStat.value) || 0)}${countryStat.suffix !== undefined ? countryStat.suffix : "+"}` : "80+";
 
   // Dynamic tree trend dataset based on current count
   const dynamicTreeData = [
@@ -129,15 +88,6 @@ export default function Impact() {
   const calcVehicles = Math.round(calcCO2MT / 4.6);
   const calcHectares = (calcTrees / 500).toFixed(1);
 
-  const dynamicKpis = [
-    { icon: TreePine, value: formatCount(currentTreeCount), label: "Trees Planted", change: `+${formatCount(additionalTrees)} from activities`, color: "#0B5D3F" },
-    { icon: Droplets, value: `${currentCO2.toLocaleString()} MT`, label: "CO₂ Sequestered", change: `Derived from ${formatCount(currentTreeCount)} trees`, color: "#173B63" },
-    { icon: Users, value: `${totalCommunities.toLocaleString()}+`, label: "Communities Reached", change: `+${additionalComm.toLocaleString()} across 3 sectors`, color: "#4CAF50" },
-    { icon: Globe2, value: `${dynamicCountryCount}`, label: "Countries Active", change: "+5 new countries", color: "#D6A95A" },
-    { icon: Target, value: `${totalProjects}${projectsSuffix}`, label: "Active Projects", change: projectsDesc, color: "#0B5D3F" },
-    { icon: Award, value: `${baseAwardsStat}${awardsSuffix}`, label: "International Awards", change: awardsDesc, color: "#4CAF50" },
-  ];
-
   return (
     <div className="pt-20">
       {/* Hero */}
@@ -156,26 +106,37 @@ export default function Impact() {
         </div>
       </section>
 
-      {/* KPIs */}
+      {/* KPIs: 1-to-1 Unified with Admin & Homepage */}
       <section ref={ref} className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5">
-            {dynamicKpis.map((kpi, i) => (
-              <motion.div
-                key={kpi.label}
-                initial={{ opacity: 0, y: 30 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ delay: i * 0.08 }}
-                className="bg-[#F6FBF8] rounded-2xl p-5 text-center border border-gray-100 hover:shadow-lg transition-all hover:-translate-y-0.5"
-              >
-                <div className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: kpi.color + "15" }}>
-                  <kpi.icon size={22} style={{ color: kpi.color }} />
-                </div>
-                <div className="text-2xl font-black mb-1" style={{ color: kpi.color, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{kpi.value}</div>
-                <div className="text-xs font-bold text-gray-700 mb-1">{kpi.label}</div>
-                <div className="text-xs text-[#4CAF50] font-medium">{kpi.change}</div>
-              </motion.div>
-            ))}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-flow-col lg:auto-cols-fr gap-4 sm:gap-5">
+            {stats.map((stat, i) => {
+              const Icon = resolveIcon(stat.iconName);
+              const formattedVal = `${formatNumber(Number(stat.value) || 0)}${stat.suffix !== undefined ? stat.suffix : ""}`;
+              return (
+                <motion.div
+                  key={stat.id ?? i}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={inView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ delay: i * 0.08 }}
+                  className="bg-[#F6FBF8] rounded-2xl p-5 text-center border border-gray-100 hover:shadow-lg transition-all hover:-translate-y-0.5 flex flex-col justify-between"
+                >
+                  <div>
+                    <div className={`w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center ${stat.bgColor || "bg-[#0B5D3F]/10"}`}>
+                      <Icon size={22} className={stat.color || "text-[#0B5D3F]"} />
+                    </div>
+                    <div
+                      className={`text-2xl font-black mb-1 ${stat.color || "text-[#0B5D3F]"}`}
+                      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                    >
+                      {formattedVal}
+                    </div>
+                    <div className="text-xs font-bold text-gray-800 mb-1 leading-snug line-clamp-2">{stat.label}</div>
+                  </div>
+                  <div className="text-[11px] text-gray-400 font-medium leading-tight mt-2 line-clamp-3">{stat.description}</div>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>

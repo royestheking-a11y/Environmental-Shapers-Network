@@ -210,21 +210,7 @@ export default function GlobalRepsAdminView() {
     setSettings(updatedSettings);
     await saveFirestoreData("esn_global_representatives_settings", updatedSettings);
 
-    // 2. Sync Impact Page KPI Stat (esn_stats_admin)
-    try {
-      const existingStats = await fetchFirestoreData<StatItem[]>("esn_stats_admin", getInitialStats());
-      if (existingStats && existingStats.length > 0) {
-        const syncedStats = existingStats.map((st) => {
-          if (st.id === 4 || st.label.toLowerCase().includes("countr") || st.label.toLowerCase().includes("nation")) {
-            return { ...st, value: countryCount };
-          }
-          return st;
-        });
-        await saveFirestoreData("esn_stats_admin", syncedStats);
-      }
-    } catch (e) {
-      console.error("Auto-sync stats error:", e);
-    }
+
 
     // 3. Sync Homepage Hero Slides
     try {

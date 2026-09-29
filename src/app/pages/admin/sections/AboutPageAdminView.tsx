@@ -228,18 +228,6 @@ export default function AboutPageAdminView() {
     setAwards(newAwards);
     await saveFirestoreData("esn_awards_admin", newAwards);
 
-    // Sync count to esn_stats_admin
-    if (statsData && statsData.length > 0) {
-      const updatedStats = statsData.map(s => {
-        if (s.label?.toLowerCase().includes("award")) {
-          return { ...s, value: newAwards.length };
-        }
-        return s;
-      });
-      setStatsData(updatedStats);
-      await saveFirestoreData("esn_stats_admin", updatedStats);
-    }
-
     await logAdminActivity("Updated Awards", "CMS", `Saved award recognition: ${awardFormData.title}`, "info");
     setShowAddAward(false);
     setEditingAwardId(null);
@@ -251,17 +239,6 @@ export default function AboutPageAdminView() {
     const newAwards = awards.filter(a => a.id !== id);
     setAwards(newAwards);
     await saveFirestoreData("esn_awards_admin", newAwards);
-
-    if (statsData && statsData.length > 0) {
-      const updatedStats = statsData.map(s => {
-        if (s.label?.toLowerCase().includes("award")) {
-          return { ...s, value: newAwards.length };
-        }
-        return s;
-      });
-      setStatsData(updatedStats);
-      await saveFirestoreData("esn_stats_admin", updatedStats);
-    }
 
     await logAdminActivity("Removed Award", "CMS", "Removed an award recognition entry.", "warning");
     notifySave("Award entry removed.");
