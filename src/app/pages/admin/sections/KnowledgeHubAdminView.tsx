@@ -274,10 +274,12 @@ export default function KnowledgeHubAdminView() {
       const res = await uploadMediaFile(file, "knowledge_hub_docs");
       if (res && res.url) {
         setFormData((prev) => ({ ...prev, fileUrl: res.url }));
+      } else {
+        alert(`Document "${file.name}" is ${(file.size / (1024 * 1024)).toFixed(1)}MB. To prevent database limit issues, please paste a direct document link (Google Drive, Dropbox, OneDrive, or document URL) into the File URL field, or upload a document under 450KB.`);
       }
     } catch (err) {
       console.error(err);
-      alert("Failed to upload document. Please try again or paste a link.");
+      alert("Failed to process document. Please paste a direct download link (Google Drive, Dropbox, OneDrive).");
     } finally {
       setIsUploadingDoc(false);
     }

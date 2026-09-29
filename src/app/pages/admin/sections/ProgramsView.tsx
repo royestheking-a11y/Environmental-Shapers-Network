@@ -24,6 +24,7 @@ export interface ProgramData {
   id: number;
   slug: string;
   title: string;
+  tagline?: string;
   category: string;
   iconName: string;
   color: string;
@@ -33,6 +34,8 @@ export interface ProgramData {
   image: string;
   stats?: ProgramStat[];
   initiatives?: ProgramInitiative[];
+  ctaTitle?: string;
+  ctaDesc?: string;
 }
 
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
@@ -220,7 +223,7 @@ const availableIcons = ["TreePine", "Waves", "Sun", "ShieldAlert", "Bug", "Gradu
 const availableColors = ["#4CAF50", "#2196F3", "#FFC107", "#F44336", "#9C27B0", "#00BCD4", "#607D8B", "#FF9800", "#795548", "#E91E63", "#3F51B5"];
 
 const blankProgram: Omit<ProgramData, "id"> = {
-  slug: "", title: "", category: "Ecosystems", iconName: "Leaf", color: "#4CAF50",
+  slug: "", title: "", tagline: "", category: "Ecosystems", iconName: "Leaf", color: "#4CAF50",
   desc: "", highlights: ["", "", ""], reach: "", image: "",
   stats: [
     { value: "", label: "" },
@@ -228,7 +231,9 @@ const blankProgram: Omit<ProgramData, "id"> = {
     { value: "", label: "" },
     { value: "", label: "" }
   ],
-  initiatives: []
+  initiatives: [],
+  ctaTitle: "",
+  ctaDesc: ""
 };
 
 export function resolveIcon(name: string) {
@@ -245,19 +250,37 @@ export function ProgramsView() {
   const [form, setForm] = useState<Omit<ProgramData, "id">>(blankProgram);
   const [editId, setEditId] = useState<number | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   const save = async (list: ProgramData[]) => {
+    setIsSaving(true);
     setPrograms(list);
-    await saveFirestoreData("esn_programs", list);
+    try {
+      await saveFirestoreData("esn_programs", list);
+      await saveFirestoreData("esn_programs_admin", list);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3500);
+    } catch (err) {
+      console.error("Failed to save programs to Firestore:", err);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!form.title || !form.slug) return;
+    let updatedList: ProgramData[];
     if (editId !== null) {
-      save(programs.map((p) => p.id === editId ? { ...form, id: editId } : p));
+      updatedList = programs.map((p) => 
+        (p.id === editId || String(p.id) === String(editId) || p.slug === form.slug)
+          ? { ...form, id: editId }
+          : p
+      );
     } else {
-      save([...programs, { ...form, id: Date.now() }]);
+      updatedList = [...programs, { ...form, id: Date.now() }];
     }
+    await save(updatedList);
     setShowForm(false);
     setEditId(null);
     setForm(blankProgram);
@@ -279,7 +302,14 @@ export function ProgramsView() {
     const defaultInitiatives = DEFAULT_PROGRAM_INITIATIVES[p.slug] || [];
     const existingInitiatives = rest.initiatives && rest.initiatives.length > 0 ? rest.initiatives : defaultInitiatives;
 
-    setForm({ ...rest, stats: fullStats, initiatives: existingInitiatives });
+    setForm({
+      ...rest,
+      tagline: rest.tagline || "",
+      ctaTitle: rest.ctaTitle || "",
+      ctaDesc: rest.ctaDesc || "",
+      stats: fullStats,
+      initiatives: existingInitiatives
+    });
     setEditId(id);
     setShowForm(true);
   };
@@ -370,6 +400,10 @@ export function ProgramsView() {
                 <div>
                   <label className="text-xs font-bold text-gray-600 mb-1.5 block">Reach (Label)</label>
                   <input type="text" value={form.reach} onChange={(e) => setForm({ ...form, reach: e.target.value })} placeholder="E.g., 80+ Countries Active" className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="text-xs font-bold text-gray-600 mb-1.5 block">Tagline / Subtitle</label>
+                  <input type="text" value={form.tagline || ""} onChange={(e) => setForm({ ...form, tagline: e.target.value })} placeholder="E.g., Breathing Life Back into Degraded Landscapes" className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
                 </div>
                 <div className="sm:col-span-2">
                   <ImageUploadField
@@ -551,8 +585,19 @@ export function ProgramsView() {
               </div>
               
               <div className="flex gap-3 mt-8">
-                <button onClick={handleSubmit} className="flex-1 bg-[#0B5D3F] text-white py-3 rounded-xl font-semibold hover:bg-[#0a5237] transition-all">
-                  {editId ? "Save Changes" : "Create Program"}
+                <button
+                  onClick={handleSubmit}
+                  disabled={isSaving}
+                  className="flex-1 bg-[#0B5D3F] text-white py-3 rounded-xl font-semibold hover:bg-[#0a5237] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                >
+                  {isSaving ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Saving changes...
+                    </>
+                  ) : (
+                    editId ? "Save Changes" : "Create Program"
+                  )}
                 </button>
                 <button onClick={() => setShowForm(false)} className="px-6 py-3 rounded-xl text-gray-500 hover:bg-gray-100 font-semibold">Cancel</button>
               </div>
@@ -580,6 +625,13 @@ export function ProgramsView() {
         )}
       </AnimatePresence>
 
+      {saveSuccess && (
+        <div className="bg-emerald-50 border border-emerald-200 text-[#0B5D3F] px-4 py-3 rounded-2xl text-xs font-semibold flex items-center gap-2.5 shadow-sm">
+          <CheckCircle2 size={16} className="text-[#0B5D3F] shrink-0" />
+          <span>Changes saved successfully! Program details, statistics, and photo have been updated and synced to the website.</span>
+        </div>
+      )}
+
       <div className="relative max-w-sm">
         <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
         <input type="text" placeholder="Search programs..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
@@ -590,11 +642,35 @@ export function ProgramsView() {
           const Icon = resolveIcon(p.iconName);
           return (
             <motion.div key={p.id} className="flex flex-col sm:flex-row sm:items-center gap-5 px-6 py-5 border-b border-gray-50 last:border-0 hover:bg-[#F6FBF8]/50 transition-colors">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: p.color + '18', color: p.color }}>
-                <Icon size={20} />
+              <div className="relative w-14 h-14 rounded-2xl overflow-hidden shrink-0 border border-gray-100 bg-[#F6FBF8] flex items-center justify-center">
+                {p.image ? (
+                  <img src={p.image} alt={p.title} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: p.color + '18', color: p.color }}>
+                    <Icon size={22} />
+                  </div>
+                )}
+                <div className="absolute bottom-0 right-0 w-5 h-5 rounded-tl-lg flex items-center justify-center shadow-xs" style={{ backgroundColor: p.color, color: "#fff" }}>
+                  <Icon size={11} />
+                </div>
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-bold text-gray-800 text-sm mb-1">{p.title}</div>
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <span className="font-bold text-gray-800 text-sm">{p.title}</span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: p.color + '18', color: p.color }}>
+                    {p.category}
+                  </span>
+                  {p.reach && (
+                    <span className="text-[10px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                      {p.reach}
+                    </span>
+                  )}
+                </div>
+                {p.tagline && (
+                  <div className="text-xs font-medium text-emerald-800/80 mb-0.5 line-clamp-1 italic">
+                    "{p.tagline}"
+                  </div>
+                )}
                 <div className="text-xs text-gray-400 line-clamp-1">{p.desc}</div>
               </div>
               <div className="flex gap-2 shrink-0">

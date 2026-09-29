@@ -8,6 +8,7 @@ import { getInitialStats, StatItem } from "./admin/sections/StatsAdminView";
 import { getInitialProjects, Project } from "./admin/sections/ProjectsView";
 import { getInitialCampaigns, Campaign } from "./admin/sections/CampaignsView";
 import { getInitialEvents, ESNEvent } from "./admin/sections/EventsView";
+import { getInitialCountryReps, CountryRepItem } from "./admin/sections/GlobalRepsAdminView";
 
 const carbonData = [
   { month: "Jan", reduced: 8500 },
@@ -80,15 +81,30 @@ export default function Impact() {
   const currentTreeCount = baseTreeCount + additionalTrees;
   const currentCO2 = Math.round(currentTreeCount * 0.0625) + additionalCO2;
 
+  const [countryReps] = useFirestoreData<CountryRepItem[]>("esn_country_representatives", getInitialCountryReps());
+
   const baseCommStat = rawList.find(s => s.label.toLowerCase().includes("communit"))?.value || 12000;
   const totalCommunities = baseCommStat + additionalComm;
 
   const baseCountryStat = rawList.find(s => s.label.toLowerCase().includes("countr") || s.label.toLowerCase().includes("nation"))?.value || 80;
-  const liveActiveProjects = projects.filter(p => !p.status || p.status.toLowerCase() === "active").length;
-  const baseProjectsStat = rawList.find(s => s.label.toLowerCase().includes("project"))?.value || 470;
-  const totalProjects = Math.max(baseProjectsStat, liveActiveProjects);
+  const dynamicCountryCount = (countryReps && countryReps.length > 0)
+    ? countryReps.length
+    : (baseCountryStat || 12);
 
-  const baseAwardsStat = rawList.find(s => s.label.toLowerCase().includes("award"))?.value || 24;
+  const liveActiveProjects = projects.filter(p => !p.status || p.status.toLowerCase() === "active").length;
+  const projectsStat = rawList.find(s => s.label.toLowerCase().includes("project"));
+  const totalProjects = projectsStat ? projectsStat.value : 470;
+  const projectsSuffix = projectsStat?.suffix ?? "+";
+  const projectsDesc = (projectsStat?.description && projectsStat.description.length > 0 && !projectsStat.description.toLowerCase().includes("environmental initiatives"))
+    ? projectsStat.description
+    : `${liveActiveProjects} active initiatives`;
+
+  const awardsStat = rawList.find(s => s.label.toLowerCase().includes("award"));
+  const baseAwardsStat = awardsStat ? awardsStat.value : 24;
+  const awardsSuffix = awardsStat?.suffix ?? "";
+  const awardsDesc = (awardsStat?.description && awardsStat.description.length > 0 && !awardsStat.description.toLowerCase().includes("global recognitions"))
+    ? awardsStat.description
+    : "+3 this year";
 
   // Dynamic tree trend dataset based on current count
   const dynamicTreeData = [
@@ -117,9 +133,9 @@ export default function Impact() {
     { icon: TreePine, value: formatCount(currentTreeCount), label: "Trees Planted", change: `+${formatCount(additionalTrees)} from activities`, color: "#0B5D3F" },
     { icon: Droplets, value: `${currentCO2.toLocaleString()} MT`, label: "CO₂ Sequestered", change: `Derived from ${formatCount(currentTreeCount)} trees`, color: "#173B63" },
     { icon: Users, value: `${totalCommunities.toLocaleString()}+`, label: "Communities Reached", change: `+${additionalComm.toLocaleString()} across 3 sectors`, color: "#4CAF50" },
-    { icon: Globe2, value: `${baseCountryStat}+`, label: "Countries Active", change: "+5 new countries", color: "#D6A95A" },
-    { icon: Target, value: `${totalProjects}+`, label: "Active Projects", change: `${liveActiveProjects} active initiatives`, color: "#0B5D3F" },
-    { icon: Award, value: `${baseAwardsStat}`, label: "International Awards", change: "+3 this year", color: "#4CAF50" },
+    { icon: Globe2, value: `${dynamicCountryCount}`, label: "Countries Active", change: "+5 new countries", color: "#D6A95A" },
+    { icon: Target, value: `${totalProjects}${projectsSuffix}`, label: "Active Projects", change: projectsDesc, color: "#0B5D3F" },
+    { icon: Award, value: `${baseAwardsStat}${awardsSuffix}`, label: "International Awards", change: awardsDesc, color: "#4CAF50" },
   ];
 
   return (
@@ -404,9 +420,9 @@ export default function Impact() {
                 <div className="w-12 h-12 rounded-2xl bg-[#E8F5E9] flex items-center justify-center mb-6">
                   <Globe2 size={24} className="text-[#0B5D3F]" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">80+ Global Representatives</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">{dynamicCountryCount} Global Representatives</h3>
                 <p className="text-gray-600 text-xs leading-relaxed mb-6">
-                  Our official country delegates coordinate grassroots actions, local restoration drives, and government dialogues across 80+ nations.
+                  Our official country delegates coordinate grassroots actions, local restoration drives, and government dialogues across {dynamicCountryCount} nations.
                 </p>
               </div>
               <Link to="/global-representatives" className="inline-flex items-center gap-2 text-xs font-bold text-[#0B5D3F] hover:text-[#4CAF50] transition-colors">

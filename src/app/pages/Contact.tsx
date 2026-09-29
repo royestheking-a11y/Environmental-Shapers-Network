@@ -196,7 +196,7 @@ export default function Contact() {
                     </div>
                     <div>
                       <div className="text-xs text-white/60 mb-0.5">Email</div>
-                      <div className="text-sm font-medium mb-0.5 break-all">{settings.contactEmail || "info@esnglobal.org"}</div>
+                      <div className="text-sm font-medium mb-0.5 break-all">{settings.contactEmail || "enviro.sn@gmail.com"}</div>
                       <div className="text-sm font-medium break-all">research@esnglobal.org</div>
                     </div>
                   </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useLocation, Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -9,6 +9,7 @@ import { useFirestoreData } from "../../lib/useFirestore";
 import { ImageWithFallback } from "../components/ui/ImageWithFallback";
 import { initialTeamMembers, AboutTeamMember } from "./admin/sections/AboutPageAdminView";
 import { defaultAuditReports, defaultReportsSettings } from "./admin/sections/ReportsAdminView";
+import { getInitialStats, StatItem } from "./admin/sections/StatsAdminView";
 
 function PageHero({ title, sub, image }: { title: string; sub: string; image: string }) {
   return (
@@ -621,31 +622,47 @@ function ReportsPage() {
 }
 
 function AwardsPage() {
+  const [awardsData] = useFirestoreData<any[]>("esn_awards_admin", awards);
+  const [statsData] = useFirestoreData<StatItem[]>("esn_stats_admin", getInitialStats());
+  const awardsList = awardsData && awardsData.length > 0 ? awardsData : awards;
+
+  const awardsStat = statsData.find(s => s.label.toLowerCase().includes("award"));
+  const countriesStat = statsData.find(s => s.label.toLowerCase().includes("countries reached") || s.label.toLowerCase().includes("country"));
+  const awardsCount = awardsStat ? `${awardsStat.value}${awardsStat.suffix || ""}` : `${awardsList.length}`;
+  const countriesCount = countriesStat ? `${countriesStat.value}${countriesStat.suffix || "+"}` : "190+";
+
   return (
     <div className="bg-[#F6FBF8] min-h-screen">
       <PageHero title="Awards & Recognition" sub="Global recognition for our impact, innovation, and commitment to environmental excellence." image="https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400" />
       <div className="max-w-6xl mx-auto px-6 py-16">
         <Breadcrumb current="Awards & Recognition" />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-12">
-          {[["24", "International Awards"], ["12", "Global Certifications"], ["190+", "Countries Recognized In"], ["2019", "Founded"]].map(([v, l]) => (
-            <div key={l} className="bg-white rounded-2xl p-5 text-center border border-gray-100">
+          {[
+            [awardsCount, "International Awards"],
+            ["12", "Global Certifications"],
+            [countriesCount, "Countries Recognized In"],
+            ["2019", "Founded"]
+          ].map(([v, l]) => (
+            <div key={l} className="bg-white rounded-2xl p-5 text-center border border-gray-100 shadow-sm">
               <div className="text-2xl font-black text-[#0B5D3F]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{v}</div>
               <div className="text-xs text-gray-500 mt-1">{l}</div>
             </div>
           ))}
         </div>
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {awards.map((a, i) => (
-            <motion.div key={a.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.09 }}
-              className="bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-xl transition-all group">
-              <div className="relative h-40 overflow-hidden">
-                <img src={a.img} alt={a.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                <div className="absolute top-3 left-3 bg-[#D6A95A] text-white text-xs font-bold px-2.5 py-1 rounded-full">{a.year}</div>
-              </div>
-              <div className="p-5">
-                <div className="text-xs font-bold text-[#4CAF50] mb-2 uppercase tracking-wider">{a.category}</div>
-                <div className="font-bold text-gray-900 mb-1">{a.title}</div>
-                <div className="text-xs text-gray-500 flex items-center gap-1"><Award size={11} /> {a.org}</div>
+          {awardsList.map((a: any, i: number) => (
+            <motion.div key={a.title + i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.09 }}
+              className="bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-xl transition-all group flex flex-col justify-between">
+              <div>
+                <div className="relative h-44 overflow-hidden bg-emerald-950/10">
+                  <ImageWithFallback src={a.img} alt={a.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <div className="absolute top-3 left-3 bg-[#D6A95A] text-white text-xs font-bold px-2.5 py-1 rounded-full">{a.year}</div>
+                </div>
+                <div className="p-5">
+                  <div className="text-xs font-bold text-[#4CAF50] mb-2 uppercase tracking-wider">{a.category}</div>
+                  <div className="font-bold text-gray-900 mb-1">{a.title}</div>
+                  <div className="text-xs text-gray-500 flex items-center gap-1"><Award size={11} /> {a.org}</div>
+                </div>
               </div>
             </motion.div>
           ))}
@@ -657,9 +674,8 @@ function AwardsPage() {
 
 export default function OrganizationPage() {
   const { pathname } = useLocation();
-  if (pathname === "/our-team") return <OurTeamPage />;
-  if (pathname === "/board") return <BoardPage />;
-  if (pathname === "/reports") return <ReportsPage />;
-  if (pathname === "/awards") return <AwardsPage />;
+  if (pathname.includes("board")) return <BoardPage />;
+  if (pathname.includes("report")) return <ReportsPage />;
+  if (pathname.includes("award")) return <AwardsPage />;
   return <OurTeamPage />;
 }

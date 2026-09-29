@@ -97,16 +97,22 @@ export default function ReportsAdminView() {
 
   const saveReportsToFirestore = async (newReports: AuditReportItem[]) => {
     setReports(newReports);
-    await saveFirestoreData("esn_reports_admin", newReports);
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
+    const success = await saveFirestoreData("esn_reports_admin", newReports);
+    if (success) {
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } else {
+      alert("Note: Document saved to browser cache. Cloud sync is queued.");
+    }
   };
 
   const saveSettingsToFirestore = async (newSettings: ReportsPageSettings) => {
     setSettings(newSettings);
-    await saveFirestoreData("esn_reports_settings", newSettings);
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
+    const success = await saveFirestoreData("esn_reports_settings", newSettings);
+    if (success) {
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    }
   };
 
   const handleOpenAdd = () => {
@@ -131,7 +137,7 @@ export default function ReportsAdminView() {
     setShowModal(true);
   };
 
-  const handleSaveReport = () => {
+  const handleSaveReport = async () => {
     if (!formData.title?.trim() || !formData.year?.trim()) {
       alert("Please provide both a Title and Year for the report.");
       return;
@@ -141,7 +147,7 @@ export default function ReportsAdminView() {
       const updated = (reports || []).map((r) =>
         r.id === editingId ? ({ ...r, ...formData } as AuditReportItem) : r
       );
-      saveReportsToFirestore(updated);
+      await saveReportsToFirestore(updated);
     } else {
       const newId = reports && reports.length > 0 ? Math.max(...reports.map((r) => r.id)) + 1 : 1;
       const newReport: AuditReportItem = {
@@ -154,15 +160,15 @@ export default function ReportsAdminView() {
         fileUrl: formData.fileUrl || "",
         viewUrl: formData.viewUrl || ""
       };
-      saveReportsToFirestore([newReport, ...(reports || [])]);
+      await saveReportsToFirestore([newReport, ...(reports || [])]);
     }
     setShowModal(false);
   };
 
-  const handleDeleteReport = () => {
+  const handleDeleteReport = async () => {
     if (deleteConfirmId !== null) {
       const updated = (reports || []).filter((r) => r.id !== deleteConfirmId);
-      saveReportsToFirestore(updated);
+      await saveReportsToFirestore(updated);
       setDeleteConfirmId(null);
     }
   };
@@ -180,10 +186,12 @@ export default function ReportsAdminView() {
           fileUrl: res.url,
           size: res.size || prev.size
         }));
+      } else {
+        alert(`File "${file.name}" is ${(file.size / (1024 * 1024)).toFixed(1)}MB. To prevent database limit issues, please paste a direct file link (from Google Drive, Dropbox, OneDrive, or document hosting) into the PDF URL field, or upload a file under 450KB.`);
       }
     } catch (err) {
       console.error(err);
-      alert("Failed to upload file. Please try again.");
+      alert("Failed to process file. Please paste a direct document link (Google Drive, Dropbox, OneDrive).");
     } finally {
       setIsUploadingFile(false);
     }

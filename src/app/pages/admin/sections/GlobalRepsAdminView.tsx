@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Globe2, Plus, Search, Edit3, Trash2, CheckCircle2, Award, Users,
-  MapPin, Shield, Star, ExternalLink, Eye, Compass, Heart, Zap
+  MapPin, Shield, Star, ExternalLink, Eye, Compass, Heart, Zap, X, AlertTriangle
 } from "lucide-react";
 import { useFirestoreData, saveFirestoreData, fetchFirestoreData } from "../../../../lib/useFirestore";
 import { ImageUploadField } from "../../../components/ui/ImageUploadField";
@@ -51,16 +51,61 @@ export interface RepPillar {
   bg: string;
 }
 
+export interface CountryRepItem {
+  id: number | string;
+  country: string;
+  flag?: string;
+  repName?: string;
+  role?: string;
+  region?: string;
+  email?: string;
+  status?: "Active" | "Appointed" | "In Review";
+  appointedYear?: string;
+}
+
+const COUNTRY_FLAGS: Record<string, string> = {
+  bangladesh: "🇧🇩", canada: "🇨🇦", kenya: "🇰🇪", brazil: "🇧🇷",
+  uk: "🇬🇧", "united kingdom": "🇬🇧", germany: "🇩🇪", australia: "🇦🇺",
+  indonesia: "🇮🇩", colombia: "🇨🇴", ghana: "🇬🇭", india: "🇮🇳",
+  fiji: "🇫🇯", usa: "🇺🇸", "united states": "🇺🇸", nepal: "🇳🇵",
+  japan: "🇯🇵", france: "🇫🇷", "south africa": "🇿🇦", egypt: "🇪🇬",
+  mexico: "🇲🇽", nigeria: "🇳🇬", philippines: "🇵🇭", spain: "🇪🇸",
+  italy: "🇮🇹", maldives: "🇲🇻", vietnam: "🇻🇳", thailand: "🇹🇭"
+};
+
+export function getFlagForCountry(countryName: string): string {
+  if (!countryName) return "🌐";
+  const clean = countryName.trim().toLowerCase();
+  return COUNTRY_FLAGS[clean] || "🌐";
+}
+
+export function getInitialCountryReps(): CountryRepItem[] {
+  return [
+    { id: 1, country: "Bangladesh", repName: "Rizwan Ahmed", role: "National Lead Delegate", region: "South Asia", flag: "🇧🇩", status: "Active", appointedYear: "2024" },
+    { id: 2, country: "Canada", repName: "Elena Trudeau", role: "Country Representative", region: "North America", flag: "🇨🇦", status: "Active", appointedYear: "2024" },
+    { id: 3, country: "Kenya", repName: "David Ochieng", role: "East Africa Coordinator", region: "East Africa", flag: "🇰🇪", status: "Active", appointedYear: "2023" },
+    { id: 4, country: "Brazil", repName: "Maria Santos", role: "Amazon Basin Delegate", region: "South America", flag: "🇧🇷", status: "Active", appointedYear: "2023" },
+    { id: 5, country: "United Kingdom", repName: "Oliver Davies", role: "European Liaison", region: "Europe", flag: "🇬🇧", status: "Active", appointedYear: "2024" },
+    { id: 6, country: "Germany", repName: "Hannah Müller", role: "Country Representative", region: "Europe", flag: "🇩🇪", status: "Active", appointedYear: "2024" },
+    { id: 7, country: "Australia", repName: "Liam Chen", role: "Oceania Delegate", region: "Oceania", flag: "🇦🇺", status: "Active", appointedYear: "2024" },
+    { id: 8, country: "Indonesia", repName: "Siti Aminah", role: "Southeast Asia Lead", region: "Southeast Asia", flag: "🇮🇩", status: "Active", appointedYear: "2023" },
+    { id: 9, country: "Colombia", repName: "Sofia Hernandez", role: "Youth & Climate Negotiator", region: "South America", flag: "🇨🇴", status: "Active", appointedYear: "2024" },
+    { id: 10, country: "Ghana", repName: "Kwame Mensah", role: "West Africa Coordinator", region: "West Africa", flag: "🇬🇭", status: "Active", appointedYear: "2024" },
+    { id: 11, country: "India", repName: "Priya Sharma", role: "Country Representative", region: "South Asia", flag: "🇮🇳", status: "Active", appointedYear: "2024" },
+    { id: 12, country: "Fiji", repName: "Kalesi Vuetaki", role: "Pacific Islands Envoy", region: "Pacific", flag: "🇫🇯", status: "Active", appointedYear: "2024" }
+  ];
+}
+
 export const defaultGlobalRepsSettings: GlobalRepsSettings = {
   badge: "Global Leadership Network",
   title: "Lead Environmental Action in",
   highlightedTitle: "Your Country",
-  subtitle: "Environmental Shapers Network appoints dedicated Country & Regional Representatives across 80+ nations. As an official ESN Representative, you will lead national initiatives, coordinate youth volunteers, and represent your region on global environmental stages.",
+  subtitle: "Environmental Shapers Network appoints dedicated Country & Regional Representatives across nations worldwide. As an official ESN Representative, you will lead national initiatives, coordinate youth volunteers, and represent your region on global environmental stages.",
   image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=900",
   floatingBadgeTitle: "Official Representation",
   floatingBadgeSub: "UN & COP Credentialed Network",
   stats: [
-    { label: "Country Reps", val: "80+" },
+    { label: "Country Reps", val: "12" },
     { label: "Active Nations", val: "190+" },
     { label: "Regional Hubs", val: "12" },
     { label: "Volunteers", val: "48K+" }
@@ -105,7 +150,7 @@ export const defaultRepPillars: RepPillar[] = [
 ];
 
 export default function GlobalRepsAdminView() {
-  const [activeTab, setActiveTab] = useState<"hero-stats" | "pillars">("hero-stats");
+  const [activeTab, setActiveTab] = useState<"countries" | "hero-stats" | "pillars">("countries");
   const [settings, setSettings] = useFirestoreData<GlobalRepsSettings>(
     "esn_global_representatives_settings",
     defaultGlobalRepsSettings
@@ -114,8 +159,26 @@ export default function GlobalRepsAdminView() {
     "esn_global_representatives_pillars",
     defaultRepPillars
   );
+  const [countryReps, setCountryReps] = useFirestoreData<CountryRepItem[]>(
+    "esn_country_representatives",
+    getInitialCountryReps()
+  );
 
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [searchCountry, setSearchCountry] = useState("");
+  const [showCountryModal, setShowCountryModal] = useState(false);
+  const [editingCountryId, setEditingCountryId] = useState<number | string | null>(null);
+  const [countryForm, setCountryForm] = useState<Partial<CountryRepItem>>({
+    country: "",
+    repName: "",
+    role: "Country Representative",
+    region: "Global",
+    flag: "🌐",
+    status: "Active",
+    appointedYear: "2024"
+  });
+  const [deleteCountryConfirmId, setDeleteCountryConfirmId] = useState<number | string | null>(null);
+
   const [editingPillarId, setEditingPillarId] = useState<number | null>(null);
   const [pillarForm, setPillarForm] = useState<Partial<RepPillar>>({
     title: "",
@@ -128,22 +191,162 @@ export default function GlobalRepsAdminView() {
 
   const currentSettings = settings || defaultGlobalRepsSettings;
   const currentPillars = pillars || defaultRepPillars;
+  const currentCountryReps = countryReps || getInitialCountryReps();
+
+  const syncAllGlobalCounters = async (countryCount: number) => {
+    // 1. Sync reps settings stats
+    const updatedStats = (currentSettings.stats || defaultGlobalRepsSettings.stats).map((st) => {
+      if (st.label.toLowerCase().includes("rep") || st.label.toLowerCase().includes("countr")) {
+        return { ...st, val: `${countryCount}` };
+      }
+      return st;
+    });
+
+    const updatedSettings: GlobalRepsSettings = {
+      ...currentSettings,
+      subtitle: currentSettings.subtitle.replace(/\b\d+\+?\s*nations\b/gi, `${countryCount} nations`),
+      stats: updatedStats
+    };
+    setSettings(updatedSettings);
+    await saveFirestoreData("esn_global_representatives_settings", updatedSettings);
+
+    // 2. Sync Impact Page KPI Stat (esn_stats_admin)
+    try {
+      const existingStats = await fetchFirestoreData<StatItem[]>("esn_stats_admin", getInitialStats());
+      if (existingStats && existingStats.length > 0) {
+        const syncedStats = existingStats.map((st) => {
+          if (st.id === 4 || st.label.toLowerCase().includes("countr") || st.label.toLowerCase().includes("nation")) {
+            return { ...st, value: countryCount };
+          }
+          return st;
+        });
+        await saveFirestoreData("esn_stats_admin", syncedStats);
+      }
+    } catch (e) {
+      console.error("Auto-sync stats error:", e);
+    }
+
+    // 3. Sync Homepage Hero Slides
+    try {
+      const existingSlides = await fetchFirestoreData<HeroSlide[]>("esn_hero_admin", getInitialHeroSlides());
+      if (existingSlides && existingSlides.length > 0) {
+        let slidesModified = false;
+        const syncedSlides = existingSlides.map((slide) => {
+          if (slide.sub && /\b\d+\+?\s*countries\b/i.test(slide.sub)) {
+            slidesModified = true;
+            return {
+              ...slide,
+              sub: slide.sub.replace(/\b\d+\+?\s*countries\b/gi, `${countryCount} countries`),
+            };
+          }
+          return slide;
+        });
+        if (slidesModified) {
+          await saveFirestoreData("esn_hero_admin", syncedSlides);
+        }
+      }
+    } catch (e) {
+      console.error("Hero sync error:", e);
+    }
+  };
+
+  const saveCountryRepsToFirestore = async (newList: CountryRepItem[]) => {
+    setCountryReps(newList);
+    await saveFirestoreData("esn_country_representatives", newList);
+    await syncAllGlobalCounters(newList.length);
+
+    await logAdminActivity(
+      "Updated Country Representatives",
+      "CMS",
+      `Saved ${newList.length} country representatives and auto-synced Impact & Hero counters to ${newList.length}.`,
+      "success"
+    );
+
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 3000);
+  };
+
+  const handleOpenAddCountry = () => {
+    setEditingCountryId(null);
+    setCountryForm({
+      country: "",
+      repName: "",
+      role: "Country Representative",
+      region: "Global",
+      flag: "🌐",
+      status: "Active",
+      appointedYear: new Date().getFullYear().toString()
+    });
+    setShowCountryModal(true);
+  };
+
+  const handleStartEditCountry = (c: CountryRepItem) => {
+    setEditingCountryId(c.id);
+    setCountryForm({ ...c });
+    setShowCountryModal(true);
+  };
+
+  const handleCountryNameChange = (name: string) => {
+    const suggestedFlag = getFlagForCountry(name);
+    setCountryForm(prev => ({
+      ...prev,
+      country: name,
+      flag: (prev.flag && prev.flag !== "🌐") ? prev.flag : suggestedFlag
+    }));
+  };
+
+  const handleSaveCountry = () => {
+    if (!countryForm.country?.trim()) {
+      alert("Please enter a country name.");
+      return;
+    }
+    const flag = countryForm.flag && countryForm.flag !== "🌐"
+      ? countryForm.flag
+      : getFlagForCountry(countryForm.country);
+
+    if (editingCountryId !== null) {
+      const updated = currentCountryReps.map((item) =>
+        item.id === editingCountryId
+          ? ({ ...item, ...countryForm, flag } as CountryRepItem)
+          : item
+      );
+      saveCountryRepsToFirestore(updated);
+    } else {
+      const newItem: CountryRepItem = {
+        id: Date.now(),
+        country: countryForm.country.trim(),
+        repName: countryForm.repName?.trim() || "Official Delegate",
+        role: countryForm.role?.trim() || "Country Representative",
+        region: countryForm.region?.trim() || "Global",
+        flag,
+        status: countryForm.status || "Active",
+        appointedYear: countryForm.appointedYear || new Date().getFullYear().toString(),
+        email: countryForm.email || ""
+      };
+      saveCountryRepsToFirestore([...currentCountryReps, newItem]);
+    }
+    setShowCountryModal(false);
+  };
+
+  const handleDeleteCountry = (id: number | string) => {
+    const updated = currentCountryReps.filter((c) => c.id !== id);
+    saveCountryRepsToFirestore(updated);
+    setDeleteCountryConfirmId(null);
+  };
 
   const saveSettingsToFirestore = async (newSettings: GlobalRepsSettings) => {
     setSettings(newSettings);
     await saveFirestoreData("esn_global_representatives_settings", newSettings);
 
-    // Cross-synchronization: Update Homepage Impact Stats & Hero Slides automatically
     try {
       const repsStat = (newSettings.stats || []).find((s) => s.label.toLowerCase().includes("rep"));
       const nationsStat = (newSettings.stats || []).find((s) =>
         s.label.toLowerCase().includes("nation") || s.label.toLowerCase().includes("countr")
       );
 
-      const repsNum = repsStat ? parseNumericValue(repsStat.val) : 80;
+      const repsNum = repsStat ? parseNumericValue(repsStat.val) : currentCountryReps.length;
       const nationsNum = nationsStat ? parseNumericValue(nationsStat.val) : 190;
 
-      // 1. Sync Impact Stats (esn_stats_admin)
       const existingStats = await fetchFirestoreData<StatItem[]>("esn_stats_admin", getInitialStats());
       if (existingStats && existingStats.length > 0) {
         let statsModified = false;
@@ -167,29 +370,10 @@ export default function GlobalRepsAdminView() {
         }
       }
 
-      // 2. Sync Hero Slides (esn_hero_admin)
-      const existingSlides = await fetchFirestoreData<HeroSlide[]>("esn_hero_admin", getInitialHeroSlides());
-      if (existingSlides && existingSlides.length > 0 && repsStat) {
-        let slidesModified = false;
-        const syncedSlides = existingSlides.map((slide) => {
-          if (slide.sub && /\b\d+\+\s*countries\b/i.test(slide.sub)) {
-            slidesModified = true;
-            return {
-              ...slide,
-              sub: slide.sub.replace(/\b\d+\+\s*countries\b/gi, `${repsStat.val} countries`),
-            };
-          }
-          return slide;
-        });
-        if (slidesModified) {
-          await saveFirestoreData("esn_hero_admin", syncedSlides);
-        }
-      }
-
       await logAdminActivity(
-        "Updated Global Representatives",
+        "Updated Global Representatives Settings",
         "CMS",
-        `Saved Global Representatives settings and auto-synced Homepage Hero & Impact Stats (${repsStat?.val || "80+"} reps, ${nationsStat?.val || "190+"} nations).`,
+        `Saved Global Representatives settings (${repsStat?.val || currentCountryReps.length} reps, ${nationsStat?.val || "190+"} nations).`,
         "success"
       );
     } catch (e) {
@@ -258,6 +442,18 @@ export default function GlobalRepsAdminView() {
     }
   };
 
+  const filteredCountries = currentCountryReps.filter((c) => {
+    if (!searchCountry) return true;
+    const q = searchCountry.toLowerCase();
+    return (
+      c.country.toLowerCase().includes(q) ||
+      (c.repName || "").toLowerCase().includes(q) ||
+      (c.region || "").toLowerCase().includes(q)
+    );
+  });
+
+  const countryToDelete = currentCountryReps.find(c => c.id === deleteCountryConfirmId);
+
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
@@ -274,7 +470,7 @@ export default function GlobalRepsAdminView() {
             )}
           </div>
           <p className="text-xs text-gray-500 mt-0.5">
-            Manage Global Country Representatives page hero, volunteer stats, banner images, and leadership pillars.
+            Manage appointed countries, representative delegates, hero statistics, and leadership pillars.
           </p>
         </div>
 
@@ -291,7 +487,17 @@ export default function GlobalRepsAdminView() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-gray-200 pb-2">
+      <div className="flex items-center gap-2 border-b border-gray-200 pb-2 flex-wrap">
+        <button
+          onClick={() => setActiveTab("countries")}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+            activeTab === "countries"
+              ? "bg-[#0B5D3F] text-white shadow-sm"
+              : "text-gray-600 hover:bg-gray-100"
+          }`}
+        >
+          <Globe2 size={13} /> Country Directory ({currentCountryReps.length})
+        </button>
         <button
           onClick={() => setActiveTab("hero-stats")}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
@@ -314,7 +520,257 @@ export default function GlobalRepsAdminView() {
         </button>
       </div>
 
-      {/* TAB 1: HERO BANNER & STATS */}
+      {/* TAB 1: COUNTRIES DIRECTORY */}
+      {activeTab === "countries" && (
+        <div className="flex flex-col gap-6">
+          {/* Dynamic Sync Banner */}
+          <div className="bg-gradient-to-r from-[#0B5D3F]/10 via-[#173B63]/10 to-[#4CAF50]/10 border border-[#4CAF50]/30 rounded-3xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-5 shadow-xs">
+            <div className="flex items-start gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-[#0B5D3F] text-white flex items-center justify-center shrink-0 shadow-md">
+                <Globe2 size={28} className="text-[#81C784]" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <span className="text-xl font-black text-[#0B5D3F]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    {currentCountryReps.length} Global Country Representatives
+                  </span>
+                  <span className="bg-[#4CAF50] text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                    Dynamic Sync Active
+                  </span>
+                </div>
+                <p className="text-xs text-gray-600 leading-relaxed max-w-2xl">
+                  Adding or removing countries automatically updates the Impact page card (<strong>"{currentCountryReps.length} Global Representatives"</strong>), Impact KPI Counter, and the Public Directory in real-time.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={handleOpenAddCountry}
+              className="inline-flex items-center justify-center gap-2 bg-[#0B5D3F] text-white px-5 py-3 rounded-2xl font-bold text-xs hover:bg-[#0a5237] transition-all shadow-md shadow-[#0B5D3F]/20 shrink-0"
+            >
+              <Plus size={16} /> Add Country Representative
+            </button>
+          </div>
+
+          {/* Search bar & count */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="relative max-w-sm w-full">
+              <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search country, delegate, region..."
+                value={searchCountry}
+                onChange={(e) => setSearchCountry(e.target.value)}
+                className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white border border-gray-200 text-xs font-medium focus:outline-none focus:border-[#4CAF50]"
+              />
+            </div>
+            <div className="text-xs font-semibold text-gray-500">
+              Showing {filteredCountries.length} of {currentCountryReps.length} appointed countries
+            </div>
+          </div>
+
+          {/* Countries Grid */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredCountries.map((c) => (
+              <div
+                key={c.id}
+                className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group"
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-2xl">{c.flag || getFlagForCountry(c.country)}</span>
+                      <div>
+                        <h4 className="font-bold text-gray-900 text-sm">{c.country}</h4>
+                        <span className="text-[10px] text-gray-400 font-medium">{c.region || "Global"}</span>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-[#0B5D3F] border border-emerald-100">
+                      {c.status || "Active"}
+                    </span>
+                  </div>
+
+                  <div className="bg-[#F6FBF8] rounded-xl p-3 border border-gray-100/80 mb-4">
+                    <div className="text-xs font-bold text-gray-800">{c.repName || "Official Representative"}</div>
+                    <div className="text-[11px] text-gray-500">{c.role || "Country Representative"}</div>
+                    {c.appointedYear && (
+                      <div className="text-[10px] text-gray-400 mt-1">Appointed: {c.appointedYear}</div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-gray-50">
+                  <span className="text-[10px] text-gray-400">ID #{String(c.id).slice(-4)}</span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => handleStartEditCountry(c)}
+                      className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-[#0B5D3F] transition-colors"
+                      title="Edit Country"
+                    >
+                      <Edit3 size={14} />
+                    </button>
+                    <button
+                      onClick={() => setDeleteCountryConfirmId(c.id)}
+                      className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+                      title="Delete Country"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {filteredCountries.length === 0 && (
+              <div className="col-span-full py-16 text-center text-gray-400 bg-white rounded-3xl border border-gray-100">
+                <Globe2 size={36} className="mx-auto mb-2 opacity-30 text-[#0B5D3F]" />
+                <p className="text-sm font-semibold">No countries found matching your search</p>
+              </div>
+            )}
+          </div>
+
+          {/* Delete Country Modal */}
+          <AnimatePresence>
+            {deleteCountryConfirmId !== null && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+                <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }} className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center">
+                  <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <AlertTriangle size={28} className="text-red-500" />
+                  </div>
+                  <h4 className="font-black text-gray-900 mb-1">Remove Country?</h4>
+                  <p className="text-xs text-gray-500 mb-1">This will remove:</p>
+                  <p className="text-sm font-bold text-gray-800 mb-4">{countryToDelete?.flag} {countryToDelete?.country}</p>
+                  <p className="text-xs text-amber-600 bg-amber-50 p-2.5 rounded-xl mb-6">
+                    Total country count will update from {currentCountryReps.length} to {currentCountryReps.length - 1} across the entire website.
+                  </p>
+                  <div className="flex gap-3">
+                    <button onClick={() => handleDeleteCountry(deleteCountryConfirmId)} className="flex-1 bg-red-500 text-white py-3 rounded-xl font-semibold text-xs hover:bg-red-600 transition-all">Yes, Remove</button>
+                    <button onClick={() => setDeleteCountryConfirmId(null)} className="flex-1 border border-gray-200 text-gray-600 py-3 rounded-xl font-semibold text-xs hover:bg-gray-50 transition-all">Cancel</button>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Add / Edit Country Modal */}
+          <AnimatePresence>
+            {showCountryModal && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+                <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} className="bg-white rounded-3xl p-8 max-w-lg w-full shadow-2xl my-8" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center justify-between mb-6">
+                    <h4 className="font-black text-gray-900 text-lg" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                      {editingCountryId ? "Edit Country Representative" : "Add Country Representative"}
+                    </h4>
+                    <button onClick={() => setShowCountryModal(false)} className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center hover:bg-gray-200">
+                      <X size={16} />
+                    </button>
+                  </div>
+
+                  <div className="flex flex-col gap-4">
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="col-span-2">
+                        <label className="text-xs font-bold text-gray-700 mb-1.5 block">Country Name *</label>
+                        <input
+                          type="text"
+                          value={countryForm.country || ""}
+                          onChange={(e) => handleCountryNameChange(e.target.value)}
+                          placeholder="e.g. Canada, Germany, Nepal"
+                          className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm font-semibold focus:outline-none focus:border-[#4CAF50]"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-gray-700 mb-1.5 block">Flag Symbol</label>
+                        <input
+                          type="text"
+                          value={countryForm.flag || ""}
+                          onChange={(e) => setCountryForm({ ...countryForm, flag: e.target.value })}
+                          placeholder="🇨🇦"
+                          className="w-full px-3 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-center text-lg focus:outline-none focus:border-[#4CAF50]"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-bold text-gray-700 mb-1.5 block">Delegate Name</label>
+                        <input
+                          type="text"
+                          value={countryForm.repName || ""}
+                          onChange={(e) => setCountryForm({ ...countryForm, repName: e.target.value })}
+                          placeholder="e.g. Elena Trudeau"
+                          className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-gray-700 mb-1.5 block">Region</label>
+                        <input
+                          type="text"
+                          value={countryForm.region || ""}
+                          onChange={(e) => setCountryForm({ ...countryForm, region: e.target.value })}
+                          placeholder="e.g. North America, Europe"
+                          className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-bold text-gray-700 mb-1.5 block">Role / Designation</label>
+                        <input
+                          type="text"
+                          value={countryForm.role || ""}
+                          onChange={(e) => setCountryForm({ ...countryForm, role: e.target.value })}
+                          placeholder="e.g. Country Representative"
+                          className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-gray-700 mb-1.5 block">Appointed Year</label>
+                        <input
+                          type="text"
+                          value={countryForm.appointedYear || ""}
+                          onChange={(e) => setCountryForm({ ...countryForm, appointedYear: e.target.value })}
+                          placeholder="e.g. 2024"
+                          className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-gray-700 mb-1.5 block">Status</label>
+                      <select
+                        value={countryForm.status || "Active"}
+                        onChange={(e) => setCountryForm({ ...countryForm, status: e.target.value as any })}
+                        className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]"
+                      >
+                        <option value="Active">Active (Official Delegate)</option>
+                        <option value="Appointed">Appointed (Pending Term Start)</option>
+                        <option value="In Review">In Review</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 mt-8">
+                    <button
+                      onClick={handleSaveCountry}
+                      className="flex-1 bg-[#0B5D3F] text-white py-3 rounded-xl font-bold text-xs hover:bg-[#0a5237] transition-all shadow-md shadow-[#0B5D3F]/20"
+                    >
+                      {editingCountryId ? "Save Changes" : "Add Country Representative"}
+                    </button>
+                    <button
+                      onClick={() => setShowCountryModal(false)}
+                      className="px-6 py-3 rounded-xl text-gray-500 hover:bg-gray-100 font-semibold text-xs"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
+
+      {/* TAB 2: HERO BANNER & STATS */}
       {activeTab === "hero-stats" && (
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm flex flex-col gap-6">
           {/* Interconnected System Notice */}

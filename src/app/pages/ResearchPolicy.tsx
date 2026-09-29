@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { BookOpen, FileText, Download, ArrowRight, CheckCircle, ExternalLink, Sparkles } from "lucide-react";
 import { Link } from "react-router";
 import { motion } from "motion/react";
@@ -30,22 +31,44 @@ const defaultPublications = [
 
 export default function ResearchPolicy() {
   const [researchAreas] = useFirestoreData<ResearchArea[]>("esn_research_admin", getInitialResearchAreas());
+  const [knowledgeResources] = useFirestoreData<any[]>("esn_knowledge_hub_resources", []);
   const [cmsContent] = useFirestoreData<any[]>("esn_cms_content", []);
 
-  // Filter research publications from CMS
-  const dynamicPubs = (cmsContent || [])
-    .filter((item: any) => 
-      (item.status === "Published" || !item.status) &&
-      (item.type === "Report" || item.type === "Research Paper" || item.type === "Policy Brief" || item.type === "Article")
-    )
-    .map((item: any) => ({
-      id: item.id,
-      title: item.title,
-      desc: item.excerpt || item.summary || "Official peer-reviewed scientific paper from ESN research divisions.",
-      type: item.type || "Research Paper",
-      date: item.date || "2026",
-      link: `/news/${item.id}`,
-    }));
+  // Filter research publications from Knowledge Hub resources or CMS
+  const dynamicPubs = useMemo(() => {
+    if (knowledgeResources && knowledgeResources.length > 0) {
+      return knowledgeResources
+        .filter((item: any) =>
+          item.type === "Report" || item.type === "Research Paper" || item.type === "Policy Brief" || item.type === "Article" || !item.type
+        )
+        .map((item: any) => ({
+          id: item.id,
+          title: item.title,
+          desc: item.desc || "Official peer-reviewed scientific paper from ESN research divisions.",
+          type: item.type || "Research Paper",
+          date: item.date || "2026",
+          link: item.link || item.fileUrl || "/knowledge-hub",
+        }));
+    }
+
+    if (cmsContent && cmsContent.length > 0) {
+      return cmsContent
+        .filter((item: any) => 
+          (item.status === "Published" || !item.status) &&
+          (item.type === "Report" || item.type === "Research Paper" || item.type === "Policy Brief" || item.type === "Article")
+        )
+        .map((item: any) => ({
+          id: item.id,
+          title: item.title,
+          desc: item.excerpt || item.summary || "Official peer-reviewed scientific paper from ESN research divisions.",
+          type: item.type || "Research Paper",
+          date: item.date || "2026",
+          link: `/news/${item.id}`,
+        }));
+    }
+
+    return defaultPublications;
+  }, [knowledgeResources, cmsContent]);
 
   const publications = dynamicPubs.length > 0 ? dynamicPubs.slice(0, 3) : defaultPublications;
   const areas = researchAreas && researchAreas.length > 0 ? researchAreas : getInitialResearchAreas();

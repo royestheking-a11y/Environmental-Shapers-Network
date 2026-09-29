@@ -38,17 +38,9 @@ export default function AllPrograms() {
             <h1 className="text-white mb-5" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(2rem, 5vw, 3.5rem)", fontWeight: 900 }}>
               Programs That Drive<br />Real Environmental Change
             </h1>
-            <p className="text-white/70 text-lg max-w-xl mx-auto mb-8">
+            <p className="text-white/70 text-lg max-w-xl mx-auto">
               Integrated program areas working across ecosystems, communities, and policy to address the world's most pressing environmental challenges.
             </p>
-            <div className="flex items-center justify-center gap-8">
-              {[[programs.length.toString(), "Programs"], ["80+", "Countries"], ["470+", "Projects"]].map(([v, l]) => (
-                <div key={l} className="text-center">
-                  <div className="text-white text-2xl font-black" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{v}</div>
-                  <div className="text-white/60 text-xs">{l}</div>
-                </div>
-              ))}
-            </div>
           </motion.div>
         </div>
       </section>

@@ -396,7 +396,7 @@ function HeroBlock({ heroImage, label, tagline, icon: Icon, breadcrumb }: any) {
   return (
     <section className="relative h-[65vh] min-h-[420px] flex items-end overflow-hidden">
       <div className="absolute inset-0">
-        <img src={heroImage} alt={label} className="w-full h-full object-cover" />
+        <ImageWithFallback src={heroImage} alt={label} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0a1a0e]/90 via-[#0a1a0e]/40 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#0a1a0e]/60 to-transparent" />
       </div>
@@ -684,14 +684,18 @@ export default function ProgramPage() {
   if (pathname === "/events") return <EventsPage />;
   
   // Dynamic lookup for programs added or customized via the admin dashboard
-  const dbProgram = allPrograms?.find(p => p.slug === program);
-  const baseProgram = program && programData[program] ? programData[program] : null;
+  const normalizedParam = program?.toLowerCase().trim();
+  const dbProgram = allPrograms?.find(p => 
+    p.slug?.toLowerCase().trim() === normalizedParam ||
+    p.title?.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-") === normalizedParam
+  );
+  const baseProgram = normalizedParam && programData[normalizedParam] ? programData[normalizedParam] : null;
 
   if (dbProgram) {
     const dynamicData = {
       slug: dbProgram.slug,
       label: dbProgram.title,
-      tagline: `${dbProgram.category} · ${dbProgram.reach || "Global Initiative"}`,
+      tagline: dbProgram.tagline || baseProgram?.tagline || `${dbProgram.category} · ${dbProgram.reach || "Global Initiative"}`,
       description: dbProgram.desc,
       icon: resolveIcon(dbProgram.iconName),
       heroImage: dbProgram.image || baseProgram?.heroImage || "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400",
@@ -699,8 +703,8 @@ export default function ProgramPage() {
         ? dbProgram.stats.filter(s => s.value || s.label)
         : (baseProgram?.stats || [
             { value: dbProgram.reach || "Global", label: "Program Reach" },
-            { value: "470+", label: "Projects Supported" },
-            { value: "80+", label: "Partner Countries" },
+            { value: "Active", label: "Field Operations" },
+            { value: "Science-Led", label: "Action Model" },
             { value: "100%", label: "Impact Verified" },
           ]),
       highlights: dbProgram.highlights && dbProgram.highlights.length > 0 ? dbProgram.highlights : (baseProgram?.highlights || [

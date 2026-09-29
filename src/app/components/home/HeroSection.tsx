@@ -99,6 +99,7 @@ export function HeroSection() {
     "esn_global_representatives_settings",
     defaultGlobalRepsSettings
   );
+  const [countryRepsList] = useFirestoreData<any[]>("esn_country_representatives", []);
   const [slide, setSlide] = useState(0);
 
   const activeReps = repsSettings || defaultGlobalRepsSettings;
@@ -107,9 +108,10 @@ export function HeroSection() {
   ) || { val: "80+", label: "Country Reps" };
   const nationsStat = (activeReps.stats || defaultGlobalRepsSettings.stats).find((s: any) =>
     s.label?.toLowerCase().includes("nation") || s.label?.toLowerCase().includes("countr")
-  ) || { val: "190+", label: "Active Nations" };
-  const repsCount = repsStat.val || "80+";
-  const nationsCount = nationsStat.val || "190+";
+  ) || { val: "80+", label: "Active Nations" };
+  const actualRepsCount = (countryRepsList && countryRepsList.length > 0) ? `${countryRepsList.length}` : null;
+  const repsCount = actualRepsCount || repsStat.val || "80+";
+  const nationsCount = actualRepsCount || (nationsStat.val === "190+" ? "80+" : nationsStat.val) || "80+";
 
   // Interactive click-to-grow plants state
   const [plants, setPlants] = useState<{ id: number; x: number; y: number }[]>([]);

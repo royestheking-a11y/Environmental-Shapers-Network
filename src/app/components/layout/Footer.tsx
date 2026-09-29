@@ -221,7 +221,7 @@ export function Footer() {
               </div>
               <div className="flex items-center gap-3 text-sm text-gray-400">
                 <Mail size={15} className="text-[#4CAF50] shrink-0" />
-                <span>{settings.contactEmail || "info@esnglobal.org"}</span>
+                <span>{settings.contactEmail || "enviro.sn@gmail.com"}</span>
               </div>
               <div className="flex items-center gap-3 text-sm text-gray-400">
                 <Globe size={15} className="text-[#4CAF50] shrink-0" />

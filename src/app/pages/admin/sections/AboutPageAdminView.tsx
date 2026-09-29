@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Plus, Edit3, Trash2, AlertCircle, Save, LayoutTemplate, Users, History, AlignLeft, Image as ImageIcon, Target, Globe2, BarChart3, ArrowRight } from "lucide-react";
+import { Plus, Edit3, Trash2, AlertCircle, Save, LayoutTemplate, Users, History, AlignLeft, Image as ImageIcon, Target, Globe2, BarChart3, ArrowRight, Award } from "lucide-react";
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 import { logAdminActivity } from "../../../../lib/activityLogger";
 import { resolveIcon } from "./ProgramsView";
@@ -41,11 +41,29 @@ export interface AboutTeamMember {
   bio: string;
   img: string;
   tags: string[];
-  category: "Advisor" | "BD" | "Global" | "Founder";
+  category: "Advisor" | "BD" | "Global" | "Founder" | "Board";
   imagePosition?: "top" | "center" | "bottom";
   linkedin?: string;
   email?: string;
 }
+
+export interface AwardItem {
+  id: number;
+  year: string;
+  title: string;
+  org: string;
+  category: string;
+  img: string;
+}
+
+export const initialAwards: AwardItem[] = [
+  { id: 1, year: "2026", title: "UNEP Champions of the Earth", org: "United Nations Environment Programme", category: "Science & Innovation", img: "https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?auto=format&fit=crop&q=80&w=600" },
+  { id: 2, year: "2025", title: "Global Green Award", org: "International Union for Conservation of Nature", category: "Best Environmental NGO", img: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&q=80&w=600" },
+  { id: 3, year: "2025", title: "Earth Defenders Prize", org: "Goldman Environmental Prize", category: "Environmental Defense", img: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=600" },
+  { id: 4, year: "2024", title: "Climate Action Leadership Award", org: "World Resources Institute", category: "Policy & Leadership", img: "https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?auto=format&fit=crop&q=80&w=600" },
+  { id: 5, year: "2024", title: "Innovation for the Planet", org: "World Economic Forum", category: "Technology & Innovation", img: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=600" },
+  { id: 6, year: "2023", title: "Ocean Guardian Award", org: "Ocean Conservancy", category: "Marine Conservation", img: "https://images.unsplash.com/photo-1582967788606-a171c1080cb0?auto=format&fit=crop&q=80&w=600" },
+];
 
 export interface VisionMissionItem {
   id: number;
@@ -149,7 +167,7 @@ export const initialGlobalPresenceData: AboutGlobalPresenceData = {
 
 
 export default function AboutPageAdminView() {
-  const [activeTab, setActiveTab] = useState<"hero" | "story" | "milestones" | "team" | "vision" | "presence">("hero");
+  const [activeTab, setActiveTab] = useState<"hero" | "story" | "milestones" | "team" | "vision" | "presence" | "awards">("hero");
 
   const [heroData, setHeroData] = useFirestoreData<AboutHeroData>("esn_about_hero", initialHeroData);
   const [storyData, setStoryData] = useFirestoreData<AboutStoryData>("esn_about_story", initialStoryData);
@@ -157,6 +175,8 @@ export default function AboutPageAdminView() {
   const [teamMembers, setTeamMembers] = useFirestoreData<AboutTeamMember[]>("esn_about_team", initialTeamMembers);
   const [visionData, setVisionData] = useFirestoreData<AboutVisionMissionData>("esn_about_vision_mission", initialVisionMissionData);
   const [presenceData, setPresenceData] = useFirestoreData<AboutGlobalPresenceData>("esn_about_global_presence", initialGlobalPresenceData);
+  const [awards, setAwards] = useFirestoreData<AwardItem[]>("esn_awards_admin", initialAwards);
+  const [statsData, setStatsData] = useFirestoreData<any[]>("esn_stats_admin", []);
 
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
@@ -175,6 +195,77 @@ export default function AboutPageAdminView() {
   const [showAddTeam, setShowAddTeam] = useState(false);
   const [editingTeamId, setEditingTeamId] = useState<number | null>(null);
   const [teamFormData, setTeamFormData] = useState<Partial<AboutTeamMember>>({ tags: [] });
+
+  // Awards editing state
+  const [showAddAward, setShowAddAward] = useState(false);
+  const [editingAwardId, setEditingAwardId] = useState<number | null>(null);
+  const [awardFormData, setAwardFormData] = useState<Partial<AwardItem>>({
+    year: new Date().getFullYear().toString(),
+    category: "Science & Innovation",
+    img: ""
+  });
+
+  const handleSaveAward = async () => {
+    if (!awardFormData.title || !awardFormData.org) {
+      alert("Please enter both the Award Title and Issuing Organization.");
+      return;
+    }
+    let newAwards: AwardItem[];
+    if (editingAwardId !== null) {
+      newAwards = awards.map(a => a.id === editingAwardId ? { ...a, ...awardFormData } as AwardItem : a);
+    } else {
+      const newId = awards.length > 0 ? Math.max(...awards.map(a => a.id)) + 1 : 1;
+      const newAward: AwardItem = {
+        id: newId,
+        year: awardFormData.year || new Date().getFullYear().toString(),
+        title: awardFormData.title || "",
+        org: awardFormData.org || "",
+        category: awardFormData.category || "Environmental Defense",
+        img: awardFormData.img || "https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600"
+      };
+      newAwards = [newAward, ...awards];
+    }
+    setAwards(newAwards);
+    await saveFirestoreData("esn_awards_admin", newAwards);
+
+    // Sync count to esn_stats_admin
+    if (statsData && statsData.length > 0) {
+      const updatedStats = statsData.map(s => {
+        if (s.label?.toLowerCase().includes("award")) {
+          return { ...s, value: newAwards.length };
+        }
+        return s;
+      });
+      setStatsData(updatedStats);
+      await saveFirestoreData("esn_stats_admin", updatedStats);
+    }
+
+    await logAdminActivity("Updated Awards", "CMS", `Saved award recognition: ${awardFormData.title}`, "info");
+    setShowAddAward(false);
+    setEditingAwardId(null);
+    setAwardFormData({ year: new Date().getFullYear().toString(), category: "Science & Innovation", img: "" });
+    notifySave("International Award saved and published live!");
+  };
+
+  const handleDeleteAward = async (id: number) => {
+    const newAwards = awards.filter(a => a.id !== id);
+    setAwards(newAwards);
+    await saveFirestoreData("esn_awards_admin", newAwards);
+
+    if (statsData && statsData.length > 0) {
+      const updatedStats = statsData.map(s => {
+        if (s.label?.toLowerCase().includes("award")) {
+          return { ...s, value: newAwards.length };
+        }
+        return s;
+      });
+      setStatsData(updatedStats);
+      await saveFirestoreData("esn_stats_admin", updatedStats);
+    }
+
+    await logAdminActivity("Removed Award", "CMS", "Removed an award recognition entry.", "warning");
+    notifySave("Award entry removed.");
+  };
 
   const handleSaveHero = async () => {
     setIsSaving(true);
@@ -262,6 +353,7 @@ export default function AboutPageAdminView() {
     { id: "team", label: "Team & Advisors", icon: Users },
     { id: "vision", label: "Vision & Mission", icon: Target },
     { id: "presence", label: "Global Presence", icon: Globe2 },
+    { id: "awards", label: "Awards & Recognition", icon: Award },
   ];
 
   return (
@@ -493,6 +585,7 @@ export default function AboutPageAdminView() {
                       <label className="text-xs font-bold text-gray-600 mb-1.5 block">Category</label>
                       <select value={teamFormData.category || "Global"} onChange={e => setTeamFormData({ ...teamFormData, category: e.target.value as any })} className="w-full px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]">
                         <option value="Founder">Founder</option>
+                        <option value="Board">Board Member / Governance</option>
                         <option value="BD">Bangladesh Team</option>
                         <option value="Global">Global Team</option>
                         <option value="Advisor">Advisor</option>
@@ -700,6 +793,186 @@ export default function AboutPageAdminView() {
           <button onClick={handleSavePresence} disabled={isSaving} className="mt-4 flex items-center gap-2 bg-[#0B5D3F] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#0a5237] transition-colors disabled:opacity-50">
             <Save size={18} /> {isSaving ? "Saving..." : "Save Global Presence"}
           </button>
+        </div>
+      )}
+
+      {/* AWARDS & RECOGNITION TAB */}
+      {activeTab === "awards" && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between flex-wrap gap-4 bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+            <div>
+              <div className="text-xs font-bold text-[#4CAF50] uppercase tracking-wider mb-1">Live Synchronized</div>
+              <h4 className="font-bold text-gray-900 text-lg">International Awards & Recognitions ({awards.length})</h4>
+              <p className="text-xs text-gray-500">
+                Manage global awards shown on the website (`/awards`). Changes automatically update the "International Awards" counter.
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setEditingAwardId(null);
+                setAwardFormData({
+                  year: new Date().getFullYear().toString(),
+                  category: "Science & Innovation",
+                  title: "",
+                  org: "",
+                  img: "https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600"
+                });
+                setShowAddAward(true);
+              }}
+              className="flex items-center gap-2 px-5 py-2.5 bg-[#0B5D3F] hover:bg-[#0a5237] text-white text-xs font-bold rounded-xl transition-all shadow-sm"
+            >
+              <Plus size={14} /> Add New Award
+            </button>
+          </div>
+
+          {/* Awards Grid */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {awards.map((award) => (
+              <div key={award.id} className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                <div>
+                  <div className="relative h-40 bg-gray-100 overflow-hidden">
+                    <img src={award.img} alt={award.title} className="w-full h-full object-cover" />
+                    <div className="absolute top-3 left-3 bg-[#D6A95A] text-white text-xs font-bold px-2.5 py-1 rounded-full shadow">
+                      {award.year}
+                    </div>
+                  </div>
+                  <div className="p-5">
+                    <span className="text-[11px] font-bold text-[#4CAF50] uppercase tracking-wider block mb-1">
+                      {award.category}
+                    </span>
+                    <h5 className="font-bold text-gray-900 text-base mb-1">{award.title}</h5>
+                    <p className="text-xs text-gray-500 flex items-center gap-1">
+                      <Award size={13} className="text-[#0B5D3F]" /> {award.org}
+                    </p>
+                  </div>
+                </div>
+                <div className="px-5 pb-5 pt-2 border-t border-gray-50 flex items-center justify-between gap-2">
+                  <button
+                    onClick={() => {
+                      setEditingAwardId(award.id);
+                      setAwardFormData({ ...award });
+                      setShowAddAward(true);
+                    }}
+                    className="flex-1 py-1.5 px-3 bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1"
+                  >
+                    <Edit3 size={12} /> Edit
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (window.confirm(`Delete award "${award.title}"?`)) {
+                        handleDeleteAward(award.id);
+                      }
+                    }}
+                    className="py-1.5 px-3 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1"
+                  >
+                    <Trash2 size={12} /> Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Add / Edit Award Modal */}
+          <AnimatePresence>
+            {showAddAward && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-gray-100 shadow-2xl max-h-[90vh] overflow-y-auto"
+                >
+                  <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
+                    <div>
+                      <h4 className="font-bold text-gray-900 text-lg">
+                        {editingAwardId !== null ? "Edit International Award" : "Add International Award"}
+                      </h4>
+                      <p className="text-xs text-gray-400">Award details will sync to the public /awards page.</p>
+                    </div>
+                    <button
+                      onClick={() => setShowAddAward(false)}
+                      className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center font-bold text-sm"
+                    >
+                      &times;
+                    </button>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-bold text-gray-700 mb-1 block">Year *</label>
+                        <input
+                          type="text"
+                          value={awardFormData.year || ""}
+                          onChange={(e) => setAwardFormData({ ...awardFormData, year: e.target.value })}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm font-bold focus:outline-none focus:border-[#4CAF50]"
+                          placeholder="2026"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-gray-700 mb-1 block">Category *</label>
+                        <input
+                          type="text"
+                          value={awardFormData.category || ""}
+                          onChange={(e) => setAwardFormData({ ...awardFormData, category: e.target.value })}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm font-medium focus:outline-none focus:border-[#4CAF50]"
+                          placeholder="Science & Innovation"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-gray-700 mb-1 block">Award Title *</label>
+                      <input
+                        type="text"
+                        value={awardFormData.title || ""}
+                        onChange={(e) => setAwardFormData({ ...awardFormData, title: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm font-bold focus:outline-none focus:border-[#4CAF50]"
+                        placeholder="e.g. UNEP Champions of the Earth"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-gray-700 mb-1 block">Issuing Organization *</label>
+                      <input
+                        type="text"
+                        value={awardFormData.org || ""}
+                        onChange={(e) => setAwardFormData({ ...awardFormData, org: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm font-medium focus:outline-none focus:border-[#4CAF50]"
+                        placeholder="e.g. United Nations Environment Programme"
+                      />
+                    </div>
+
+                    <div>
+                      <ImageUploadField
+                        label="Award Badge / Event Image"
+                        value={awardFormData.img || ""}
+                        onChange={(url) => setAwardFormData({ ...awardFormData, img: url })}
+                        folder="awards_images"
+                        aspectRatio="video"
+                        helpText="Upload an image or paste a photo URL"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-100 mt-6">
+                    <button
+                      onClick={() => setShowAddAward(false)}
+                      className="px-4 py-2 rounded-xl border border-gray-200 text-gray-600 font-bold text-xs hover:bg-gray-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSaveAward}
+                      className="px-5 py-2 rounded-xl bg-[#0B5D3F] hover:bg-[#0a5237] text-white font-bold text-xs flex items-center gap-1.5 shadow"
+                    >
+                      <Save size={13} /> Save Award & Sync Count
+                    </button>
+                  </div>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>
         </div>
       )}
     </div>

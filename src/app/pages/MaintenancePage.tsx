@@ -21,12 +21,12 @@ function FallingLeaf({ delay, x }: { delay: number; x: number }) {
 
 export function MaintenancePage() {
   const settings = useSettings();
-  const contactEmail = (!settings?.contactEmail || settings.contactEmail.includes("esnbd.org") || settings.contactEmail.includes("environmentalshapersnetwork.org"))
-    ? "info@esnglobal.org"
+  const contactEmail = (!settings?.contactEmail || settings.contactEmail.includes("esnbd.org") || settings.contactEmail.includes("environmentalshapersnetwork.org") || settings.contactEmail === "info@esnglobal.org")
+    ? "enviro.sn@gmail.com"
     : settings.contactEmail;
 
   return (
-    <section className="relative min-h-screen overflow-hidden flex items-center justify-center bg-[#0a1a0e]" style={{ cursor: "none" }}>
+    <section className="relative min-h-screen overflow-hidden flex items-center justify-center bg-[#0a1a0e]">
       {/* Full Background Image */}
       <div className="absolute inset-0">
         <img

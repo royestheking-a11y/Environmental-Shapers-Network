@@ -10,7 +10,13 @@ import {
 } from "lucide-react";
 
 import { fetchFirestoreData, saveFirestoreData, useFirestoreData } from "../../lib/useFirestore";
-import { defaultGlobalRepsSettings, defaultRepPillars } from "./admin/sections/GlobalRepsAdminView";
+import {
+  defaultGlobalRepsSettings,
+  defaultRepPillars,
+  getInitialCountryReps,
+  CountryRepItem,
+  getFlagForCountry
+} from "./admin/sections/GlobalRepsAdminView";
 import {
   defaultCampusChaptersSettings,
   defaultCampusChapters,
@@ -97,7 +103,45 @@ function StatCard({ value, label }: { value: string; label: string }) {
   );
 }
 
-// ─── Volunteer Page ────────────────────────────────────────────────────────────
+export interface VolunteerStatItem {
+  val: string;
+  label: string;
+}
+
+export interface VolunteerPageContent {
+  heroTitle: string;
+  heroSub: string;
+  heroImage: string;
+  stats: VolunteerStatItem[];
+  whyBadge: string;
+  whyTitle: string;
+  whyDesc: string;
+  benefitsTitle: string;
+  benefits: string[];
+}
+
+export const defaultVolunteerPageContent: VolunteerPageContent = {
+  heroTitle: "Volunteer With ESN",
+  heroSub: "Give your time, skills, and passion to protect the planet — locally and globally.",
+  heroImage: "https://images.unsplash.com/photo-1593113598332-cd288d649433?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400",
+  stats: [
+    { val: "48K+", label: "Active Volunteers" },
+    { val: "80+", label: "Countries" },
+    { val: "800+", label: "Projects Supported" },
+    { val: "92%", label: "Volunteer Satisfaction" }
+  ],
+  whyBadge: "Why Volunteer",
+  whyTitle: "Make a Real Difference",
+  whyDesc: "ESN volunteers are at the heart of everything we do — from planting trees in Bangladesh to monitoring coral reefs in the Pacific. Your skills and time directly translate into environmental impact.",
+  benefitsTitle: "Volunteer Benefits",
+  benefits: [
+    "Certificate of participation & service hours",
+    "Access to ESN training library (200+ courses)",
+    "Professional network across 80+ countries",
+    "References for academic & career applications",
+    "Invitation to annual ESN Volunteer Summit"
+  ]
+};
 
 function VolunteerPage() {
   const defaultRoles = [
@@ -106,6 +150,12 @@ function VolunteerPage() {
     { id: 3, title: "Social Media Volunteer", location: "Remote", commitment: "4–6 hrs/week", skills: "Content creation, design" },
   ];
   const [roles, setRoles, loadingRoles] = useFirestoreData<any[]>("esn_volunteer_roles", defaultRoles);
+  const [pageContent] = useFirestoreData<VolunteerPageContent>("esn_volunteer_page_content", defaultVolunteerPageContent);
+  const [statsData] = useFirestoreData<any[]>("esn_stats_admin", []);
+  const countriesStat = statsData?.find((s: any) => s.label?.toLowerCase().includes("countr") || s.label?.toLowerCase().includes("partner") || s.label?.toLowerCase().includes("global"));
+  const dynamicCountries = countriesStat ? `${countriesStat.value}${countriesStat.suffix || "+"}` : "80+";
+
+  const content = { ...defaultVolunteerPageContent, ...(pageContent || {}) };
 
   const [selected, setSelected] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", email: "", phone: "", country: "", resumeLink: "", motivation: "", skills: "", availability: "", role: "" });
@@ -132,7 +182,7 @@ function VolunteerPage() {
 
   if (submitted) return (
     <div className="bg-[#F6FBF8] min-h-screen">
-      <PageHero title="Volunteer With ESN" sub="Give your time, skills, and passion to protect the planet." image="https://images.unsplash.com/photo-1593113598332-cd288d649433?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400" icon={Heart} />
+      <PageHero title={content.heroTitle} sub={content.heroSub} image={content.heroImage} icon={Heart} />
       <div className="max-w-6xl mx-auto px-6 py-12">
         <SuccessCard title="Application Received!" sub="Thank you for applying to volunteer with ESN. Our volunteer coordinator will review your application and get back to you within 3–5 business days." onReset={() => { setSubmitted(false); setShowForm(false); setForm({ name: "", email: "", phone: "", country: "", resumeLink: "", motivation: "", skills: "", availability: "", role: "" }); }} />
       </div>
@@ -141,22 +191,26 @@ function VolunteerPage() {
 
   return (
     <div className="bg-[#F6FBF8] min-h-screen">
-      <PageHero title="Volunteer With ESN" sub="Give your time, skills, and passion to protect the planet — locally and globally." image="https://images.unsplash.com/photo-1593113598332-cd288d649433?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400" icon={Heart} />
+      <PageHero title={content.heroTitle} sub={content.heroSub} image={content.heroImage} icon={Heart} />
       <div className="max-w-6xl mx-auto px-6 py-16">
         <Breadcrumb current="Volunteer" />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-12">
-          {[["48K+", "Active Volunteers"], ["190+", "Countries"], ["800+", "Projects Supported"], ["92%", "Volunteer Satisfaction"]].map(([v, l]) => <StatCard key={l} value={v} label={l} />)}
+          {(content.stats || defaultVolunteerPageContent.stats).map((st) => {
+            const isCountry = st.label.toLowerCase().includes("countr");
+            const val = (isCountry && (st.val === "190+" || st.val === "80+")) ? dynamicCountries : st.val;
+            return <StatCard key={st.label} value={val} label={st.label} />;
+          })}
         </div>
 
         <div className="grid md:grid-cols-2 gap-10 mb-12">
           <div>
-            <div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider mb-2">Why Volunteer</div>
-            <h2 className="text-gray-900 mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 2vw, 1.8rem)", fontWeight: 800 }}>Make a Real Difference</h2>
-            <p className="text-gray-600 leading-relaxed mb-5">ESN volunteers are at the heart of everything we do — from planting trees in Bangladesh to monitoring coral reefs in the Pacific. Your skills and time directly translate into environmental impact.</p>
+            <div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider mb-2">{content.whyBadge || "Why Volunteer"}</div>
+            <h2 className="text-gray-900 mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 2vw, 1.8rem)", fontWeight: 800 }}>{content.whyTitle}</h2>
+            <p className="text-gray-600 leading-relaxed mb-5">{content.whyDesc}</p>
           </div>
           <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-            <div className="text-sm font-bold text-gray-800 mb-4">Volunteer Benefits</div>
-            {["Certificate of participation & service hours", "Access to ESN training library (200+ courses)", "Professional network across 80+ countries", "References for academic & career applications", "Invitation to annual ESN Volunteer Summit"].map((b) => (
+            <div className="text-sm font-bold text-gray-800 mb-4">{content.benefitsTitle || "Volunteer Benefits"}</div>
+            {(content.benefits || defaultVolunteerPageContent.benefits).map((b) => (
               <div key={b} className="flex items-start gap-2 mb-3"><CheckCircle2 size={14} className="text-[#4CAF50] shrink-0 mt-0.5" /><span className="text-sm text-gray-600">{b}</span></div>
             ))}
           </div>
@@ -793,7 +847,7 @@ function CareersPage() {
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState("All");
 
-  const depts = ["All", ...Array.from(new Set(jobListings.map((j) => j.dept)))];
+  const depts: string[] = ["All", ...Array.from(new Set((jobListings || []).map((j: any) => String(j.dept || ""))))];
   const filtered = filter === "All" ? jobListings : jobListings.filter((j) => j.dept === filter);
 
   const handleApply = (job: any) => {
@@ -1009,9 +1063,12 @@ function CareersPage() {
 function GlobalRepresentativePage() {
   const [settingsData] = useFirestoreData<any>("esn_global_representatives_settings", defaultGlobalRepsSettings);
   const [pillarsData] = useFirestoreData<any[]>("esn_global_representatives_pillars", defaultRepPillars);
+  const [countryRepsData] = useFirestoreData<CountryRepItem[]>("esn_country_representatives", getInitialCountryReps());
 
   const settings = settingsData || defaultGlobalRepsSettings;
   const pillars = pillarsData && pillarsData.length > 0 ? pillarsData : defaultRepPillars;
+  const countryReps = countryRepsData || getInitialCountryReps();
+  const countryCount = countryReps.length;
 
   const [form, setForm] = useState({
     name: "",
@@ -1063,19 +1120,24 @@ function GlobalRepresentativePage() {
               </span>
             </h1>
             <p className="text-gray-600 text-base sm:text-lg leading-relaxed mb-8">
-              {settings.subtitle ||
-                "Environmental Shapers Network appoints dedicated Country & Regional Representatives across 80+ nations. As an official ESN Representative, you will lead national initiatives, coordinate youth volunteers, and represent your region on global environmental stages."}
+              {settings.subtitle
+                ? settings.subtitle.replace(/\b\d+\+?\s*nations\b/gi, `${countryCount} nations`)
+                : `Environmental Shapers Network appoints dedicated Country & Regional Representatives across ${countryCount} nations. As an official ESN Representative, you will lead national initiatives, coordinate youth volunteers, and represent your region on global environmental stages.`}
             </p>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {(settings.stats || defaultGlobalRepsSettings.stats).map((s: any) => (
-                <div key={s.label} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm text-center">
-                  <div className="text-2xl font-black text-[#0B5D3F]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                    {s.val}
+              {(settings.stats || defaultGlobalRepsSettings.stats).map((s: any) => {
+                const isRepStat = s.label?.toLowerCase().includes("rep") || s.label?.toLowerCase().includes("countr");
+                const displayVal = isRepStat ? `${countryCount}` : s.val;
+                return (
+                  <div key={s.label} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm text-center">
+                    <div className="text-2xl font-black text-[#0B5D3F]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                      {displayVal}
+                    </div>
+                    <div className="text-xs text-gray-500 font-medium mt-1">{s.label}</div>
                   </div>
-                  <div className="text-xs text-gray-500 font-medium mt-1">{s.label}</div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -1129,6 +1191,32 @@ function GlobalRepresentativePage() {
               </div>
               <h3 className="font-bold text-gray-900 mb-2 text-base">{p.title}</h3>
               <p className="text-gray-600 text-xs leading-relaxed flex-1">{p.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Appointed Country Representatives Directory */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-20">
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <div className="inline-flex items-center gap-2 bg-[#E8F5E9] text-[#0B5D3F] text-xs font-bold px-4 py-1.5 rounded-full mb-3 uppercase tracking-wider">
+            <Globe2 size={13} /> Active Footprint
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-black text-[#0A3D2A] mb-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            Official Country Representatives ({countryCount} Nations)
+          </h2>
+          <p className="text-gray-600 text-xs sm:text-sm">
+            Meet our accredited regional and national leaders driving environmental change across {countryCount} countries.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3.5">
+          {countryReps.map((c) => (
+            <div key={c.id} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-xs hover:shadow-md transition-all text-center flex flex-col items-center">
+              <span className="text-3xl mb-2">{c.flag || getFlagForCountry(c.country)}</span>
+              <h4 className="font-bold text-gray-900 text-xs leading-snug line-clamp-1">{c.country}</h4>
+              <span className="text-[10px] text-[#0B5D3F] font-semibold line-clamp-1 mt-0.5">{c.repName || "Official Delegate"}</span>
+              <span className="text-[9px] text-gray-400 line-clamp-1">{c.region || "Global"}</span>
             </div>
           ))}
         </div>

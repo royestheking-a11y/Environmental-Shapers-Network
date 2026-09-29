@@ -1,11 +1,12 @@
 import { Link } from "react-router";
 import { motion } from "motion/react";
 import { ArrowRight, Target, Users, Calendar, Megaphone, Heart } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { getInitialCampaigns, Campaign } from "./admin/sections/CampaignsView";
 import { resolveIcon } from "./admin/sections/ProgramsView";
 import { ImageWithFallback } from "../components/ui/ImageWithFallback";
 import { useFirestoreData } from "../../lib/useFirestore";
+import { getInitialStats, StatItem } from "./admin/sections/StatsAdminView";
 
 function ProgressBar({ goal, raised, color }: { goal: number; raised: number; color: string }) {
   const pct = Math.min(100, Math.round((raised / (goal || 1)) * 100));
@@ -25,10 +26,17 @@ function ProgressBar({ goal, raised, color }: { goal: number; raised: number; co
 
 export default function Campaigns() {
   const [allCampaigns] = useFirestoreData<Campaign[]>("esn_campaigns_admin", getInitialCampaigns());
+  const [statsData] = useFirestoreData<StatItem[]>("esn_stats_admin", getInitialStats());
 
   const active = allCampaigns.filter(c => c.status === "active");
   const completed = allCampaigns.filter(c => c.status === "completed");
   const filteredCampaigns = active;
+
+  const statsList = statsData && statsData.length > 0 ? statsData : getInitialStats();
+  const projectStat = statsList.find(s => s.label.toLowerCase().includes("project"));
+  const countriesStat = statsList.find(s => s.label.toLowerCase().includes("country") || s.label.toLowerCase().includes("countries reached") || s.label.toLowerCase().includes("partner"));
+  const projectCount = projectStat ? `${projectStat.value}${projectStat.suffix || "+"}` : "470+";
+  const countriesCount = countriesStat ? `${countriesStat.value}${countriesStat.suffix || "+"}` : "80+";
 
   return (
     <div className="bg-[#F6FBF8] min-h-screen">
@@ -49,7 +57,12 @@ export default function Campaigns() {
               Every campaign is a targeted effort to solve a specific environmental crisis. Your contribution directly funds on-the-ground action.
             </p>
             <div className="flex items-center justify-center gap-10 flex-wrap">
-              {[["140K+", "Campaign Supporters"], ["470+", "Active Projects"], ["80+", "Countries Active"], ["1B+", "Lives Impacted"]].map(([v, l]) => (
+              {[
+                ["140K+", "Campaign Supporters"],
+                [projectCount, "Active Projects"],
+                [countriesCount, "Countries Active"],
+                ["1B+", "Lives Impacted"]
+              ].map(([v, l]) => (
                 <div key={l} className="text-center">
                   <div className="text-white text-2xl font-black" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{v}</div>
                   <div className="text-white/60 text-xs">{l}</div>

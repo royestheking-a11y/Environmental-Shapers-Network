@@ -10,6 +10,10 @@ import { useFirestoreData } from "../../lib/useFirestore";
 
 export default function Projects() {
   const [allProjects] = useFirestoreData<Project[]>("esn_projects_admin", getInitialProjects());
+  const [statsData] = useFirestoreData<any[]>("esn_stats_admin", []);
+  const projectStat = statsData?.find((s: any) => s.label?.toLowerCase().includes("project"));
+  const projectCount = projectStat ? `${projectStat.value}${projectStat.suffix || "+"}` : (allProjects?.length ? `${allProjects.length}+` : "470+");
+
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [status, setStatus] = useState("All");
@@ -31,7 +35,7 @@ export default function Projects() {
               <MapPin size={14} />
               Our Projects
             </div>
-            <h1 className="text-white mb-4">470+ Projects Worldwide</h1>
+            <h1 className="text-white mb-4">{projectCount} Projects Worldwide</h1>
             <p className="text-white/70 text-lg max-w-xl mx-auto">
               From forest restoration to marine conservation — explore our global portfolio of environmental impact projects.
             </p>

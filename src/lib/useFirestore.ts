@@ -10,6 +10,7 @@ function sanitizeData<T>(val: T): T {
       str.includes("esnbd.org") ||
       str.includes("environmentalshapersnetwork.org") ||
       str.includes("contact@environmentalnetwork.org") ||
+      str.includes("info@esnglobal.org") ||
       str.includes("privacy@esn.org") ||
       str.includes("legal@esn.org") ||
       str.includes("accessibility@esn.org")
@@ -17,7 +18,8 @@ function sanitizeData<T>(val: T): T {
       const updated = str
         .replace(/esnbd\.org/g, "esnglobal.org")
         .replace(/@environmentalshapersnetwork\.org/g, "@esnglobal.org")
-        .replace(/contact@environmentalnetwork\.org/g, "info@esnglobal.org")
+        .replace(/contact@environmentalnetwork\.org/g, "enviro.sn@gmail.com")
+        .replace(/info@esnglobal\.org/g, "enviro.sn@gmail.com")
         .replace(/privacy@esn\.org/g, "privacy@esnglobal.org")
         .replace(/legal@esn\.org/g, "legal@esnglobal.org")
         .replace(/accessibility@esn\.org/g, "accessibility@esnglobal.org");
@@ -64,6 +66,10 @@ const KEY_ALIASES: Record<string, string> = {
   esn_who_we_are_admin: "esn_whoweare_admin",
   esn_youth_stats: "esn_youth_stats_admin",
   esn_youth_stats_admin: "esn_youth_stats",
+  esn_programs: "esn_programs_admin",
+  esn_programs_admin: "esn_programs",
+  esn_awards_admin: "esn_awards",
+  esn_awards: "esn_awards_admin",
 };
 
 export const ESN_FIRESTORE_COLLECTIONS = [
@@ -116,8 +122,10 @@ export const ESN_FIRESTORE_COLLECTIONS = [
   "esn_campus_chapters_list",
   "esn_global_representatives_settings",
   "esn_global_representatives_pillars",
+  "esn_country_representatives",
   "esn_knowledge_hub_settings",
   "esn_knowledge_hub_resources",
+  "esn_awards_admin",
   "esn_backups"
 ];
 
@@ -126,7 +134,21 @@ function setLocalCache<T>(key: string, value: T): void {
   try {
     const cleanValue = sanitizeData(value);
     memoryCache.set(key, cleanValue);
-    localStorage.setItem(`esn_cache_${key}`, JSON.stringify(cleanValue));
+    try {
+      localStorage.setItem(`esn_cache_${key}`, JSON.stringify(cleanValue));
+    } catch (quotaError: any) {
+      // If localStorage is full, evict non-critical temporary keys
+      if (quotaError.name === "QuotaExceededError") {
+        console.warn(`[LocalCache] Quota exceeded on key "${key}". Evicting non-essential cache...`);
+        const keysToClear = Object.keys(localStorage).filter(k => k.includes("_backup") || k.includes("_logs"));
+        keysToClear.forEach(k => localStorage.removeItem(k));
+        try {
+          localStorage.setItem(`esn_cache_${key}`, JSON.stringify(cleanValue));
+        } catch {
+          // If still full, it remains accessible in memoryCache
+        }
+      }
+    }
     broadcastUpdate(key, cleanValue);
   } catch (e) {
     console.error("LocalCache write error for", key, e);
@@ -239,15 +261,13 @@ export function useFirestoreData<T>(key: string, defaultValue: T): [T, (val: T |
 
   const saveData = async (newDataOrFn: T | ((prev: T) => T)): Promise<boolean> => {
     let cleanResolved: T;
-    setData((prev) => {
-      const resolved = typeof newDataOrFn === "function" ? (newDataOrFn as (prev: T) => T)(prev) : newDataOrFn;
-      cleanResolved = sanitizeData(resolved);
-      return cleanResolved;
-    });
-    if (cleanResolved! !== undefined) {
-      return await saveFirestoreData(key, cleanResolved!);
+    if (typeof newDataOrFn === "function") {
+      cleanResolved = sanitizeData((newDataOrFn as (prev: T) => T)(data));
+    } else {
+      cleanResolved = sanitizeData(newDataOrFn);
     }
-    return false;
+    setData(cleanResolved);
+    return await saveFirestoreData(key, cleanResolved);
   };
 
   return [data, saveData, loading];
@@ -289,6 +309,15 @@ export async function fetchFirestoreData<T>(key: string, defaultValue: T): Promi
 export async function saveFirestoreData<T>(key: string, newData: T): Promise<boolean> {
   const cleanData = sanitizeData(newData);
   setLocalCache(key, cleanData);
+
+  // Safety guard against Firestore 1MB document limit
+  try {
+    const serialized = JSON.stringify(cleanData);
+    if (serialized && serialized.length > 950000) {
+      console.warn(`[Firestore Warning] Key "${key}" document size is ${(serialized.length / 1024).toFixed(0)}KB. Approaching the 1024KB Firestore limit.`);
+    }
+  } catch {}
+
   try {
     const docRef = doc(db, "site_data", key);
     await setDoc(docRef, { value: cleanData }, { merge: true });
@@ -303,7 +332,7 @@ export async function saveFirestoreData<T>(key: string, newData: T): Promise<boo
 
     return true;
   } catch (e: any) {
-    console.warn(`[Firestore] Cloud sync error for key "${key}":`, e?.message || e);
+    console.error(`[Firestore Error] Cloud sync failed for key "${key}":`, e?.code || e?.message || e);
     if (e?.code === "permission-denied" && typeof window !== "undefined") {
       window.dispatchEvent(
         new CustomEvent("esn_firestore_permission_denied", {

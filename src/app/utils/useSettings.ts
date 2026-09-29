@@ -4,7 +4,7 @@ import { fetchFirestoreData, useFirestoreData } from "../../lib/useFirestore";
 const defaultSettings = {
   siteName: "Environmental Shapers Network",
   tagline: "Shaping Minds, Protecting Earth",
-  contactEmail: "info@esnglobal.org",
+  contactEmail: "enviro.sn@gmail.com",
   officeLocation: "Dhaka, Bangladesh & California, United States of America",
   timezone: "Asia/Dhaka",
   language: "English",
@@ -19,8 +19,8 @@ const defaultSettings = {
 
 function normalizeSettings(s: any) {
   if (!s) return defaultSettings;
-  const contactEmail = (!s.contactEmail || s.contactEmail.includes("esnbd.org") || s.contactEmail.includes("environmentalshapersnetwork.org"))
-    ? "info@esnglobal.org"
+  const contactEmail = (!s.contactEmail || s.contactEmail.includes("esnbd.org") || s.contactEmail.includes("environmentalshapersnetwork.org") || s.contactEmail === "info@esnglobal.org")
+    ? "enviro.sn@gmail.com"
     : s.contactEmail;
   const officeLocation = !s.officeLocation || s.officeLocation.includes("Global Offices in 12 Countries")
     ? (s.officeLocation ? s.officeLocation : "Dhaka, Bangladesh & California, United States of America")

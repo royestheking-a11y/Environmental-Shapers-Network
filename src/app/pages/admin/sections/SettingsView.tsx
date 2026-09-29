@@ -11,7 +11,7 @@ function getSavedSettings() {
   return {
     siteName: "Environmental Shapers Network",
     tagline: "Shaping Minds, Protecting Earth",
-    contactEmail: "info@esnglobal.org",
+    contactEmail: "enviro.sn@gmail.com",
     officeLocation: "Dhaka, Bangladesh & California, United States of America",
     timezone: "Asia/Dhaka",
     language: "English",
