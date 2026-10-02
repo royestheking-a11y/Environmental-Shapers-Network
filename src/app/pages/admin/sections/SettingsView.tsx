@@ -314,7 +314,21 @@ export function SettingsView() {
                 <Field label="Organization Name" k="siteName" />
                 <Field label="Platform Tagline" k="tagline" />
                 <Field label="Official Contact Email" k="contactEmail" type="email" />
-                <Field label="Global Offices / Location (Footer)" k="officeLocation" placeholder="Dhaka, Bangladesh & California, United States of America" />
+                <div>
+                  <label className="text-xs font-bold text-gray-600 mb-1.5 block">
+                    Global Offices / Location (Footer)
+                    <span className="ml-2 text-[10px] font-medium text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200 normal-case tracking-normal">
+                      Editable · Shows in site footer
+                    </span>
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={(settings as any)["officeLocation"] || ""}
+                    onChange={(e) => update("officeLocation", e.target.value)}
+                    placeholder="Dhaka, Bangladesh & California, United States of America"
+                    className="w-full px-4 py-3 rounded-xl bg-white border-2 border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] transition-colors resize-none text-gray-800"
+                  />
+                </div>
                 <div>
                   <label className="text-xs font-bold text-gray-600 mb-1.5 block">Default Timezone</label>
                   <select

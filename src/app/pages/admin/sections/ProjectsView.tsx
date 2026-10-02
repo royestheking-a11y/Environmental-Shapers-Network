@@ -553,8 +553,8 @@ export function ProjectsView() {
       {/* Create/Edit Form Modal */}
       <AnimatePresence>
         {showForm && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} className="bg-white rounded-3xl p-8 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center p-4 overflow-y-auto">
+            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} className="bg-white rounded-3xl p-8 max-w-2xl w-full shadow-2xl my-8" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-6">
                 <h4 className="font-black text-gray-900" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{editId ? "Edit Project" : "Add New Project"}</h4>
                 <button onClick={() => setShowForm(false)} className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center hover:bg-gray-200"><X size={16} /></button>
@@ -860,28 +860,55 @@ export function ProjectsView() {
                     )}
                   </div>
 
-                  {/* Add new photo input */}
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={newGalleryInput}
-                      onChange={(e) => setNewGalleryInput(e.target.value)}
-                      placeholder="Paste image URL (e.g. https://images.unsplash.com/... or /meeting time.jpeg)"
-                      className="flex-1 px-3 py-2 rounded-xl bg-[#F6FBF8] border border-gray-200 text-xs text-gray-800 focus:outline-none focus:border-[#4CAF50]"
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
+                  {/* Add new photo - URL input + direct upload */}
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={newGalleryInput}
+                        onChange={(e) => setNewGalleryInput(e.target.value)}
+                        placeholder="Paste image URL (e.g. https://images.unsplash.com/... or /meeting time.jpeg)"
+                        className="flex-1 px-3 py-2.5 rounded-xl bg-white border-2 border-gray-200 text-xs text-gray-800 focus:outline-none focus:border-[#4CAF50] transition-colors"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            if (newGalleryInput.trim()) {
+                              handleAddGalleryImg(newGalleryInput);
+                            }
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={(e) => {
                           e.preventDefault();
-                          handleAddGalleryImg(newGalleryInput);
-                        }
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleAddGalleryImg(newGalleryInput)}
-                      className="px-4 py-2 bg-[#0B5D3F] text-white text-xs font-bold rounded-xl hover:bg-[#0a5237] transition-all flex items-center gap-1 shrink-0"
-                    >
-                      <Plus size={14} /> Add Photo
-                    </button>
+                          e.stopPropagation();
+                          const urlToAdd = newGalleryInput.trim();
+                          if (!urlToAdd) return;
+                          const currentGallery = form.galleryImgs || [];
+                          setForm((prev: any) => ({ ...prev, galleryImgs: [...currentGallery, urlToAdd] }));
+                          setNewGalleryInput("");
+                        }}
+                        className="px-4 py-2.5 bg-[#0B5D3F] text-white text-xs font-bold rounded-xl hover:bg-[#0a5237] transition-all flex items-center gap-1.5 shrink-0 shadow-sm"
+                      >
+                        <Plus size={14} /> Add Photo
+                      </button>
+                    </div>
+                    <div className="pt-1">
+                      <ImageUploadField
+                        label=""
+                        value=""
+                        onChange={(url) => {
+                          if (url) {
+                            const currentGallery = form.galleryImgs || [];
+                            setForm((prev: any) => ({ ...prev, galleryImgs: [...currentGallery, url] }));
+                          }
+                        }}
+                        folder="projects"
+                        helpText="Or upload a photo directly (PNG, JPG, WebP) — it will be added to the gallery above"
+                        aspectRatio="video"
+                      />
+                    </div>
                   </div>
                 </div>
 

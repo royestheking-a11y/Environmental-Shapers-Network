@@ -79,9 +79,9 @@ export default function About() {
   const calculatedCO2 = Math.round(treeCount * 0.0625);
 
   const countriesStat = statsList.find(s =>
-    s.label.toLowerCase().includes("countries reached") ||
-    s.label.toLowerCase().includes("country") ||
-    s.label.toLowerCase().includes("partner")
+    s.label.toLowerCase().includes("countr") ||
+    s.label.toLowerCase().includes("nation") ||
+    s.iconName === "Globe2"
   );
   const communitiesStat = statsList.find(s =>
     s.label.toLowerCase().includes("communit") ||

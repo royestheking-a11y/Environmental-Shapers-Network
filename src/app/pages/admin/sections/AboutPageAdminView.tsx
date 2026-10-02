@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Plus, Edit3, Trash2, AlertCircle, Save, LayoutTemplate, Users, History, AlignLeft, Image as ImageIcon, Target, Globe2, BarChart3, ArrowRight, Award } from "lucide-react";
+import { Plus, Edit3, Trash2, AlertCircle, Save, LayoutTemplate, Users, History, AlignLeft, Image as ImageIcon, Target, Globe2, BarChart3, ArrowRight, Award, TreePine, Calendar, ExternalLink, Link2 } from "lucide-react";
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 import { logAdminActivity } from "../../../../lib/activityLogger";
 import { resolveIcon } from "./ProgramsView";
 import { ImageUploadField } from "../../../components/ui/ImageUploadField";
+import { getInitialStats } from "./StatsAdminView";
 
 // Types
 export interface AboutHeroData {
@@ -402,6 +403,102 @@ export default function AboutPageAdminView() {
 
       {activeTab === "hero" && (
         <div className="bg-white rounded-2xl p-6 border border-gray-100">
+
+          {/* Live Impact Stats Preview — exactly what shows in the 4 hero stat cards */}
+          {(() => {
+            const liveStat = statsData && statsData.length > 0 ? statsData : getInitialStats();
+            function fmt(n: number) {
+              if (n >= 1000000) return (n / 1000000).toFixed(1) + "M";
+              if (n >= 1000) return (n / 1000).toFixed(0) + "K";
+              return n.toLocaleString();
+            }
+            const treeStat = liveStat.find((s: any) => s.label?.toLowerCase().includes("tree") || s.iconName === "TreePine");
+            const countriesStat = liveStat.find((s: any) => s.label?.toLowerCase().includes("countr") || s.label?.toLowerCase().includes("nation") || s.iconName === "Globe2");
+            const communitiesStat = liveStat.find((s: any) => s.label?.toLowerCase().includes("communit") || s.label?.toLowerCase().includes("chapter"));
+            const currentYear = new Date().getFullYear();
+            const yearsNum = Math.max(currentYear - 2019, 7);
+
+            const cards = [
+              {
+                icon: Globe2,
+                value: countriesStat ? `${fmt(countriesStat.value)}${countriesStat.suffix ?? "+"}` : "80+",
+                label: countriesStat?.label || "Countries Active",
+                color: "#0B5D3F",
+                connected: !!countriesStat,
+              },
+              {
+                icon: TreePine,
+                value: treeStat ? `${fmt(treeStat.value)}${treeStat.suffix ?? "+"}` : "2.4M+",
+                label: treeStat?.label || "Trees Planted",
+                color: "#4CAF50",
+                connected: !!treeStat,
+              },
+              {
+                icon: Users,
+                value: communitiesStat ? `${fmt(communitiesStat.value)}${communitiesStat.suffix ?? "+"}` : "12K+",
+                label: communitiesStat?.label || "Communities Reached",
+                color: "#173B63",
+                connected: !!communitiesStat,
+              },
+              {
+                icon: Calendar,
+                value: `${yearsNum} Yrs`,
+                label: "Of Impact",
+                color: "#D6A95A",
+                connected: true,
+              },
+            ];
+
+            return (
+              <div className="mb-6 bg-gradient-to-br from-[#F0FDF4] to-[#EFF6FF] border border-[#4CAF50]/25 rounded-2xl p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-[#0B5D3F] flex items-center justify-center">
+                        <BarChart3 size={14} className="text-[#81C784]" />
+                      </div>
+                      <span className="text-sm font-bold text-[#0B5D3F]">About Hero — Live Stat Cards Preview</span>
+                      <span className="text-[10px] font-bold text-white bg-[#4CAF50] px-2 py-0.5 rounded-full">Auto-Synced</span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1 ml-9">These 4 cards on the public About page pull directly from <strong>Impact Stats</strong>. Change values there to update here.</p>
+                  </div>
+                  <a
+                    href="/admin/stats"
+                    className="flex items-center gap-1.5 text-xs font-bold text-[#0B5D3F] bg-white border border-[#4CAF50]/40 px-3 py-2 rounded-xl hover:bg-[#0B5D3F] hover:text-white transition-all shrink-0"
+                  >
+                    Edit Impact Stats <ExternalLink size={12} />
+                  </a>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {cards.map((card, i) => {
+                    const Icon = card.icon;
+                    return (
+                      <div key={i} className="bg-white rounded-xl p-4 border border-gray-100 text-center shadow-sm">
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center mx-auto mb-2" style={{ backgroundColor: card.color + "18" }}>
+                          <Icon size={18} style={{ color: card.color }} />
+                        </div>
+                        <div className="text-xl font-black text-gray-900 mb-0.5" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                          {card.value}
+                        </div>
+                        <div className="text-[11px] text-gray-500 font-medium">{card.label}</div>
+                        <div className={`mt-1.5 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full inline-block ${
+                          card.connected
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                            : "bg-amber-50 text-amber-700 border border-amber-200"
+                        }`}>
+                          {i === 3 ? "Auto-calculated" : card.connected ? "Connected" : "Using fallback"}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="text-[11px] text-gray-400 mt-3 text-center">
+                  ✦ To change these numbers, go to <a href="/admin/stats" className="text-[#0B5D3F] font-semibold underline">Admin → Impact Stats</a> and edit the values there.
+                </p>
+              </div>
+            );
+          })()}
+
           <div className="grid gap-4 mb-6">
             <div>
               <label className="text-xs font-bold text-gray-600 mb-1.5 block">Title Part 1</label>
