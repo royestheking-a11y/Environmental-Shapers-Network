@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   TreePine, Plus, Search, MapPin, Globe2, Users, TrendingUp,
   Edit3, Trash2, X, AlertTriangle, Download, CheckCircle2,
-  Clock, PauseCircle, Filter, Calendar, Image as ImageIcon
+  Clock, PauseCircle, Filter, Calendar, Image as ImageIcon, Link2, Megaphone
 } from "lucide-react";
 import { ImageUploadField } from "../../../components/ui/ImageUploadField";
 
@@ -51,11 +51,16 @@ export interface Project {
   partners?: string[];
   galleryImgs?: string[];
   timeline?: ProjectTimelineItem[];
+  // Event & Campaign cross-links:
+  linkedEventIds?: number[];
+  linkedCampaignIds?: number[];
 }
 
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 import { logAdminActivity } from "../../../../lib/activityLogger";
-import { DEFAULT_PROGRAM_INITIATIVES } from "./ProgramsView";
+import { DEFAULT_PROGRAM_INITIATIVES, DEFAULT_PROGRAM_STATS, ProgramData } from "./ProgramsView";
+import type { ESNEvent } from "./EventsView";
+import type { Campaign } from "./CampaignsView";
 
 export const PROGRAM_OPTIONS = [
   { slug: "forest-restoration", label: "Forest Restoration" },
@@ -257,10 +262,12 @@ const blankProject: Omit<Project, "id"> = {
   img: "", theme: "SDG 15", impact: "", volunteers: 0, color: "#0B5D3F",
   year: new Date().getFullYear(),
   tagline: "", challenge: "", sdgs: "SDG 13, SDG 15",
-  programSlug: "forest-restoration", initiativeTitle: "Amazon Revival",
+  programSlug: "forest-restoration", initiativeTitle: "",
   impactTrees: 0, impactCO2: 0, impactCommunities: 0, impactBeneficiaries: 0,
-  partners: ["ESN International", "Local Community Network"],
+  partners: [],
   galleryImgs: [],
+  linkedEventIds: [],
+  linkedCampaignIds: [],
   timeline: [
     { year: `${new Date().getFullYear()}`, event: "Project initiation and community baseline assessments" },
     { year: `${new Date().getFullYear() + 1}`, event: "Field rollout and stakeholder mobilization" },
@@ -294,7 +301,10 @@ function downloadCSV(projects: Project[]) {
 
 export function ProjectsView() {
   const [projects, setProjects, loading] = useFirestoreData<Project[]>("esn_projects_admin", getInitialProjects());
-  
+  const [allEvents] = useFirestoreData<ESNEvent[]>("esn_events", []);
+  const [allCampaigns] = useFirestoreData<Campaign[]>("esn_campaigns_admin", []);
+  const galleryUploadRef = useRef<HTMLInputElement>(null);
+  const [galleryUploading, setGalleryUploading] = useState(false);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<"All" | ProjectStatus>("All");
   const [showForm, setShowForm] = useState(false);
@@ -457,6 +467,22 @@ export function ProjectsView() {
       ...form,
       galleryImgs: (form.galleryImgs || []).filter((_, idx) => idx !== indexToRemove)
     });
+  };
+
+  const toggleLinkedEvent = (eventId: number) => {
+    const current = form.linkedEventIds || [];
+    const updated = current.includes(eventId)
+      ? current.filter((id: number) => id !== eventId)
+      : [...current, eventId];
+    setForm({ ...form, linkedEventIds: updated });
+  };
+
+  const toggleLinkedCampaign = (campaignId: number) => {
+    const current = form.linkedCampaignIds || [];
+    const updated = current.includes(campaignId)
+      ? current.filter((id: number) => id !== campaignId)
+      : [...current, campaignId];
+    setForm({ ...form, linkedCampaignIds: updated });
   };
 
   const handleAddTimelineMilestone = () => {
@@ -656,19 +682,24 @@ export function ProjectsView() {
                     </div>
                     <div>
                       <label className="text-[11px] font-bold text-gray-700 block mb-1">Linked Program Initiative</label>
-                      <input
-                        type="text"
-                        list="initiative-options"
+                      <select
                         value={form.initiativeTitle || ""}
                         onChange={(e) => setForm({ ...form, initiativeTitle: e.target.value })}
-                        placeholder="Select or enter initiative track..."
-                        className="w-full px-3 py-2 rounded-xl bg-white border border-emerald-300 text-xs font-medium text-gray-800 focus:outline-none"
-                      />
-                      <datalist id="initiative-options">
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-emerald-300 text-xs font-medium text-gray-800 focus:outline-none focus:border-[#4CAF50]"
+                      >
+                        <option value="">— None / Custom —</option>
                         {currentProgramInitiatives.map((init) => (
-                          <option key={init.title} value={init.title} />
+                          <option key={init.title} value={init.title}>{init.title}</option>
                         ))}
-                      </datalist>
+                      </select>
+                      {form.initiativeTitle === "" && (
+                        <input
+                          type="text"
+                          placeholder="Or type a custom initiative name..."
+                          className="mt-1.5 w-full px-3 py-2 rounded-xl bg-white border border-emerald-200 text-xs text-gray-700 focus:outline-none focus:border-[#4CAF50]"
+                          onBlur={(e) => { if (e.target.value.trim()) setForm({ ...form, initiativeTitle: e.target.value.trim() }); }}
+                        />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -860,20 +891,22 @@ export function ProjectsView() {
                     )}
                   </div>
 
-                  {/* Add new photo - URL input + direct upload */}
-                  <div className="space-y-2">
+                  {/* Add new photo - URL input + upload button */}
+                  <div className="space-y-2 mt-1">
                     <div className="flex gap-2">
                       <input
                         type="text"
                         value={newGalleryInput}
                         onChange={(e) => setNewGalleryInput(e.target.value)}
-                        placeholder="Paste image URL (e.g. https://images.unsplash.com/... or /meeting time.jpeg)"
+                        placeholder="Paste image URL (https://... or /local-image.jpeg)"
                         className="flex-1 px-3 py-2.5 rounded-xl bg-white border-2 border-gray-200 text-xs text-gray-800 focus:outline-none focus:border-[#4CAF50] transition-colors"
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
                             e.preventDefault();
-                            if (newGalleryInput.trim()) {
-                              handleAddGalleryImg(newGalleryInput);
+                            const u = newGalleryInput.trim();
+                            if (u) {
+                              setForm((prev: any) => ({ ...prev, galleryImgs: [...(prev.galleryImgs || []), u] }));
+                              setNewGalleryInput("");
                             }
                           }
                         }}
@@ -883,32 +916,134 @@ export function ProjectsView() {
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          const urlToAdd = newGalleryInput.trim();
-                          if (!urlToAdd) return;
-                          const currentGallery = form.galleryImgs || [];
-                          setForm((prev: any) => ({ ...prev, galleryImgs: [...currentGallery, urlToAdd] }));
+                          const u = newGalleryInput.trim();
+                          if (!u) return;
+                          setForm((prev: any) => ({ ...prev, galleryImgs: [...(prev.galleryImgs || []), u] }));
                           setNewGalleryInput("");
                         }}
-                        className="px-4 py-2.5 bg-[#0B5D3F] text-white text-xs font-bold rounded-xl hover:bg-[#0a5237] transition-all flex items-center gap-1.5 shrink-0 shadow-sm"
+                        className="px-4 py-2.5 bg-[#0B5D3F] text-white text-xs font-bold rounded-xl hover:bg-[#0a5237] transition-all flex items-center gap-1.5 shrink-0"
                       >
-                        <Plus size={14} /> Add Photo
+                        <Plus size={14} /> Add URL
                       </button>
                     </div>
-                    <div className="pt-1">
-                      <ImageUploadField
-                        label=""
-                        value=""
-                        onChange={(url) => {
-                          if (url) {
-                            const currentGallery = form.galleryImgs || [];
-                            setForm((prev: any) => ({ ...prev, galleryImgs: [...currentGallery, url] }));
+                    {/* Direct file upload button */}
+                    <div>
+                      <input
+                        ref={galleryUploadRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setGalleryUploading(true);
+                          try {
+                            const { uploadMediaFile } = await import("../../../../lib/storageService");
+                            const result = await uploadMediaFile(file, "projects");
+                            if (result?.url) {
+                              setForm((prev: any) => ({ ...prev, galleryImgs: [...(prev.galleryImgs || []), result.url] }));
+                            }
+                          } catch (err) {
+                            console.error("Gallery upload failed:", err);
+                          } finally {
+                            setGalleryUploading(false);
+                            if (galleryUploadRef.current) galleryUploadRef.current.value = "";
                           }
                         }}
-                        folder="projects"
-                        helpText="Or upload a photo directly (PNG, JPG, WebP) — it will be added to the gallery above"
-                        aspectRatio="video"
                       />
+                      <button
+                        type="button"
+                        onClick={() => galleryUploadRef.current?.click()}
+                        disabled={galleryUploading}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-[#0B5D3F]/30 hover:border-[#0B5D3F] bg-[#F0FDF4] hover:bg-[#E8F5E9] text-[#0B5D3F] text-xs font-semibold transition-all disabled:opacity-60"
+                      >
+                        {galleryUploading ? (
+                          <><span className="w-3.5 h-3.5 border-2 border-[#0B5D3F]/30 border-t-[#0B5D3F] rounded-full animate-spin" /> Uploading...</>
+                        ) : (
+                          <><ImageIcon size={14} /> Upload Photo from Device (PNG, JPG, WebP)</>
+                        )}
+                      </button>
                     </div>
+                  </div>
+                </div>
+
+                {/* ── Event & Campaign Linking ─────────────────────────────── */}
+                <div className="sm:col-span-2 pt-4 border-t border-gray-100">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Link2 size={14} className="text-[#173B63]" />
+                    <label className="text-xs font-bold text-gray-800 uppercase tracking-wider">Link to Events & Campaigns</label>
+                    <span className="text-[10px] text-gray-400 normal-case tracking-normal font-normal">— connects this project to existing events and campaigns</span>
+                  </div>
+
+                  {/* Events */}
+                  <div className="mb-3">
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <Calendar size={12} className="text-[#0B5D3F]" />
+                      <span className="text-[11px] font-bold text-[#0B5D3F] uppercase tracking-wider">Linked Events</span>
+                      {(form.linkedEventIds || []).length > 0 && (
+                        <span className="text-[10px] bg-[#0B5D3F] text-white font-bold px-1.5 py-0.5 rounded-full">{(form.linkedEventIds || []).length}</span>
+                      )}
+                    </div>
+                    {allEvents && allEvents.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {allEvents.map((ev) => {
+                          const linked = (form.linkedEventIds || []).includes(ev.id);
+                          return (
+                            <button
+                              key={ev.id}
+                              type="button"
+                              onClick={() => toggleLinkedEvent(ev.id)}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold border transition-all ${
+                                linked
+                                  ? "bg-[#0B5D3F] text-white border-[#0B5D3F] shadow-sm"
+                                  : "bg-white text-gray-600 border-gray-200 hover:border-[#0B5D3F] hover:text-[#0B5D3F]"
+                              }`}
+                            >
+                              {linked && <CheckCircle2 size={11} />}
+                              {ev.title}
+                              {ev.date && <span className="opacity-60 font-normal">· {ev.date}</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-400 italic">No events found. Add events in the Events section first.</p>
+                    )}
+                  </div>
+
+                  {/* Campaigns */}
+                  <div>
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <Megaphone size={12} className="text-[#D6A95A]" />
+                      <span className="text-[11px] font-bold text-[#D6A95A] uppercase tracking-wider">Linked Campaigns</span>
+                      {(form.linkedCampaignIds || []).length > 0 && (
+                        <span className="text-[10px] bg-[#D6A95A] text-white font-bold px-1.5 py-0.5 rounded-full">{(form.linkedCampaignIds || []).length}</span>
+                      )}
+                    </div>
+                    {allCampaigns && allCampaigns.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {allCampaigns.map((camp) => {
+                          const linked = (form.linkedCampaignIds || []).includes(camp.id);
+                          return (
+                            <button
+                              key={camp.id}
+                              type="button"
+                              onClick={() => toggleLinkedCampaign(camp.id)}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold border transition-all ${
+                                linked
+                                  ? "bg-[#D6A95A] text-white border-[#D6A95A] shadow-sm"
+                                  : "bg-white text-gray-600 border-gray-200 hover:border-[#D6A95A] hover:text-[#D6A95A]"
+                              }`}
+                            >
+                              {linked && <CheckCircle2 size={11} />}
+                              {camp.title}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-400 italic">No campaigns found. Add campaigns in the Campaigns section first.</p>
+                    )}
                   </div>
                 </div>
 
