@@ -25,9 +25,11 @@ export interface Campaign {
   lead: string;
   image: string;
   color: string;
-  // Connected Project:
+  // Connected Project & Event:
   projectId?: number;
   projectName?: string;
+  eventId?: number;
+  eventName?: string;
   // Interconnection & Impact Dashboard Insights:
   programSlug?: string;
   initiativeTitle?: string;
@@ -41,6 +43,7 @@ import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestor
 import { logAdminActivity } from "../../../../lib/activityLogger";
 import { DEFAULT_PROGRAM_INITIATIVES } from "./ProgramsView";
 import { PROGRAM_OPTIONS, getInitialProjects, Project } from "./ProjectsView";
+import { getInitialEvents, ESNEvent } from "./EventsView";
 
 export function getInitialCampaigns(): Campaign[] {
   return [
@@ -48,7 +51,7 @@ export function getInitialCampaigns(): Campaign[] {
       id: 1, title: "Plant A Million Trees", category: "Forest Restoration", status: "active", volunteers: 4200,
       startDate: "Jan 1, 2026", endDate: "Dec 31, 2026", description: "Restoring degraded lands through community-driven tree planting.",
       sdgs: ["SDG 13", "SDG 15"], lead: "Rizwan Ahmed", image: "/Climate Reality Leadership Corps Training | Representing Bangladesh.jpeg", color: "#0B5D3F",
-      projectId: 1, projectName: "Amazon Reforestation Hub",
+      projectId: 1, projectName: "Amazon Reforestation Hub", eventId: 1, eventName: "Global Youth Climate Summit 2026",
       programSlug: "forest-restoration", initiativeTitle: "Amazon Revival",
       impactTrees: 847000, impactCO2: 52937, impactCommunities: 140, impactBeneficiaries: 250000
     },
@@ -106,7 +109,7 @@ const blankCampaign: Omit<Campaign, "id"> = {
   title: "", category: "Forest Restoration", status: "draft",
   volunteers: 0, startDate: "", endDate: "",
   description: "", sdgs: [], lead: "", image: "", color: "#0B5D3F",
-  projectId: undefined, projectName: "",
+  projectId: undefined, projectName: "", eventId: undefined, eventName: "",
   programSlug: "forest-restoration", initiativeTitle: "Amazon Revival",
   impactTrees: 0, impactCO2: 0, impactCommunities: 0, impactBeneficiaries: 0,
 };
@@ -130,6 +133,7 @@ function QRGrid({ size = 120 }: { size?: number }) {
 export function CampaignsView() {
   const [campaigns, setCampaigns, loading] = useFirestoreData<Campaign[]>("esn_campaigns_admin", getInitialCampaigns());
   const [projects] = useFirestoreData<Project[]>("esn_projects_admin", getInitialProjects());
+  const [events] = useFirestoreData<ESNEvent[]>("esn_events", getInitialEvents());
   
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<"All" | CampaignStatus>("All");
@@ -153,6 +157,8 @@ export function CampaignsView() {
       volunteers: Number(form.volunteers || 0),
       projectId: form.projectId ? Number(form.projectId) : undefined,
       projectName: form.projectName || "",
+      eventId: form.eventId ? Number(form.eventId) : undefined,
+      eventName: form.eventName || "",
       sdgs: Array.isArray(form.sdgs) ? form.sdgs : String(form.sdgs || "").split(",").map(s => s.trim()).filter(Boolean),
     };
     if (editId !== null) {
@@ -175,6 +181,8 @@ export function CampaignsView() {
       sdgs: rest.sdgs || [],
       projectId: c.projectId,
       projectName: c.projectName || "",
+      eventId: c.eventId,
+      eventName: c.eventName || "",
       programSlug: c.programSlug || "forest-restoration",
       initiativeTitle: c.initiativeTitle || "",
       impactTrees: Number(c.impactTrees || 0),
@@ -323,7 +331,45 @@ export function CampaignsView() {
                   {form.projectName && (
                     <div className="mt-2 text-xs text-emerald-800 flex items-center gap-1.5 font-medium">
                       <CheckCircle2 size={13} className="text-emerald-600" />
-                      Campaign linked to: <span className="font-bold">{form.projectName}</span>
+                      Campaign linked to Project: <span className="font-bold">{form.projectName}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="sm:col-span-2 p-4 bg-[#F8FAFC] border border-blue-200/80 rounded-2xl mb-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="w-2 h-2 rounded-full bg-[#173B63]" />
+                    <label className="text-xs font-bold text-[#173B63] uppercase tracking-wider">
+                      Connected Event
+                    </label>
+                  </div>
+                  <p className="text-xs text-gray-500 mb-3">
+                    Connect this campaign to an event (e.g. a summit) if they are directly linked.
+                  </p>
+                  <select
+                    value={form.eventId ? String(form.eventId) : ""}
+                    onChange={(e) => {
+                      const eid = e.target.value ? Number(e.target.value) : undefined;
+                      const matched = (events || []).find(ev => ev.id === eid);
+                      setForm({
+                        ...form,
+                        eventId: eid,
+                        eventName: matched ? matched.title : "",
+                      });
+                    }}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-blue-300 text-sm font-semibold text-gray-800 focus:outline-none focus:border-[#4CAF50]"
+                  >
+                    <option value="">None (Standalone Campaign)</option>
+                    {(events || []).map((ev) => (
+                      <option key={ev.id} value={ev.id}>
+                        #{ev.id} - {ev.title} ({ev.date})
+                      </option>
+                    ))}
+                  </select>
+                  {form.eventName && (
+                    <div className="mt-2 text-xs text-blue-800 flex items-center gap-1.5 font-medium">
+                      <CheckCircle2 size={13} className="text-blue-600" />
+                      Campaign linked to Event: <span className="font-bold">{form.eventName}</span>
                     </div>
                   )}
                 </div>
