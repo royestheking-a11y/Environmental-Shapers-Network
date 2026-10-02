@@ -454,8 +454,6 @@ export default function ProjectDetail() {
       { year: "2025", event: "Full scale rollout, stakeholder partnerships, and field implementation" },
       { year: "2026", event: "Continuous monitoring, impact verification, and global reporting" },
     ]),
-    programSlug: adminProj.programSlug as string | undefined,
-    initiativeTitle: adminProj.initiativeTitle as string | undefined,
   } : (staticProj ? {
     ...staticProj,
     programSlug: undefined as string | undefined,
