@@ -629,10 +629,22 @@ export function CampaignsView() {
                   <Calendar size={11} />
                   {c.startDate} → {c.endDate || "Ongoing"}
                 </div>
-                <div className="flex gap-1.5 mb-5">
+                <div className="flex gap-1.5 mb-3 flex-wrap">
                   {c.sdgs.map((sdg) => (
                     <span key={sdg} className="text-xs font-bold bg-[#D6A95A]/15 text-[#D6A95A] px-2 py-1 rounded-full">{sdg}</span>
                   ))}
+                </div>
+                <div className="flex gap-1.5 mb-5 flex-wrap">
+                  {c.programSlug && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
+                      Prog: {PROGRAM_OPTIONS.find(o => o.slug === c.programSlug)?.label || c.programSlug}
+                    </span>
+                  )}
+                  {c.initiativeTitle && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                      Init: {c.initiativeTitle}
+                    </span>
+                  )}
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => setDetail(c)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold bg-[#F6FBF8] border border-gray-100 text-gray-600 hover:bg-[#0B5D3F] hover:text-white hover:border-[#0B5D3F] transition-all">

@@ -1231,6 +1231,18 @@ export function ProjectsView() {
                   </div>
                   <span className="text-xs font-semibold text-gray-500">{p.progress}%</span>
                 </div>
+                <div className="mt-2.5 flex items-center gap-2 flex-wrap">
+                  {p.programSlug && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
+                      Program: {PROGRAM_OPTIONS.find(o => o.slug === p.programSlug)?.label || p.programSlug}
+                    </span>
+                  )}
+                  {p.initiativeTitle && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                      Initiative: {p.initiativeTitle}
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="flex gap-2 shrink-0">
                 <button onClick={() => startEdit(p)} className="p-2 rounded-xl hover:bg-[#0B5D3F]/10 text-gray-300 hover:text-[#0B5D3F] transition-all" title="Edit">

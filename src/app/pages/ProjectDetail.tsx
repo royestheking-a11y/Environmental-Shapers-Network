@@ -421,6 +421,8 @@ export default function ProjectDetail() {
     theme: adminProj.theme || staticProj?.theme || "SDG 15",
     impact: adminProj.impact || staticProj?.impact || "Community Impact",
     volunteers: adminProj.volunteers !== undefined ? adminProj.volunteers : (staticProj?.volunteers ?? 500),
+    programSlug: adminProj.programSlug,
+    initiativeTitle: adminProj.initiativeTitle,
     icon: staticProj?.icon || TreePine,
     color: adminProj.color || staticProj?.color || "#0B5D3F",
     budget: adminProj.budget ? `$${adminProj.budget.toLocaleString()}` : (staticProj?.budget || "$1.5M"),
@@ -689,9 +691,16 @@ export default function ProjectDetail() {
                     to={`/programs/${project.programSlug}`}
                     className="text-xs font-bold text-[#0B5D3F] hover:text-[#4CAF50] text-right flex items-center gap-1 justify-end hover:underline"
                   >
-                    <span>{project.category}</span>
+                    <span>{project.programSlug.replace("-", " ").replace(/\b\w/g, l => l.toUpperCase())}</span>
                     <ChevronRight size={12} />
                   </Link>
+                </div>
+              )}
+
+              {project.initiativeTitle && (
+                <div className="flex items-start justify-between py-2.5 border-b border-gray-50">
+                  <span className="text-xs text-gray-400 shrink-0">Linked Initiative</span>
+                  <span className="text-xs font-bold text-[#173B63] text-right">{project.initiativeTitle}</span>
                 </div>
               )}
 
