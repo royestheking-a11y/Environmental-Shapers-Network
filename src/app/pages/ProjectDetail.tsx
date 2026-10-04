@@ -740,7 +740,7 @@ export default function ProjectDetail() {
             {/* Volunteer CTA */}
             <div className="bg-gradient-to-br from-[#0B5D3F] to-[#173B63] rounded-2xl p-6 text-white">
               <div className="text-xs font-bold uppercase tracking-wider text-white/60 mb-2">Get Involved</div>
-              <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800 }} className="mb-2">Volunteer on This Project</h3>
+              <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800 }} className="mb-2 text-white">Volunteer on This Project</h3>
               <p className="text-xs text-white/70 mb-5">Join {project.volunteers.toLocaleString()}+ volunteers making a difference.</p>
               <Link to="/volunteer" className="flex items-center justify-center gap-2 bg-[#4CAF50] text-white py-3 rounded-xl text-sm font-semibold hover:bg-[#43a047] transition-all">
                 Apply to Volunteer <ArrowRight size={13} />
