@@ -709,6 +709,7 @@ function EventsPage() {
   
   const displayEvents = eventsList && eventsList.length > 0
     ? eventsList.map((e) => ({
+        id: e.id,
         type: e.type,
         status: e.status,
         seats: `${e.registered}/${e.capacity} Seats`,
