@@ -70,8 +70,8 @@ export default function StatsAdminView() {
     const treeVal = Number(treeStat?.value || 0);
     const calculatedCO2 = Math.round(treeVal * 0.0625);
 
-    const updated = currentStats.map((s, idx) => {
-      const isCO2 = s.label?.toLowerCase().includes("co2") || s.label?.toLowerCase().includes("co₂") || s.label?.toLowerCase().includes("carbon") || idx === 1;
+    const updated = currentStats.map((s) => {
+      const isCO2 = s.label?.toLowerCase().includes("co2") || s.label?.toLowerCase().includes("co₂") || s.label?.toLowerCase().includes("carbon");
       if (isCO2) {
         return { ...s, value: calculatedCO2, suffix: " MT", label: "CO₂ Sequestered", description: "Metric tons of carbon sequestered" };
       }

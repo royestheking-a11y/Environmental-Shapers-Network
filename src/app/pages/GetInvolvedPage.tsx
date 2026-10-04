@@ -151,9 +151,6 @@ function VolunteerPage() {
   ];
   const [roles, setRoles, loadingRoles] = useFirestoreData<any[]>("esn_volunteer_roles", defaultRoles);
   const [pageContent] = useFirestoreData<VolunteerPageContent>("esn_volunteer_page_content", defaultVolunteerPageContent);
-  const [statsData] = useFirestoreData<any[]>("esn_stats_admin", []);
-  const countriesStat = statsData?.find((s: any) => s.label?.toLowerCase().includes("countr") || s.label?.toLowerCase().includes("partner") || s.label?.toLowerCase().includes("global"));
-  const dynamicCountries = countriesStat ? `${countriesStat.value}${countriesStat.suffix || "+"}` : "80+";
 
   const content = { ...defaultVolunteerPageContent, ...(pageContent || {}) };
 
@@ -196,9 +193,7 @@ function VolunteerPage() {
         <Breadcrumb current="Volunteer" />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-12">
           {(content.stats || defaultVolunteerPageContent.stats).map((st) => {
-            const isCountry = st.label.toLowerCase().includes("countr");
-            const val = (isCountry && (st.val === "190+" || st.val === "80+")) ? dynamicCountries : st.val;
-            return <StatCard key={st.label} value={val} label={st.label} />;
+            return <StatCard key={st.label} value={st.val} label={st.label} />;
           })}
         </div>
 

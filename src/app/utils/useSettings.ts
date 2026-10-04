@@ -25,11 +25,25 @@ function normalizeSettings(s: any) {
   const officeLocation = !s.officeLocation || s.officeLocation.includes("Global Offices in 12 Countries")
     ? (s.officeLocation ? s.officeLocation : "Dhaka, Bangladesh & California, United States of America")
     : s.officeLocation;
+    
+  const fixUrl = (url: string, def: string) => {
+    if (!url || typeof url !== 'string') return def;
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      return `https://${url}`;
+    }
+    return url;
+  };
+
   return {
     ...defaultSettings,
     ...s,
     contactEmail,
     officeLocation: officeLocation || "Dhaka, Bangladesh & California, United States of America",
+    facebookUrl: fixUrl(s.facebookUrl, defaultSettings.facebookUrl),
+    instagramUrl: fixUrl(s.instagramUrl, defaultSettings.instagramUrl),
+    linkedinUrl: fixUrl(s.linkedinUrl, defaultSettings.linkedinUrl),
+    twitterUrl: fixUrl(s.twitterUrl, defaultSettings.twitterUrl),
+    youtubeUrl: fixUrl(s.youtubeUrl, defaultSettings.youtubeUrl),
   };
 }
 
