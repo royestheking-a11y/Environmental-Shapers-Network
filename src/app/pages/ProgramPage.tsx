@@ -593,25 +593,7 @@ function GenericProgramPage({ d }: { d: any }) {
           )}
         </div>
 
-        <div>
-          <div className="text-center mb-10">
-            <div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider mb-2">Voices</div>
-            <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 2vw, 1.8rem)", fontWeight: 800 }} className="text-gray-900">Voices from the Field</h2>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {d.stories.map((s: any, i: number) => (
-              <motion.div key={s.name} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-                className="bg-white rounded-2xl p-7 border border-gray-100">
-                <div className="flex gap-1 mb-4">{[...Array(5)].map((_, k) => <Star key={k} size={14} className="fill-[#D6A95A] text-[#D6A95A]" />)}</div>
-                <p className="text-gray-600 text-sm leading-relaxed italic mb-6">"{s.quote}"</p>
-                <div>
-                  <div className="font-bold text-gray-900 text-sm">{s.name}</div>
-                  <div className="text-xs text-[#4CAF50]">{s.role}</div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+
 
         {programEvents.length > 0 && (
           <div>
