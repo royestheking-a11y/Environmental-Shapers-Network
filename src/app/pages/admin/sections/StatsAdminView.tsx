@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Plus, Search, Edit3, Trash2, AlertCircle, CheckCircle2, Sparkles,
