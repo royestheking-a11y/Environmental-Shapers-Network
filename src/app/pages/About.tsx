@@ -209,9 +209,9 @@ export default function About() {
           <img
             src="/Climate Reality Leadership Corps Training | Representing Bangladesh.jpeg"
             alt=""
-            className="w-full h-full object-cover opacity-20"
+            className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0B5D3F]/40 to-[#071a0f]/80" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0B5D3F]/60 to-[#071a0f]/80" />
         </div>
 
         {/* Falling Leaves */}

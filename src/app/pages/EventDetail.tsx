@@ -8,8 +8,8 @@ function PageHero({ title, sub, image }: { title: string; sub: string; image: st
   return (
     <section className="relative py-28 bg-gradient-to-br from-[#0B5D3F] via-[#0E4733] to-[#173B63] overflow-hidden text-white">
       <div className="absolute inset-0">
-        <img src={image} alt="" className="w-full h-full object-cover opacity-20" />
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0B5D3F]/90 to-[#173B63]/90" />
+        <img src={image} alt="" className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0B5D3F]/70 to-[#173B63]/70" />
       </div>
       <div className="relative z-10 max-w-6xl mx-auto px-6">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
