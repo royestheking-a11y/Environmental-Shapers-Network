@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, useInView } from "motion/react";
 import { getInitialStats, StatItem } from "../../pages/admin/sections/StatsAdminView";
 import { useFirestoreData } from "../../../lib/useFirestore";
@@ -54,7 +54,18 @@ export function StatsSection() {
   const inView = useInView(sectionRef, { once: true, margin: "-100px" });
   const [statsRaw] = useFirestoreData<StatItem[]>("esn_stats_admin", getInitialStats());
 
-  const stats = statsRaw && statsRaw.length > 0 ? statsRaw : getInitialStats();
+  const stats = useMemo(() => {
+    const raw = statsRaw && statsRaw.length > 0 ? statsRaw : getInitialStats();
+    let foundCO2 = false;
+    return raw.filter((s) => {
+      const isCO2 = s.label?.toLowerCase().includes("co2") || s.label?.toLowerCase().includes("co₂") || s.label?.toLowerCase().includes("carbon");
+      if (isCO2) {
+        if (foundCO2) return false;
+        foundCO2 = true;
+      }
+      return true;
+    });
+  }, [statsRaw]);
 
   return (
     <section ref={sectionRef} className="py-16 bg-white relative overflow-hidden border-t border-gray-100">
