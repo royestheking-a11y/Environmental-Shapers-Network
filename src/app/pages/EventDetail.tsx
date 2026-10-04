@@ -1,10 +1,43 @@
 import { useParams, Link, Navigate } from "react-router";
 import { useFirestoreData } from "../../lib/useFirestore";
 import { getInitialEvents, ESNEvent } from "./admin/sections/EventsView";
-import { PageHero } from "../components/ui/PageHero";
-import { Calendar, MapPin, Users, Clock, Video, Globe2, ArrowRight } from "lucide-react";
+import { Calendar, MapPin, Users, Clock, Video, Globe2, ArrowRight, ChevronRight } from "lucide-react";
 import { motion } from "motion/react";
-import { Breadcrumb } from "../components/ui/Breadcrumb";
+
+function PageHero({ title, sub, image }: { title: string; sub: string; image: string }) {
+  return (
+    <section className="relative py-28 bg-gradient-to-br from-[#0B5D3F] via-[#0E4733] to-[#173B63] overflow-hidden text-white">
+      <div className="absolute inset-0">
+        <img src={image} alt="" className="w-full h-full object-cover opacity-20" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0B5D3F]/90 to-[#173B63]/90" />
+      </div>
+      <div className="relative z-10 max-w-6xl mx-auto px-6">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <h1 className="text-white mb-4 text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            {title}
+          </h1>
+          <p className="text-white/80 text-base sm:text-lg max-w-xl leading-relaxed">{sub}</p>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+function Breadcrumb({ current, parents }: { current: string, parents?: {label: string, href: string}[] }) {
+  return (
+    <div className="flex items-center gap-2 text-sm text-gray-400 mb-8 flex-wrap">
+      <Link to="/" className="hover:text-[#0B5D3F] transition-colors">Home</Link>
+      <ChevronRight size={14} />
+      {parents?.map((p, i) => (
+        <div key={i} className="flex items-center gap-2">
+          <Link to={p.href} className="hover:text-[#0B5D3F] transition-colors">{p.label}</Link>
+          <ChevronRight size={14} />
+        </div>
+      ))}
+      <span className="text-gray-700 font-medium">{current}</span>
+    </div>
+  );
+}
 
 export default function EventDetail() {
   const { id } = useParams<{ id: string }>();
