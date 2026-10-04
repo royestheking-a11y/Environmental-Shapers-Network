@@ -427,6 +427,12 @@ function HeroBlock({ heroImage, label, tagline, icon: Icon, breadcrumb }: any) {
 function GenericProgramPage({ d }: { d: any }) {
   const Icon = d.icon;
   const [allProjects] = useFirestoreData<Project[]>("esn_projects_admin", getInitialProjects());
+  const [eventsList] = useFirestoreData<ESNEvent[]>("esn_events", getInitialEvents());
+
+  const programEvents = useMemo(() => {
+    if (!eventsList || eventsList.length === 0) return [];
+    return eventsList.filter((e) => e.programSlug === d.slug);
+  }, [eventsList, d.slug]);
 
   const programProjects = useMemo(() => {
     if (!allProjects || allProjects.length === 0) return [];
@@ -606,6 +612,68 @@ function GenericProgramPage({ d }: { d: any }) {
             ))}
           </div>
         </div>
+
+        {programEvents.length > 0 && (
+          <div>
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+              <div>
+                <span className="text-[#0B5D3F] text-xs font-bold uppercase tracking-[0.2em] block mb-2">Programs & Gatherings</span>
+                <h2 className="text-3xl md:text-4xl font-bold text-[#0A3D2A]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  Upcoming {d.label} Events
+                </h2>
+                <p className="text-gray-600 text-sm mt-1 max-w-xl">
+                  Summits, campaigns, and hackathons hosted and led by ESN for this program.
+                </p>
+              </div>
+              <Link to="/events" className="inline-flex items-center gap-1.5 text-sm font-bold text-[#0B5D3F] hover:text-[#4CAF50] transition-colors shrink-0">
+                View All Events <ArrowRight size={15} />
+              </Link>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {programEvents.map((e) => (
+                <Link
+                  key={e.id}
+                  to={`/events/${e.id}`}
+                  className="group bg-[#F8FCF9] rounded-2xl overflow-hidden border border-gray-100 hover:border-[#4CAF50]/40 hover:shadow-xl transition-all flex flex-col h-full cursor-pointer"
+                >
+                  <div className="relative h-48 overflow-hidden bg-gray-100">
+                    <ImageWithFallback
+                      src={e.image || "https://images.unsplash.com/photo-1540575467063-178a50c2df87?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1400"}
+                      alt={e.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                      <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-white shadow-sm" style={{ color: "#0B5D3F" }}>
+                        {e.type}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-6 flex-1 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center gap-4 text-[11px] font-bold text-gray-500 mb-2">
+                        <span className="flex items-center gap-1"><Calendar size={12} className="text-[#4CAF50]" /> {e.date}</span>
+                        <span className="flex items-center gap-1"><MapPin size={12} className="text-[#4CAF50]" /> {e.location}</span>
+                      </div>
+                      <h3 className="font-black text-gray-900 text-lg mb-2 group-hover:text-[#0B5D3F] transition-colors line-clamp-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                        {e.title}
+                      </h3>
+                      <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed mb-4">
+                        {e.description}
+                      </p>
+                    </div>
+                    <div className="pt-4 border-t border-gray-100 flex items-center justify-between text-xs">
+                      <span className="font-bold text-[#4CAF50]">{e.registered}/{e.capacity} Registered</span>
+                      <span className="text-[#0B5D3F] font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                        Learn More <ChevronRight size={14} />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
           className="bg-gradient-to-r from-[#0B5D3F] to-[#173B63] rounded-3xl p-12 text-white text-center">
           <Users size={32} className="text-[#4CAF50] mx-auto mb-4" />
