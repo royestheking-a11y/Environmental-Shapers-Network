@@ -32,21 +32,7 @@ export default function YouthEngagement() {
 
   return (
     <div className="pt-24">
-      {/* Hero Section */}
-      <section className="pt-12 pb-20 bg-gradient-to-b from-[#E6F3EB] to-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#4CAF50]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-[#0A3D2A] mb-6 leading-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            Youth <span className="text-[#4CAF50]">Development</span>
-          </h1>
-          <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed mb-10">
-            Young people are not just the future—they are the present. Join a global movement of environmental shapers, learn how to lead, and take action in your community today.
-          </p>
-          <Link to="/volunteer" className="inline-flex items-center gap-2 bg-[#0A3D2A] hover:bg-[#173B63] text-white px-8 py-4 rounded-full font-bold transition-all hover:-translate-y-1 shadow-xl">
-            Join the Movement <ArrowRight size={20} />
-          </Link>
-        </div>
-      </section>
+
 
       {/* The existing youth stats and initiatives from the homepage */}
       <YouthDevelopmentSection />
