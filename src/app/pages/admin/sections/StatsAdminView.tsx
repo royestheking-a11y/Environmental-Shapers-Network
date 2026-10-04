@@ -70,15 +70,48 @@ export default function StatsAdminView() {
     const treeVal = Number(treeStat?.value || 0);
     const calculatedCO2 = Math.round(treeVal * 0.0625);
 
-    const updated = currentStats.map((s) => {
+    let foundCO2 = false;
+    const updated = currentStats.filter(s => {
+      const isCO2 = s.label?.toLowerCase().includes("co2") || s.label?.toLowerCase().includes("co₂") || s.label?.toLowerCase().includes("carbon");
+      if (isCO2) {
+        if (foundCO2) return false;
+        foundCO2 = true;
+      }
+      return true;
+    }).map((s) => {
       const isCO2 = s.label?.toLowerCase().includes("co2") || s.label?.toLowerCase().includes("co₂") || s.label?.toLowerCase().includes("carbon");
       if (isCO2) {
         return { ...s, value: calculatedCO2, suffix: " MT", label: "CO₂ Sequestered", description: "Metric tons of carbon sequestered" };
       }
       return s;
     });
+    
+    if (!foundCO2) {
+      const newId = updated.length > 0 ? Math.max(...updated.map(s => s.id)) + 1 : 1;
+      updated.push({ id: newId, iconName: "Leaf", value: calculatedCO2, suffix: " MT", label: "CO₂ Sequestered", description: "Metric tons of carbon sequestered", color: "text-[#4CAF50]", bgColor: "bg-[#4CAF50]/10" });
+    }
+
     saveStats(updated, `CO₂ calculated: ${calculatedCO2.toLocaleString()} MT based on ${treeVal.toLocaleString()} trees`);
   };
+
+  useEffect(() => {
+    if (stats && stats.length > 0) {
+      const co2Stats = stats.filter(s => s.label?.toLowerCase().includes("co2") || s.label?.toLowerCase().includes("co₂") || s.label?.toLowerCase().includes("carbon"));
+      if (co2Stats.length > 1) {
+        let foundCO2 = false;
+        const deduped = stats.filter(s => {
+          const isCO2 = s.label?.toLowerCase().includes("co2") || s.label?.toLowerCase().includes("co₂") || s.label?.toLowerCase().includes("carbon");
+          if (isCO2) {
+            if (foundCO2) return false;
+            foundCO2 = true;
+          }
+          return true;
+        });
+        setStats(deduped);
+        saveFirestoreData("esn_stats_admin", deduped);
+      }
+    }
+  }, [stats, setStats]);
 
   const handleSaveModal = () => {
     if (!formData.label?.trim()) return;

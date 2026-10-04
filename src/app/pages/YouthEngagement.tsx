@@ -3,11 +3,13 @@ import { ArrowRight, CheckCircle, Users, Globe2, BookOpen, MapPin, ChevronRight,
 import { Link } from "react-router";
 import { useFirestoreData } from "../../lib/useFirestore";
 import { getInitialProjects, Project } from "./admin/sections/ProjectsView";
+import { getInitialEvents, ESNEvent } from "./admin/sections/EventsView";
 import { ImageWithFallback } from "../components/ui/ImageWithFallback";
 import { useMemo } from "react";
 
 export default function YouthEngagement() {
   const [allProjects] = useFirestoreData<Project[]>("esn_projects_admin", getInitialProjects());
+  const [allEvents] = useFirestoreData<ESNEvent[]>("esn_events", getInitialEvents());
 
   const youthProjects = useMemo(() => {
     if (!allProjects) return [];
@@ -17,8 +19,35 @@ export default function YouthEngagement() {
       return slug === "youth" || cat.includes("youth") || cat.includes("education");
     });
   }, [allProjects]);
+
+  const youthEvents = useMemo(() => {
+    if (!allEvents) return [];
+    return allEvents.filter((e) => {
+      const slug = (e.programSlug || "").toLowerCase();
+      return slug === "youth";
+    });
+  }, [allEvents]);
+
+  const typeColors: Record<string, string> = { Summit: "#0B5D3F", Campaign: "#4CAF50", Hackathon: "#173B63", Forum: "#1565C0", Delegation: "#E65100", Gala: "#D6A95A" };
+
   return (
-    <div>
+    <div className="pt-24">
+      {/* Hero Section */}
+      <section className="pt-12 pb-20 bg-gradient-to-b from-[#E6F3EB] to-white relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#4CAF50]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 text-center">
+          <h1 className="text-4xl md:text-6xl font-bold text-[#0A3D2A] mb-6 leading-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            Youth <span className="text-[#4CAF50]">Development</span>
+          </h1>
+          <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed mb-10">
+            Young people are not just the future—they are the present. Join a global movement of environmental shapers, learn how to lead, and take action in your community today.
+          </p>
+          <Link to="/volunteer" className="inline-flex items-center gap-2 bg-[#0A3D2A] hover:bg-[#173B63] text-white px-8 py-4 rounded-full font-bold transition-all hover:-translate-y-1 shadow-xl">
+            Join the Movement <ArrowRight size={20} />
+          </Link>
+        </div>
+      </section>
+
       {/* The existing youth stats and initiatives from the homepage */}
       <YouthDevelopmentSection />
 
@@ -143,6 +172,71 @@ export default function YouthEngagement() {
                       <span className="font-bold text-gray-700">{p.impact || `${p.volunteers} Volunteers`}</span>
                       <span className="text-[#0B5D3F] font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
                         View Project <ChevronRight size={14} />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Active Youth Events */}
+      {youthEvents.length > 0 && (
+        <section className="py-20 bg-white border-t border-emerald-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+              <div>
+                <span className="text-[#0B5D3F] text-xs font-bold uppercase tracking-[0.2em] block mb-2">Programs & Gatherings</span>
+                <h2 className="text-3xl md:text-4xl font-bold text-[#0A3D2A]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  Upcoming Youth Events
+                </h2>
+                <p className="text-gray-600 text-sm mt-1 max-w-xl">
+                  Summits, campaigns, and hackathons hosted and led by ESN youth members.
+                </p>
+              </div>
+              <Link to="/events" className="inline-flex items-center gap-1.5 text-sm font-bold text-[#0B5D3F] hover:text-[#4CAF50] transition-colors shrink-0">
+                View All Events <ArrowRight size={15} />
+              </Link>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {youthEvents.map((e) => (
+                <Link
+                  key={e.id}
+                  to={`/contact?subject=Event%20Registration&event=${encodeURIComponent(e.title)}`}
+                  className="group bg-[#F8FCF9] rounded-2xl overflow-hidden border border-gray-100 hover:border-[#4CAF50]/40 hover:shadow-xl transition-all flex flex-col h-full cursor-pointer"
+                >
+                  <div className="relative h-48 overflow-hidden bg-gray-100">
+                    <ImageWithFallback
+                      src={e.image || "https://images.unsplash.com/photo-1540575467063-178a50c2df87?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1400"}
+                      alt={e.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                      <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-white shadow-sm" style={{ color: typeColors[e.type] || "#0B5D3F" }}>
+                        {e.type}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-6 flex-1 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center gap-4 text-[11px] font-bold text-gray-500 mb-2">
+                        <span className="flex items-center gap-1"><BookOpen size={12} className="text-[#4CAF50]" /> {e.date}</span>
+                        <span className="flex items-center gap-1"><MapPin size={12} className="text-[#4CAF50]" /> {e.location}</span>
+                      </div>
+                      <h3 className="font-black text-gray-900 text-lg mb-2 group-hover:text-[#0B5D3F] transition-colors line-clamp-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                        {e.title}
+                      </h3>
+                      <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed mb-4">
+                        {e.description}
+                      </p>
+                    </div>
+                    <div className="pt-4 border-t border-gray-100 flex items-center justify-between text-xs">
+                      <span className="font-bold text-[#4CAF50]">{e.registered}/{e.capacity} Registered</span>
+                      <span className="text-[#0B5D3F] font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                        Register <ChevronRight size={14} />
                       </span>
                     </div>
                   </div>
