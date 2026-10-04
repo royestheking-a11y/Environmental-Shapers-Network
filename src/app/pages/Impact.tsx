@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Link } from "react-router";
 import { motion, useInView } from "motion/react";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
@@ -53,7 +53,18 @@ export default function Impact() {
 
   // Read ONE unified impact dataset from esn_stats_admin
   const [statsRaw] = useFirestoreData<StatItem[]>("esn_stats_admin", getInitialStats());
-  const stats = statsRaw && statsRaw.length > 0 ? statsRaw : getInitialStats();
+  const stats = useMemo(() => {
+    const raw = statsRaw && statsRaw.length > 0 ? statsRaw : getInitialStats();
+    let foundCO2 = false;
+    return raw.filter((s) => {
+      const isCO2 = s.label?.toLowerCase().includes("co2") || s.label?.toLowerCase().includes("co₂") || s.label?.toLowerCase().includes("carbon");
+      if (isCO2) {
+        if (foundCO2) return false;
+        foundCO2 = true;
+      }
+      return true;
+    });
+  }, [statsRaw]);
 
   // Find corresponding tree & CO2 stats for the calculation engine & charts
   const treeStat = stats.find(s => s.label?.toLowerCase().includes("tree") || s.iconName === "TreePine") || stats[0];
