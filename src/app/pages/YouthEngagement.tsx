@@ -205,7 +205,7 @@ export default function YouthEngagement() {
               {youthEvents.map((e) => (
                 <Link
                   key={e.id}
-                  to={`/contact?subject=Event%20Registration&event=${encodeURIComponent(e.title)}`}
+                  to={`/events/${e.id}`}
                   className="group bg-[#F8FCF9] rounded-2xl overflow-hidden border border-gray-100 hover:border-[#4CAF50]/40 hover:shadow-xl transition-all flex flex-col h-full cursor-pointer"
                 >
                   <div className="relative h-48 overflow-hidden bg-gray-100">
@@ -236,7 +236,7 @@ export default function YouthEngagement() {
                     <div className="pt-4 border-t border-gray-100 flex items-center justify-between text-xs">
                       <span className="font-bold text-[#4CAF50]">{e.registered}/{e.capacity} Registered</span>
                       <span className="text-[#0B5D3F] font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                        Register <ChevronRight size={14} />
+                        Learn More <ChevronRight size={14} />
                       </span>
                     </div>
                   </div>

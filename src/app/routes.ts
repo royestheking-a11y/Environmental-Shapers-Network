@@ -9,6 +9,7 @@ const Projects = lazy(() => import("./pages/Projects"));
 const ProjectDetail = lazy(() => import("./pages/ProjectDetail"));
 const NewsArticle = lazy(() => import("./pages/NewsArticle"));
 const Impact = lazy(() => import("./pages/Impact"));
+const EventDetail = lazy(() => import("./pages/EventDetail"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Donate = lazy(() => import("./pages/Donate"));
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
@@ -52,6 +53,7 @@ export const router = createBrowserRouter([
       { path: "programs/:program", Component: ProgramPage },
       { path: "insights", Component: ProgramPage },
       { path: "events", Component: ProgramPage },
+      { path: "events/:id", Component: EventDetail },
       // Campaigns (public)
       { path: "campaigns", Component: Campaigns },
       // Organization

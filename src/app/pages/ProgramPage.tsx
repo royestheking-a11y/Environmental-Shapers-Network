@@ -770,7 +770,7 @@ function EventsPage() {
                 className="h-full"
               >
                 <Link
-                  to={`/contact?subject=Event%20Registration&event=${encodeURIComponent(e.title)}`}
+                  to={`/events/${e.id}`}
                   className="bg-white rounded-2xl p-6 border border-gray-100 hover:border-[#4CAF50]/40 hover:shadow-xl transition-all group flex flex-col justify-between h-full cursor-pointer"
                 >
                   <div>
@@ -804,9 +804,9 @@ function EventsPage() {
                     </div>
                   </div>
                   <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs font-bold text-[#0B5D3F] group-hover:text-[#4CAF50] transition-colors">
-                    <span>Contact Our Events Team</span>
+                    <span>View Event Details</span>
                     <span className="inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                      Inquire & Register <ArrowRight size={13} />
+                      Learn More & Register <ArrowRight size={13} />
                     </span>
                   </div>
                 </Link>
