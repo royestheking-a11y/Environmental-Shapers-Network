@@ -290,7 +290,7 @@ export function HeroSection() {
             src={currentSlide?.image || DEFAULT_HERO_IMAGES[currentSlide?.id] || "/Commonwealth Secretariat at COP27.jpeg"}
             alt="Hero Background"
             initial={{ opacity: 0, scale: 1.05 }}
-            animate={{ opacity: 0.5, scale: 1 }}
+            animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 1.2, ease: "easeInOut" }}
             className="absolute inset-0 w-full h-full object-cover"
@@ -298,8 +298,8 @@ export function HeroSection() {
             decoding="async"
           />
         </AnimatePresence>
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0a1a0e]/95 via-[#0a1a0e]/75 to-[#0a1a0e]/30" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a1a0e]/60 via-transparent to-[#0a1a0e]/80" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0a1a0e]/85 via-[#0a1a0e]/60 to-[#0a1a0e]/20" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a1a0e]/40 via-transparent to-[#0a1a0e]/70" />
       </div>
 
       {/* Falling Leaves */}
