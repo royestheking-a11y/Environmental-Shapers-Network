@@ -265,10 +265,8 @@ export default function Contact() {
                       <div className="flex items-center gap-2 mb-0.5">
                         <span className="font-bold text-gray-900 text-sm">Global Headquarters</span>
                       </div>
-                      <div className="text-sm text-gray-600 mt-1">
-                        Environmental Shapers Network<br/>
-                        International Environment House<br/>
-                        Geneva, Switzerland
+                      <div className="text-sm text-gray-600 mt-1 whitespace-pre-wrap">
+                        {settings.globalHeadquarters || "Environmental Shapers Network\nInternational Environment House\nGeneva, Switzerland"}
                       </div>
                     </div>
                   </div>
@@ -281,9 +279,8 @@ export default function Contact() {
                       <div className="flex items-center gap-2 mb-0.5">
                         <span className="font-bold text-gray-900 text-sm">Regional Offices</span>
                       </div>
-                      <div className="text-sm text-gray-600 mt-1 leading-relaxed">
-                        Nairobi &middot; Dhaka &middot; Manila &middot; Bogotá<br/>
-                        Lagos &middot; Cairo &middot; Jakarta &middot; London
+                      <div className="text-sm text-gray-600 mt-1 leading-relaxed whitespace-pre-wrap">
+                        {settings.regionalOffices || "Nairobi · Dhaka · Manila · Bogotá\nLagos · Cairo · Jakarta · London"}
                       </div>
                     </div>
                   </div>

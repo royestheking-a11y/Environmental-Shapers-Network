@@ -13,6 +13,8 @@ function getSavedSettings() {
     tagline: "Shaping Minds, Protecting Earth",
     contactEmail: "enviro.sn@gmail.com",
     officeLocation: "Dhaka, Bangladesh & California, United States of America",
+    globalHeadquarters: "Environmental Shapers Network\nInternational Environment House\nGeneva, Switzerland",
+    regionalOffices: "Nairobi · Dhaka · Manila · Bogotá\nLagos · Cairo · Jakarta · London",
     timezone: "Asia/Dhaka",
     language: "English",
     currency: "USD",
@@ -326,6 +328,36 @@ export function SettingsView() {
                     value={(settings as any)["officeLocation"] || ""}
                     onChange={(e) => update("officeLocation", e.target.value)}
                     placeholder="Dhaka, Bangladesh & California, United States of America"
+                    className="w-full px-4 py-3 rounded-xl bg-white border-2 border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] transition-colors resize-none text-gray-800"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-600 mb-1.5 block">
+                    Global Headquarters (Contact Page)
+                    <span className="ml-2 text-[10px] font-medium text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200 normal-case tracking-normal">
+                      Editable
+                    </span>
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={(settings as any)["globalHeadquarters"] || ""}
+                    onChange={(e) => update("globalHeadquarters", e.target.value)}
+                    placeholder="Global Headquarters Address"
+                    className="w-full px-4 py-3 rounded-xl bg-white border-2 border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] transition-colors resize-none text-gray-800"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-600 mb-1.5 block">
+                    Regional Offices (Contact Page)
+                    <span className="ml-2 text-[10px] font-medium text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200 normal-case tracking-normal">
+                      Editable
+                    </span>
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={(settings as any)["regionalOffices"] || ""}
+                    onChange={(e) => update("regionalOffices", e.target.value)}
+                    placeholder="Regional Offices List"
                     className="w-full px-4 py-3 rounded-xl bg-white border-2 border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] transition-colors resize-none text-gray-800"
                   />
                 </div>

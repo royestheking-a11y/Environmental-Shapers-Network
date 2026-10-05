@@ -6,6 +6,8 @@ const defaultSettings = {
   tagline: "Shaping Minds, Protecting Earth",
   contactEmail: "enviro.sn@gmail.com",
   officeLocation: "Dhaka, Bangladesh & California, United States of America",
+  globalHeadquarters: "Environmental Shapers Network\nInternational Environment House\nGeneva, Switzerland",
+  regionalOffices: "Nairobi · Dhaka · Manila · Bogotá\nLagos · Cairo · Jakarta · London",
   timezone: "Asia/Dhaka",
   language: "English",
   currency: "USD",
