@@ -126,6 +126,7 @@ export default function About() {
   // Filter team
   const founderTeam = teamData.filter(t => t.category === "Founder");
   const bdTeamList = teamData.filter(t => t.category === "BD");
+  const usaTeamList = teamData.filter(t => t.category === "USA");
   const globalTeamList = teamData.filter(t => t.category === "Global");
   const advisorTeamList = teamData.filter(t => t.category === "Advisor");
   const [selectedMember, setSelectedMember] = useState<AboutTeamMember | null>(null);
@@ -664,34 +665,34 @@ export default function About() {
       </section>
 
 {/* ── Leadership Team ───────────────────────────────────────────────────── */}
-      <section className="py-28 bg-[#F6FBF8]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-[#0B5D3F]/10 text-[#0B5D3F] text-xs font-bold px-4 py-2 rounded-full mb-5 uppercase tracking-widest">
+      <section className="py-20 sm:py-24 bg-[#F6FBF8]">
+        <div className="max-w-[1580px] mx-auto px-4 sm:px-6">
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12 sm:mb-14">
+            <div className="inline-flex items-center gap-2 bg-[#0B5D3F]/10 text-[#0B5D3F] text-xs font-bold px-4 py-2 rounded-full mb-4 uppercase tracking-widest">
               <Users size={12} /> Global Team
             </div>
-            <h2 className="text-[#0B5D3F] mb-4">Global Leadership Team</h2>
-            <p className="text-gray-500 text-lg max-w-xl mx-auto">Scientists, strategists, community organizers, and technologists — united by an unshakeable belief in collective action.</p>
+            <h2 className="text-[#0B5D3F] mb-3">Global Leadership Team</h2>
+            <p className="text-gray-500 text-base sm:text-lg max-w-xl mx-auto">Scientists, strategists, community organizers, and technologists — united by an unshakeable belief in collective action.</p>
           </motion.div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3 sm:gap-4">
             {[...founderTeam, ...globalTeamList].map((member, i) => (
               <motion.div
-                key={member.name}
-                initial={{ opacity: 0, y: 30 }}
+                key={member.id || member.name}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
+                transition={{ delay: i * 0.04 }}
                 onClick={() => setSelectedMember(member)}
-                className="bg-white rounded-3xl overflow-hidden border border-gray-100/90 hover:border-[#0B5D3F]/25 hover:shadow-2xl hover:shadow-[#0B5D3F]/10 hover:-translate-y-1.5 transition-all duration-300 group flex flex-col h-full cursor-pointer"
+                className="bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-[#0B5D3F]/25 hover:shadow-xl hover:shadow-[#0B5D3F]/8 hover:-translate-y-1 transition-all duration-300 group flex flex-col h-full cursor-pointer"
               >
-                {/* Profile Showcase Portrait */}
-                <div className="relative aspect-[4/5] w-full overflow-hidden bg-gradient-to-br from-[#0B5D3F]/10 via-[#F6FBF8] to-[#173B63]/10">
+                {/* Profile Showcase Portrait - Compact */}
+                <div className="relative aspect-square w-full overflow-hidden bg-gradient-to-br from-[#0B5D3F]/10 via-[#F6FBF8] to-[#173B63]/10">
                   {member.img ? (
                     <ImageWithFallback
                       src={member.img}
                       alt={member.name}
-                      className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out ${
+                      className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out ${
                         member.imagePosition === "center"
                           ? "object-center"
                           : member.imagePosition === "bottom"
@@ -700,62 +701,53 @@ export default function About() {
                       }`}
                     />
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-[#0B5D3F]/15 via-[#F6FBF8] to-[#173B63]/10 p-6">
-                      <div className="w-24 h-24 rounded-full bg-white shadow-md border border-[#0B5D3F]/20 flex items-center justify-center text-[#0B5D3F] font-black text-3xl tracking-wider">
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-[#0B5D3F]/15 via-[#F6FBF8] to-[#173B63]/10 p-3">
+                      <div className="w-14 h-14 rounded-full bg-white shadow-sm border border-[#0B5D3F]/20 flex items-center justify-center text-[#0B5D3F] font-black text-lg tracking-wider">
                         {member.name.split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase()}
                       </div>
-                      <span className="mt-3 text-xs font-bold text-[#0B5D3F]/70 tracking-widest uppercase">ESN Leadership</span>
+                      <span className="mt-2 text-[10px] font-bold text-[#0B5D3F]/70 tracking-wider uppercase text-center line-clamp-1">ESN Leadership</span>
                     </div>
                   )}
 
                   {/* Gradient Vignette (bottom) */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent opacity-90 group-hover:opacity-95 transition-opacity pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80 pointer-events-none" />
 
-                  {/* Category badge - Unobtrusive at top right */}
-                  <div className="absolute top-3.5 right-3.5 flex items-center gap-1.5 bg-white/95 backdrop-blur-md text-[#0B5D3F] text-[11px] font-extrabold px-3 py-1.5 rounded-full shadow-md border border-white/40">
-                    <Sparkles size={11} className="text-[#4CAF50]" />
+                  {/* Category badge */}
+                  <div className="absolute top-2.5 right-2.5 flex items-center gap-1 bg-white/95 backdrop-blur-md text-[#0B5D3F] text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-sm border border-white/40">
+                    <Sparkles size={9} className="text-[#4CAF50]" />
                     <span>{member.category || "Leader"}</span>
                   </div>
 
-                  {/* Location pill - Natural position at bottom left */}
-                  <div className="absolute bottom-3.5 left-3.5 flex items-center gap-1.5 bg-black/55 backdrop-blur-md text-white text-xs font-medium px-3 py-1.5 rounded-full border border-white/20 shadow-md">
-                    <MapPin size={11} className="text-[#4CAF50]" />
-                    <span>{member.country || "Global"}</span>
-                  </div>
+                  {/* Location pill */}
+                  {member.country && (
+                    <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-black/60 backdrop-blur-md text-white text-[10px] font-medium px-2 py-0.5 rounded-full border border-white/20 shadow-sm max-w-[85%] truncate">
+                      <MapPin size={9} className="text-[#4CAF50] shrink-0" />
+                      <span className="truncate">{member.country}</span>
+                    </div>
+                  )}
                 </div>
 
-                {/* Info */}
-                <div className="p-6 sm:p-7 flex-1 flex flex-col justify-between">
+                {/* Info: Name, Position & Experience Keywords */}
+                <div className="p-3.5 flex-1 flex flex-col justify-between">
                   <div>
-                    <h4 className="font-black text-gray-900 text-xl mb-1 group-hover:text-[#0B5D3F] transition-colors" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    <h4 className="font-extrabold text-gray-900 text-sm mb-0.5 group-hover:text-[#0B5D3F] transition-colors line-clamp-1" title={member.name} style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                       {member.name}
                     </h4>
-                    <p className="text-[#0B5D3F] text-sm font-bold mb-3 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#4CAF50]" />
-                      {member.role}
-                    </p>
-                    <p className="text-gray-500 text-xs sm:text-sm leading-relaxed mb-4 line-clamp-3">
-                      {member.bio}
+                    <p className="text-[#0B5D3F] text-xs font-semibold mb-2 flex items-center gap-1 line-clamp-1" title={member.role}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#4CAF50] shrink-0" />
+                      <span className="truncate">{member.role}</span>
                     </p>
 
-                    {/* Tags */}
+                    {/* Experience Keywords */}
                     {member.tags && member.tags.length > 0 && (
-                      <div className="flex gap-1.5 flex-wrap mb-4">
-                        {member.tags.map((tag) => (
-                          <span key={tag} className="text-[11px] font-bold bg-[#0B5D3F]/8 text-[#0B5D3F] px-3 py-1 rounded-full border border-[#0B5D3F]/12">
+                      <div className="flex gap-1 flex-wrap mt-auto">
+                        {member.tags.slice(0, 3).map((tag) => (
+                          <span key={tag} className="text-[10px] font-bold bg-[#0B5D3F]/8 text-[#0B5D3F] px-2 py-0.5 rounded-md border border-[#0B5D3F]/12 truncate">
                             {tag}
                           </span>
                         ))}
                       </div>
                     )}
-                  </div>
-
-                  {/* Showcase Action Link */}
-                  <div className="pt-3.5 border-t border-gray-100 flex items-center justify-between text-xs font-bold text-[#0B5D3F] group-hover:text-[#4CAF50] transition-colors mt-auto">
-                    <span>View Profile Showcase</span>
-                    <div className="w-7 h-7 rounded-full bg-[#0B5D3F]/8 flex items-center justify-center group-hover:bg-[#0B5D3F] group-hover:text-white transition-all">
-                      <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -765,34 +757,34 @@ export default function About() {
       </section>
 
       {/* ── BD Team ─────────────────────────────────────────────────── */}
-      <section className="py-28 bg-white border-t border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-[#4CAF50]/10 text-[#0B5D3F] text-xs font-bold px-4 py-2 rounded-full mb-5 uppercase tracking-widest">
+      <section className="py-20 sm:py-24 bg-white border-t border-gray-100">
+        <div className="max-w-[1580px] mx-auto px-4 sm:px-6">
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12 sm:mb-14">
+            <div className="inline-flex items-center gap-2 bg-[#4CAF50]/10 text-[#0B5D3F] text-xs font-bold px-4 py-2 rounded-full mb-4 uppercase tracking-widest">
               <MapPin size={12} /> BD Team
             </div>
-            <h2 className="text-[#0B5D3F] mb-4">Bangladesh Leadership</h2>
-            <p className="text-gray-500 text-lg max-w-xl mx-auto">The dedicated team leading our grassroots initiatives and national campaigns in Bangladesh.</p>
+            <h2 className="text-[#0B5D3F] mb-3">Bangladesh Leadership</h2>
+            <p className="text-gray-500 text-base sm:text-lg max-w-xl mx-auto">The dedicated team leading our grassroots initiatives and national campaigns in Bangladesh.</p>
           </motion.div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3 sm:gap-4">
             {bdTeamList.map((member, i) => (
               <motion.div
-                key={member.name}
-                initial={{ opacity: 0, y: 30 }}
+                key={member.id || member.name}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
+                transition={{ delay: i * 0.04 }}
                 onClick={() => setSelectedMember(member)}
-                className="bg-white rounded-3xl overflow-hidden border border-gray-100/90 hover:border-[#4CAF50]/30 hover:shadow-2xl hover:shadow-[#0B5D3F]/10 hover:-translate-y-1.5 transition-all duration-300 group flex flex-col h-full cursor-pointer"
+                className="bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-[#4CAF50]/30 hover:shadow-xl hover:shadow-[#0B5D3F]/8 hover:-translate-y-1 transition-all duration-300 group flex flex-col h-full cursor-pointer"
               >
-                {/* Profile Showcase Portrait */}
-                <div className="relative aspect-[4/5] w-full overflow-hidden bg-gradient-to-br from-[#0B5D3F]/10 via-[#F6FBF8] to-[#173B63]/10">
+                {/* Profile Showcase Portrait - Compact */}
+                <div className="relative aspect-square w-full overflow-hidden bg-gradient-to-br from-[#0B5D3F]/10 via-[#F6FBF8] to-[#173B63]/10">
                   {member.img ? (
                     <ImageWithFallback
                       src={member.img}
                       alt={member.name}
-                      className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out ${
+                      className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out ${
                         member.imagePosition === "center"
                           ? "object-center"
                           : member.imagePosition === "bottom"
@@ -801,62 +793,53 @@ export default function About() {
                       }`}
                     />
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-[#4CAF50]/15 via-[#F6FBF8] to-[#0B5D3F]/10 p-6">
-                      <div className="w-24 h-24 rounded-full bg-white shadow-md border border-[#4CAF50]/20 flex items-center justify-center text-[#0B5D3F] font-black text-3xl tracking-wider">
-                        {member.name.slice(0, 2).toUpperCase()}
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-[#4CAF50]/15 via-[#F6FBF8] to-[#0B5D3F]/10 p-3">
+                      <div className="w-14 h-14 rounded-full bg-white shadow-sm border border-[#4CAF50]/20 flex items-center justify-center text-[#0B5D3F] font-black text-lg tracking-wider">
+                        {member.name.split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase()}
                       </div>
-                      <span className="mt-3 text-xs font-bold text-[#0B5D3F]/70 tracking-widest uppercase">Bangladesh Team</span>
+                      <span className="mt-2 text-[10px] font-bold text-[#0B5D3F]/70 tracking-wider uppercase text-center line-clamp-1">Bangladesh Team</span>
                     </div>
                   )}
 
                   {/* Gradient Vignette (bottom) */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent opacity-90 group-hover:opacity-95 transition-opacity pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80 pointer-events-none" />
 
                   {/* Category badge */}
-                  <div className="absolute top-3.5 right-3.5 flex items-center gap-1.5 bg-white/95 backdrop-blur-md text-[#0B5D3F] text-[11px] font-extrabold px-3 py-1.5 rounded-full shadow-md border border-white/40">
-                    <Sparkles size={11} className="text-[#4CAF50]" />
+                  <div className="absolute top-2.5 right-2.5 flex items-center gap-1 bg-white/95 backdrop-blur-md text-[#0B5D3F] text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-sm border border-white/40">
+                    <Sparkles size={9} className="text-[#4CAF50]" />
                     <span>BD Chapter</span>
                   </div>
 
                   {/* Location pill */}
-                  <div className="absolute bottom-3.5 left-3.5 flex items-center gap-1.5 bg-black/55 backdrop-blur-md text-white text-xs font-medium px-3 py-1.5 rounded-full border border-white/20 shadow-md">
-                    <MapPin size={11} className="text-[#4CAF50]" />
-                    <span>{member.country || "Bangladesh"}</span>
-                  </div>
+                  {member.country && (
+                    <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-black/60 backdrop-blur-md text-white text-[10px] font-medium px-2 py-0.5 rounded-full border border-white/20 shadow-sm max-w-[85%] truncate">
+                      <MapPin size={9} className="text-[#4CAF50] shrink-0" />
+                      <span className="truncate">{member.country}</span>
+                    </div>
+                  )}
                 </div>
 
-                {/* Info */}
-                <div className="p-6 sm:p-7 flex-1 flex flex-col justify-between">
+                {/* Info: Name, Position & Experience Keywords */}
+                <div className="p-3.5 flex-1 flex flex-col justify-between">
                   <div>
-                    <h4 className="font-black text-gray-900 text-xl mb-1 group-hover:text-[#0B5D3F] transition-colors" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    <h4 className="font-extrabold text-gray-900 text-sm mb-0.5 group-hover:text-[#0B5D3F] transition-colors line-clamp-1" title={member.name} style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                       {member.name}
                     </h4>
-                    <p className="text-[#0B5D3F] text-sm font-bold mb-3 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#4CAF50]" />
-                      {member.role}
-                    </p>
-                    <p className="text-gray-500 text-xs sm:text-sm leading-relaxed mb-4 line-clamp-3">
-                      {member.bio}
+                    <p className="text-[#0B5D3F] text-xs font-semibold mb-2 flex items-center gap-1 line-clamp-1" title={member.role}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#4CAF50] shrink-0" />
+                      <span className="truncate">{member.role}</span>
                     </p>
 
-                    {/* Tags */}
+                    {/* Experience Keywords */}
                     {member.tags && member.tags.length > 0 && (
-                      <div className="flex gap-1.5 flex-wrap mb-4">
-                        {member.tags.map((tag) => (
-                          <span key={tag} className="text-[11px] font-bold bg-[#4CAF50]/10 text-[#0B5D3F] px-3 py-1 rounded-full border border-[#4CAF50]/20">
+                      <div className="flex gap-1 flex-wrap mt-auto">
+                        {member.tags.slice(0, 3).map((tag) => (
+                          <span key={tag} className="text-[10px] font-bold bg-[#4CAF50]/10 text-[#0B5D3F] px-2 py-0.5 rounded-md border border-[#4CAF50]/20 truncate">
                             {tag}
                           </span>
                         ))}
                       </div>
                     )}
-                  </div>
-
-                  {/* Showcase Action Link */}
-                  <div className="pt-3.5 border-t border-gray-100 flex items-center justify-between text-xs font-bold text-[#0B5D3F] group-hover:text-[#4CAF50] transition-colors mt-auto">
-                    <span>View Profile Showcase</span>
-                    <div className="w-7 h-7 rounded-full bg-[#4CAF50]/15 flex items-center justify-center group-hover:bg-[#0B5D3F] group-hover:text-white transition-all">
-                      <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -864,6 +847,102 @@ export default function About() {
           </div>
         </div>
       </section>
+
+      {/* ── USA Team ─────────────────────────────────────────────────── */}
+      {usaTeamList.length > 0 && (
+        <section className="py-20 sm:py-24 bg-[#F6FBF8] border-t border-gray-100">
+          <div className="max-w-[1580px] mx-auto px-4 sm:px-6">
+            <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12 sm:mb-14">
+              <div className="inline-flex items-center gap-2 bg-[#173B63]/10 text-[#173B63] text-xs font-bold px-4 py-2 rounded-full mb-4 uppercase tracking-widest">
+                <MapPin size={12} /> USA Team
+              </div>
+              <h2 className="text-[#0B5D3F] mb-3">United States Leadership</h2>
+              <p className="text-gray-500 text-base sm:text-lg max-w-xl mx-auto">
+                The dedicated leaders spearheading North American climate coalitions, policy advocacy, and community sustainability initiatives.
+              </p>
+            </motion.div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3 sm:gap-4">
+              {usaTeamList.map((member, i) => (
+                <motion.div
+                  key={member.id || member.name}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.04 }}
+                  onClick={() => setSelectedMember(member)}
+                  className="bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-[#173B63]/30 hover:shadow-xl hover:shadow-[#173B63]/8 hover:-translate-y-1 transition-all duration-300 group flex flex-col h-full cursor-pointer"
+                >
+                  {/* Profile Showcase Portrait - Compact */}
+                  <div className="relative aspect-square w-full overflow-hidden bg-gradient-to-br from-[#173B63]/10 via-[#F6FBF8] to-[#0B5D3F]/10">
+                    {member.img ? (
+                      <ImageWithFallback
+                        src={member.img}
+                        alt={member.name}
+                        className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out ${
+                          member.imagePosition === "center"
+                            ? "object-center"
+                            : member.imagePosition === "bottom"
+                            ? "object-bottom"
+                            : "object-top"
+                        }`}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-[#173B63]/15 via-[#F6FBF8] to-[#0B5D3F]/10 p-3">
+                        <div className="w-14 h-14 rounded-full bg-white shadow-sm border border-[#173B63]/20 flex items-center justify-center text-[#173B63] font-black text-lg tracking-wider">
+                          {member.name.split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase()}
+                        </div>
+                        <span className="mt-2 text-[10px] font-bold text-[#173B63]/80 tracking-wider uppercase text-center line-clamp-1">USA Team</span>
+                      </div>
+                    )}
+
+                    {/* Gradient Vignette (bottom) */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80 pointer-events-none" />
+
+                    {/* Category badge */}
+                    <div className="absolute top-2.5 right-2.5 flex items-center gap-1 bg-white/95 backdrop-blur-md text-[#173B63] text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-sm border border-white/40">
+                      <Sparkles size={9} className="text-[#173B63]" />
+                      <span>USA Chapter</span>
+                    </div>
+
+                    {/* Location pill */}
+                    {member.country && (
+                      <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-black/60 backdrop-blur-md text-white text-[10px] font-medium px-2 py-0.5 rounded-full border border-white/20 shadow-sm max-w-[85%] truncate">
+                        <MapPin size={9} className="text-[#4CAF50] shrink-0" />
+                        <span className="truncate">{member.country}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Info: Name, Position & Experience Keywords */}
+                  <div className="p-3.5 flex-1 flex flex-col justify-between">
+                    <div>
+                      <h4 className="font-extrabold text-gray-900 text-sm mb-0.5 group-hover:text-[#173B63] transition-colors line-clamp-1" title={member.name} style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                        {member.name}
+                      </h4>
+                      <p className="text-[#0B5D3F] text-xs font-semibold mb-2 flex items-center gap-1 line-clamp-1" title={member.role}>
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#173B63] shrink-0" />
+                        <span className="truncate">{member.role}</span>
+                      </p>
+
+                      {/* Experience Keywords */}
+                      {member.tags && member.tags.length > 0 && (
+                        <div className="flex gap-1 flex-wrap mt-auto">
+                          {member.tags.slice(0, 3).map((tag) => (
+                            <span key={tag} className="text-[10px] font-bold bg-[#173B63]/8 text-[#173B63] px-2 py-0.5 rounded-md border border-[#173B63]/15 truncate">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── Profile Showcase Modal ────────────────────────────────────────── */}
       <AnimatePresence>
@@ -925,7 +1004,7 @@ export default function About() {
                   <div>
                     <div className="inline-flex items-center gap-1.5 bg-[#0B5D3F]/10 text-[#0B5D3F] text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wider">
                       <Sparkles size={11} className="text-[#4CAF50]" />
-                      {selectedMember.category} Leadership
+                      {selectedMember.category === "USA" ? "USA Team" : selectedMember.category === "BD" ? "Bangladesh Team" : selectedMember.category} Leadership
                     </div>
                     <h3 className="text-2xl font-black text-gray-900 mb-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                       {selectedMember.name}

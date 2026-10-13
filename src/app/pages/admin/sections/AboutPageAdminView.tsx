@@ -42,7 +42,7 @@ export interface AboutTeamMember {
   bio: string;
   img: string;
   tags: string[];
-  category: "Advisor" | "BD" | "Global" | "Founder" | "Board";
+  category: "Advisor" | "BD" | "USA" | "Global" | "Founder" | "Board";
   imagePosition?: "top" | "center" | "bottom";
   linkedin?: string;
   email?: string;
@@ -132,7 +132,9 @@ export const initialTeamMembers: AboutTeamMember[] = [
   { id: 5, name: "Carlos Rodriguez", role: "Regional Director, Americas", country: "Bogotá, Colombia", bio: "Conservation biologist with 12 years in Amazonian field research. Carlos built ESN's Latin American network from 3 to 28 active countries in just four years.", img: "", tags: ["Conservation", "Biodiversity"], category: "Global" },
   { id: 6, name: "Amara Osei", role: "Director of Community Programs", country: "Accra, Ghana", bio: "Community organizer and former UN Environment Programme fellow. Amara designed ESN's grassroots engagement model now used by 6,000+ local chapters worldwide.", img: "", tags: ["Community", "Inclusion"], category: "Global" },
   { id: 7, name: "Dr. Saleemul Huq (Late)", role: "Chief Scientific Advisor", country: "Bangladesh", bio: "Pioneering climate scientist and leading authority on climate change adaptation in developing countries.", img: "", tags: ["Climate Science", "Adaptation"], category: "Advisor" },
-  { id: 8, name: "Prof. Johan Rockström", role: "Global Strategy Advisor", country: "Sweden", bio: "Internationally recognized scientist on global sustainability issues, known for the Planetary Boundaries framework.", img: "", tags: ["Sustainability", "Earth Systems"], category: "Advisor" }
+  { id: 8, name: "Prof. Johan Rockström", role: "Global Strategy Advisor", country: "Sweden", bio: "Internationally recognized scientist on global sustainability issues, known for the Planetary Boundaries framework.", img: "", tags: ["Sustainability", "Earth Systems"], category: "Advisor" },
+  { id: 9, name: "Sarah Jenkins", role: "Country Director, USA", country: "Washington D.C., USA", bio: "Environmental policy strategist spearheading North American climate coalitions, youth advocacy, and renewable energy partnerships.", img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=600", tags: ["Policy", "North America", "Clean Energy"], category: "USA" },
+  { id: 10, name: "Marcus Hayes", role: "Head of Partnerships, USA", country: "San Francisco, USA", bio: "Connecting grassroots climate innovations with sustainability leaders and tech coalitions across the US.", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=600", tags: ["Partnerships", "Innovation"], category: "USA" }
 ];
 
 
@@ -196,6 +198,7 @@ export default function AboutPageAdminView() {
   const [showAddTeam, setShowAddTeam] = useState(false);
   const [editingTeamId, setEditingTeamId] = useState<number | null>(null);
   const [teamFormData, setTeamFormData] = useState<Partial<AboutTeamMember>>({ tags: [] });
+  const [teamCategoryFilter, setTeamCategoryFilter] = useState<string>("All");
 
   // Awards editing state
   const [showAddAward, setShowAddAward] = useState(false);
@@ -633,27 +636,85 @@ export default function AboutPageAdminView() {
       {activeTab === "team" && (
         <div className="bg-white rounded-2xl border border-gray-100 p-6">
            <div className="flex justify-between items-center mb-6">
-             <h4 className="font-bold text-gray-900">Team & Advisors</h4>
-             <button onClick={() => { setEditingTeamId(null); setTeamFormData({ category: "Global", tags: [] }); setShowAddTeam(true); }} className="flex items-center gap-2 bg-[#0B5D3F] text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-[#0a5237]">
+             <div>
+               <h4 className="font-bold text-gray-900">Team & Advisors</h4>
+               <p className="text-xs text-gray-400 mt-0.5">Manage leadership, Bangladesh team, USA team, and advisory board profiles</p>
+             </div>
+             <button
+               onClick={() => {
+                 setEditingTeamId(null);
+                 setTeamFormData({
+                   category: (teamCategoryFilter !== "All" && ["Founder", "Board", "BD", "USA", "Global", "Advisor"].includes(teamCategoryFilter))
+                     ? (teamCategoryFilter as any)
+                     : "USA",
+                   tags: [],
+                   img: "",
+                   country: teamCategoryFilter === "USA" ? "United States" : teamCategoryFilter === "BD" ? "Dhaka, Bangladesh" : ""
+                 });
+                 setShowAddTeam(true);
+               }}
+               className="flex items-center gap-2 bg-[#0B5D3F] text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-[#0a5237] shadow-sm transition-all"
+             >
                <Plus size={16} /> Add Member
              </button>
+           </div>
+
+           {/* Category Filter Pills */}
+           <div className="flex items-center gap-2 flex-wrap mb-6 border-b border-gray-100 pb-4">
+             {[
+               { id: "All", label: "All Members" },
+               { id: "Founder", label: "Founders" },
+               { id: "Board", label: "Board Members" },
+               { id: "BD", label: "Bangladesh Team" },
+               { id: "USA", label: "USA Team" },
+               { id: "Global", label: "Global Team" },
+               { id: "Advisor", label: "Advisors" }
+             ].map(({ id, label }) => {
+               const count = id === "All" ? teamMembers.length : teamMembers.filter(m => m.category === id).length;
+               return (
+                 <button
+                   key={id}
+                   type="button"
+                   onClick={() => setTeamCategoryFilter(id)}
+                   className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                     teamCategoryFilter === id
+                       ? "bg-[#0B5D3F] text-white shadow-sm"
+                       : "bg-gray-100 text-gray-600 hover:bg-gray-200/80"
+                   }`}
+                 >
+                   <span>{label}</span>
+                   <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-extrabold ${
+                     teamCategoryFilter === id ? "bg-white/20 text-white" : "bg-white text-gray-500 border border-gray-200"
+                   }`}>
+                     {count}
+                   </span>
+                 </button>
+               );
+             })}
            </div>
 
            <AnimatePresence>
              {showAddTeam && (
                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="mb-6 bg-[#F6FBF8] p-5 rounded-xl border border-[#4CAF50]/30 overflow-hidden">
+                  <div className="flex items-center justify-between mb-4 border-b border-gray-200/60 pb-2">
+                    <h5 className="font-bold text-gray-800 text-sm">
+                      {editingTeamId !== null ? "Edit Team Member" : "Add New Team Member"}
+                    </h5>
+                    <span className="text-xs text-gray-400">All fields are editable & live-synced</span>
+                  </div>
+
                   <div className="grid md:grid-cols-2 gap-4 mb-4">
                     <div>
                       <label className="text-xs font-bold text-gray-600 mb-1.5 block">Name</label>
-                      <input type="text" value={teamFormData.name || ""} onChange={e => setTeamFormData({ ...teamFormData, name: e.target.value })} className="w-full px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
+                      <input type="text" value={teamFormData.name || ""} onChange={e => setTeamFormData({ ...teamFormData, name: e.target.value })} placeholder="Full Name" className="w-full px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
                     </div>
                     <div>
                       <label className="text-xs font-bold text-gray-600 mb-1.5 block">Role</label>
-                      <input type="text" value={teamFormData.role || ""} onChange={e => setTeamFormData({ ...teamFormData, role: e.target.value })} className="w-full px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
+                      <input type="text" value={teamFormData.role || ""} onChange={e => setTeamFormData({ ...teamFormData, role: e.target.value })} placeholder="e.g. Country Director, USA" className="w-full px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
                     </div>
                     <div>
                       <label className="text-xs font-bold text-gray-600 mb-1.5 block">Location (Country / City)</label>
-                      <input type="text" value={teamFormData.country || ""} onChange={e => setTeamFormData({ ...teamFormData, country: e.target.value })} className="w-full px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
+                      <input type="text" value={teamFormData.country || ""} onChange={e => setTeamFormData({ ...teamFormData, country: e.target.value })} placeholder="e.g. New York, USA or Washington D.C." className="w-full px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
                     </div>
                     <div>
                       <label className="text-xs font-bold text-gray-600 mb-1.5 block">Category</label>
@@ -661,6 +722,7 @@ export default function AboutPageAdminView() {
                         <option value="Founder">Founder</option>
                         <option value="Board">Board Member / Governance</option>
                         <option value="BD">Bangladesh Team</option>
+                        <option value="USA">USA Team</option>
                         <option value="Global">Global Team</option>
                         <option value="Advisor">Advisor</option>
                       </select>
@@ -689,7 +751,7 @@ export default function AboutPageAdminView() {
                     </div>
                     <div className="md:col-span-2">
                       <label className="text-xs font-bold text-gray-600 mb-1.5 block">Tags (Comma separated)</label>
-                      <input type="text" value={teamFormData.tags?.join(", ") || ""} onChange={e => setTeamFormData({ ...teamFormData, tags: e.target.value.split(",").map(t => t.trim()).filter(Boolean) })} placeholder="e.g. Climate, Science" className="w-full px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
+                      <input type="text" value={teamFormData.tags?.join(", ") || ""} onChange={e => setTeamFormData({ ...teamFormData, tags: e.target.value.split(",").map(t => t.trim()).filter(Boolean) })} placeholder="e.g. Climate Policy, North America, Sustainability" className="w-full px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
                     </div>
                     <div>
                       <label className="text-xs font-bold text-gray-600 mb-1.5 block">LinkedIn URL</label>
@@ -701,7 +763,7 @@ export default function AboutPageAdminView() {
                     </div>
                     <div className="md:col-span-2">
                       <label className="text-xs font-bold text-gray-600 mb-1.5 block">Bio</label>
-                      <textarea rows={2} value={teamFormData.bio || ""} onChange={e => setTeamFormData({ ...teamFormData, bio: e.target.value })} className="w-full px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
+                      <textarea rows={2} value={teamFormData.bio || ""} onChange={e => setTeamFormData({ ...teamFormData, bio: e.target.value })} placeholder="Brief biography and background..." className="w-full px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -712,28 +774,84 @@ export default function AboutPageAdminView() {
              )}
            </AnimatePresence>
 
-           <div className="grid md:grid-cols-2 gap-3">
-             {teamMembers.map(t => (
-               <div key={t.id} className="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:border-[#4CAF50]/30 transition-all">
-                 <div className="flex items-center gap-4">
-                   <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
-                     {t.img ? <img src={t.img} alt={t.name} className="w-full h-full object-cover" /> : <Users size={18} className="text-gray-400" />}
-                   </div>
-                   <div>
-                     <div className="flex items-center gap-2">
-                       <h5 className="font-bold text-gray-900 text-sm">{t.name}</h5>
-                       <span className="text-[10px] font-bold bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">{t.category}</span>
+           {(() => {
+             const displayedMembers = teamCategoryFilter === "All"
+               ? teamMembers
+               : teamMembers.filter(t => t.category === teamCategoryFilter);
+
+             if (displayedMembers.length === 0) {
+               return (
+                 <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50/50">
+                   <Users size={36} className="mx-auto text-gray-300 mb-2" />
+                   <p className="text-sm font-bold text-gray-600">
+                     No members in {teamCategoryFilter === "USA" ? "USA Team" : teamCategoryFilter === "BD" ? "Bangladesh Team" : teamCategoryFilter} yet.
+                   </p>
+                   <p className="text-xs text-gray-400 mt-1 max-w-sm mx-auto">
+                     Click below to add your first member to this category.
+                   </p>
+                   <button
+                     onClick={() => {
+                       setEditingTeamId(null);
+                       setTeamFormData({
+                         category: (teamCategoryFilter as any),
+                         tags: [],
+                         img: "",
+                         country: teamCategoryFilter === "USA" ? "United States" : teamCategoryFilter === "BD" ? "Dhaka, Bangladesh" : ""
+                       });
+                       setShowAddTeam(true);
+                     }}
+                     className="mt-4 inline-flex items-center gap-1.5 bg-[#0B5D3F] text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-[#0a5237]"
+                   >
+                     <Plus size={14} /> Add {teamCategoryFilter === "USA" ? "USA Team Member" : "Member"}
+                   </button>
+                 </div>
+               );
+             }
+
+             return (
+               <div className="grid md:grid-cols-2 gap-3">
+                 {displayedMembers.map(t => (
+                   <div key={t.id} className="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:border-[#4CAF50]/30 transition-all bg-white hover:shadow-sm">
+                     <div className="flex items-center gap-4 min-w-0">
+                       <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden border border-gray-100">
+                         {t.img ? (
+                           <img src={t.img} alt={t.name} className="w-full h-full object-cover" />
+                         ) : (
+                           <Users size={20} className="text-gray-400" />
+                         )}
+                       </div>
+                       <div className="min-w-0">
+                         <div className="flex items-center gap-2 flex-wrap">
+                           <h5 className="font-bold text-gray-900 text-sm truncate">{t.name}</h5>
+                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                             t.category === "USA"
+                               ? "bg-blue-50 text-blue-700 border border-blue-200"
+                               : t.category === "BD"
+                               ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                               : t.category === "Founder"
+                               ? "bg-amber-50 text-amber-700 border border-amber-200"
+                               : t.category === "Board"
+                               ? "bg-indigo-50 text-indigo-700 border border-indigo-200"
+                               : t.category === "Advisor"
+                               ? "bg-purple-50 text-purple-700 border border-purple-200"
+                               : "bg-gray-100 text-gray-600 border border-gray-200"
+                           }`}>
+                             {t.category === "USA" ? "USA Team" : t.category === "BD" ? "Bangladesh Team" : t.category}
+                           </span>
+                         </div>
+                         <p className="text-xs text-[#0B5D3F] font-semibold truncate">{t.role}</p>
+                         {t.country && <p className="text-[11px] text-gray-400 truncate">{t.country}</p>}
+                       </div>
                      </div>
-                     <p className="text-xs text-[#0B5D3F] font-semibold">{t.role}</p>
+                     <div className="flex gap-1.5 shrink-0 ml-2">
+                       <button onClick={() => { setEditingTeamId(t.id); setTeamFormData(t); setShowAddTeam(true); }} className="p-2 text-gray-400 hover:text-[#0B5D3F] hover:bg-gray-50 rounded-lg transition-colors"><Edit3 size={16} /></button>
+                       <button onClick={() => handleDeleteTeam(t.id)} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={16} /></button>
+                     </div>
                    </div>
-                 </div>
-                 <div className="flex gap-2">
-                   <button onClick={() => { setEditingTeamId(t.id); setTeamFormData(t); setShowAddTeam(true); }} className="p-2 text-gray-400 hover:text-[#0B5D3F] hover:bg-gray-50 rounded-lg"><Edit3 size={16} /></button>
-                   <button onClick={() => handleDeleteTeam(t.id)} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg"><Trash2 size={16} /></button>
-                 </div>
+                 ))}
                </div>
-             ))}
-           </div>
+             );
+           })()}
         </div>
        )}
 

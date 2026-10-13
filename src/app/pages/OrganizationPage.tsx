@@ -72,11 +72,12 @@ function OurTeamPage() {
   const [selectedMember, setSelectedMember] = useState<AboutTeamMember | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>("All");
 
-  const categories = ["All", "Executive", "Leadership", "Advisors", "Country Leads", "Bangladesh"];
+  const categories = ["All", "Executive", "Leadership", "Advisors", "Country Leads", "Bangladesh", "USA"];
 
   const filteredMembers = (teamData || initialTeamMembers).filter((m) => {
     if (activeCategory === "All") return true;
     if (activeCategory === "Bangladesh") return m.country?.toLowerCase().includes("bangladesh") || m.category?.toLowerCase().includes("bd");
+    if (activeCategory === "USA") return m.country?.toLowerCase().includes("usa") || m.country?.toLowerCase().includes("united states") || m.category === "USA";
     if (activeCategory === "Advisors") return m.category?.toLowerCase().includes("advisor");
     if (activeCategory === "Executive") return m.category?.toLowerCase().includes("exec") || m.category?.toLowerCase().includes("founder");
     if (activeCategory === "Leadership") return m.category?.toLowerCase().includes("lead") || !m.category;
