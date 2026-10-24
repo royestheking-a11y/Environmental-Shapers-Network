@@ -1,12 +1,13 @@
 import { useParams, Link, useLocation } from "react-router";
 import { motion, useInView } from "motion/react";
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useState } from "react";
 import { ArrowRight, Users, BookOpen, Calendar, ChevronRight, Globe2, CheckCircle2, MapPin, Star, TrendingUp, TreePine, Waves, Sun, ShieldAlert, Bug, GraduationCap, Microscope } from "lucide-react";
 import { ImageWithFallback } from "../components/ui/ImageWithFallback";
 import { useFirestoreData } from "../../lib/useFirestore";
 import { getInitialPrograms, resolveIcon, ProgramData } from "./admin/sections/ProgramsView";
 import { getInitialEvents, ESNEvent, DEFAULT_EVENTS_PAGE_SETTINGS, EventsPageSettings } from "./admin/sections/EventsView";
 import { getInitialProjects, Project } from "./admin/sections/ProjectsView";
+import { RollingCarousel } from "../components/ui/RollingCarousel";
 
 const programData: Record<string, {
   slug: string;
@@ -504,23 +505,18 @@ function GenericProgramPage({ d }: { d: any }) {
 
         {/* Active Projects Under This Program */}
         <div>
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
-            <div>
-              <div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider mb-2">On-The-Ground Operations</div>
-              <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 2.5vw, 2rem)", fontWeight: 800 }} className="text-gray-900">
-                Projects Under {d.label}
-              </h2>
-              <p className="text-gray-500 text-sm mt-1 max-w-xl">
-                Active grassroots deployments and field projects operating directly under this program umbrella.
-              </p>
-            </div>
-            <Link to="/projects" className="inline-flex items-center gap-1.5 text-sm font-bold text-[#0B5D3F] hover:text-[#4CAF50] transition-colors shrink-0">
-              View All Projects <ArrowRight size={15} />
-            </Link>
-          </div>
-
           {programProjects.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <RollingCarousel
+              badge={<div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider">On-The-Ground Operations</div>}
+              title={`Projects Under ${d.label}`}
+              subtitle="Active grassroots deployments and field projects operating directly under this program umbrella."
+              action={
+                <Link to="/projects" className="inline-flex items-center gap-1.5 text-sm font-bold text-[#0B5D3F] hover:text-[#4CAF50] transition-colors shrink-0">
+                  View All Projects <ArrowRight size={15} />
+                </Link>
+              }
+              itemClassName="w-[85vw] sm:w-[320px] md:w-[360px] shrink-0 snap-start"
+            >
               {programProjects.map((p, idx) => (
                 <motion.div
                   key={p.id}
@@ -528,6 +524,7 @@ function GenericProgramPage({ d }: { d: any }) {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: idx * 0.08 }}
+                  className="h-full"
                 >
                   <Link
                     to={`/projects/${p.id}`}
@@ -578,7 +575,7 @@ function GenericProgramPage({ d }: { d: any }) {
                   </Link>
                 </motion.div>
               ))}
-            </div>
+            </RollingCarousel>
           ) : (
             <div className="bg-white rounded-2xl p-10 border border-gray-100 text-center">
               <TreePine size={36} className="text-gray-300 mx-auto mb-3" />
@@ -593,25 +590,19 @@ function GenericProgramPage({ d }: { d: any }) {
           )}
         </div>
 
-
-
         {programEvents.length > 0 && (
           <div>
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
-              <div>
-                <span className="text-[#0B5D3F] text-xs font-bold uppercase tracking-[0.2em] block mb-2">Programs & Gatherings</span>
-                <h2 className="text-3xl md:text-4xl font-bold text-[#0A3D2A]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                  Upcoming {d.label} Events
-                </h2>
-                <p className="text-gray-600 text-sm mt-1 max-w-xl">
-                  Summits, campaigns, and hackathons hosted and led by ESN for this program.
-                </p>
-              </div>
-              <Link to="/events" className="inline-flex items-center gap-1.5 text-sm font-bold text-[#0B5D3F] hover:text-[#4CAF50] transition-colors shrink-0">
-                View All Events <ArrowRight size={15} />
-              </Link>
-            </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <RollingCarousel
+              badge={<span className="text-[#0B5D3F] text-xs font-bold uppercase tracking-[0.2em] block">Programs & Gatherings</span>}
+              title={`Upcoming ${d.label} Events`}
+              subtitle="Summits, campaigns, and hackathons hosted and led by ESN for this program."
+              action={
+                <Link to="/events" className="inline-flex items-center gap-1.5 text-sm font-bold text-[#0B5D3F] hover:text-[#4CAF50] transition-colors shrink-0">
+                  View All Events <ArrowRight size={15} />
+                </Link>
+              }
+              itemClassName="w-[85vw] sm:w-[320px] md:w-[360px] shrink-0 snap-start"
+            >
               {programEvents.map((e) => (
                 <Link
                   key={e.id}
@@ -628,6 +619,16 @@ function GenericProgramPage({ d }: { d: any }) {
                       <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-white shadow-sm" style={{ color: "#0B5D3F" }}>
                         {e.type}
                       </span>
+                      {e.status === "completed" && (
+                        <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-slate-900/80 text-white backdrop-blur-sm shadow-sm">
+                          Concluded
+                        </span>
+                      )}
+                      {e.status === "ongoing" && (
+                        <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-600 text-white backdrop-blur-sm shadow-sm flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> Live
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="p-6 flex-1 flex flex-col justify-between">
@@ -644,15 +645,17 @@ function GenericProgramPage({ d }: { d: any }) {
                       </p>
                     </div>
                     <div className="pt-4 border-t border-gray-100 flex items-center justify-between text-xs">
-                      <span className="font-bold text-[#4CAF50]">{e.registered}/{e.capacity} Registered</span>
+                      <span className="font-bold text-[#4CAF50]">
+                        {e.status === "completed" ? "Concluded Event" : `${e.registered || 0}/${e.capacity || 100} Registered`}
+                      </span>
                       <span className="text-[#0B5D3F] font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                        Learn More <ChevronRight size={14} />
+                        {e.status === "completed" ? "Event Recap" : "Learn More"} <ChevronRight size={14} />
                       </span>
                     </div>
                   </div>
                 </Link>
               ))}
-            </div>
+            </RollingCarousel>
           </div>
         )}
 
@@ -756,19 +759,33 @@ function EventsPage() {
   const Icon = Calendar;
   const [eventsList] = useFirestoreData<ESNEvent[]>("esn_events", getInitialEvents());
   const typeColors: Record<string, string> = { Summit: "#0B5D3F", Campaign: "#4CAF50", Hackathon: "#173B63", Forum: "#1565C0", Delegation: "#E65100", Gala: "#D6A95A" };
+  const [activeTab, setActiveTab] = useState<"all" | "upcoming" | "ongoing" | "completed">("all");
   
-  const displayEvents = eventsList && eventsList.length > 0
-    ? eventsList.map((e) => ({
-        id: e.id,
-        type: e.type,
-        status: e.status,
-        seats: `${e.registered}/${e.capacity} Seats`,
-        title: e.title,
-        date: `${e.date} · ${e.time}`,
-        location: `${e.location} (${e.mode})`,
-        image: e.image,
-      }))
-    : (DEFAULT_EVENTS_PAGE_SETTINGS as any).upcoming || [];
+  const rawList = eventsList && eventsList.length > 0 ? eventsList : getInitialEvents();
+
+  const counts = {
+    all: rawList.length,
+    upcoming: rawList.filter(e => e.status === "upcoming").length,
+    ongoing: rawList.filter(e => e.status === "ongoing").length,
+    completed: rawList.filter(e => e.status === "completed").length,
+  };
+
+  const filteredEvents = rawList.filter((e) => {
+    if (activeTab === "all") return true;
+    return e.status === activeTab;
+  });
+
+  const displayEvents = filteredEvents.map((e) => ({
+    id: e.id,
+    type: e.type,
+    status: e.status,
+    seats: `${e.registered || 0}/${e.capacity || 100} Seats`,
+    title: e.title,
+    date: `${e.date} · ${e.time || "TBD"}`,
+    location: `${e.location || "Online"} (${e.mode || "Virtual"})`,
+    image: e.image,
+    description: e.description,
+  }));
 
   return (
     <div className="bg-[#F6FBF8]">
@@ -793,14 +810,14 @@ function EventsPage() {
           <p className="text-gray-600 leading-relaxed max-w-2xl">{d.description || DEFAULT_EVENTS_PAGE_SETTINGS.description}</p>
         </div>
         <div>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <Link to="/contact?subject=Event%20Registration" className="group/header block">
               <div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5 group-hover/header:text-[#388E3C] transition-colors">
-                Calendar 2026
+                Global Network
                 <ArrowRight size={13} className="opacity-0 group-hover/header:opacity-100 group-hover/header:translate-x-1 transition-all" />
               </div>
               <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 2vw, 1.8rem)", fontWeight: 800 }} className="text-gray-900 group-hover/header:text-[#0B5D3F] transition-colors">
-                Upcoming Events
+                {activeTab === "completed" ? "Past & Concluded Events" : activeTab === "ongoing" ? "Live Ongoing Events" : "Events & Mobilizations"}
               </h2>
             </Link>
             <Link
@@ -810,60 +827,130 @@ function EventsPage() {
               Contact Our Events Team <ArrowRight size={14} />
             </Link>
           </div>
-          <div className="grid md:grid-cols-2 gap-5">
-            {displayEvents.map((e: any, i) => (
-              <motion.div
-                key={e.title + i}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }}
-                className="h-full"
+
+          {/* Filter Tabs */}
+          <div className="flex items-center gap-2 flex-wrap mb-8 pb-3 border-b border-gray-200/70">
+            {[
+              { id: "all" as const, label: "All Events", count: counts.all },
+              { id: "upcoming" as const, label: "Upcoming", count: counts.upcoming },
+              { id: "ongoing" as const, label: "Live Now", count: counts.ongoing },
+              { id: "completed" as const, label: "Past Events", count: counts.completed },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                  activeTab === tab.id
+                    ? "bg-[#0B5D3F] text-white shadow-sm"
+                    : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200/80"
+                }`}
               >
-                <Link
-                  to={`/events/${e.id}`}
-                  className="bg-white rounded-2xl p-6 border border-gray-100 hover:border-[#4CAF50]/40 hover:shadow-xl transition-all group flex flex-col justify-between h-full cursor-pointer"
-                >
-                  <div>
-                    {e.image && (
-                      <div className="h-44 rounded-xl overflow-hidden mb-4 border border-gray-100/80">
-                        <ImageWithFallback src={e.image} alt={e.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      </div>
-                    )}
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ backgroundColor: (typeColors[e.type] || "#0B5D3F") + "15", color: typeColors[e.type] || "#0B5D3F" }}>
-                          {e.type}
-                        </span>
-                        {e.status === "postponed" && (
-                          <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
-                            Postponed
-                          </span>
-                        )}
-                        {e.status === "cancelled" && (
-                          <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">
-                            Cancelled
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-xs font-semibold text-[#4CAF50] bg-[#4CAF50]/10 px-3 py-1 rounded-full shrink-0">{e.seats}</span>
-                    </div>
-                    <div className="font-bold text-gray-900 text-lg mb-3 group-hover:text-[#0B5D3F] transition-colors">{e.title}</div>
-                    <div className="flex items-center gap-4 text-xs text-gray-400 mb-4">
-                      <span className="flex items-center gap-1.5"><Calendar size={13} className="text-[#4CAF50]" /> {e.date}</span>
-                      <span className="flex items-center gap-1.5"><MapPin size={13} className="text-[#4CAF50]" /> {e.location}</span>
-                    </div>
-                  </div>
-                  <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs font-bold text-[#0B5D3F] group-hover:text-[#4CAF50] transition-colors">
-                    <span>View Event Details</span>
-                    <span className="inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                      Learn More & Register <ArrowRight size={13} />
-                    </span>
-                  </div>
-                </Link>
-              </motion.div>
+                {tab.id === "ongoing" && tab.count > 0 && (
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                )}
+                <span>{tab.label}</span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${
+                  activeTab === tab.id ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500"
+                }`}>
+                  {tab.count}
+                </span>
+              </button>
             ))}
           </div>
+
+          <div className="grid md:grid-cols-2 gap-5">
+            {displayEvents.map((e: any, i) => {
+              const isPast = e.status === "completed";
+              const isLive = e.status === "ongoing";
+
+              return (
+                <motion.div
+                  key={e.title + i}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.08 }}
+                  className="h-full"
+                >
+                  <Link
+                    to={`/events/${e.id}`}
+                    className="bg-white rounded-2xl p-6 border border-gray-100 hover:border-[#4CAF50]/40 hover:shadow-xl transition-all group flex flex-col justify-between h-full cursor-pointer"
+                  >
+                    <div>
+                      {e.image && (
+                        <div className="h-44 rounded-xl overflow-hidden mb-4 border border-gray-100/80">
+                          <ImageWithFallback src={e.image} alt={e.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        </div>
+                      )}
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ backgroundColor: (typeColors[e.type] || "#0B5D3F") + "15", color: typeColors[e.type] || "#0B5D3F" }}>
+                            {e.type}
+                          </span>
+                          {isLive && (
+                            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                              Live Now
+                            </span>
+                          )}
+                          {isPast && (
+                            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                              ✓ Past Event
+                            </span>
+                          )}
+                          {e.status === "upcoming" && (
+                            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
+                              Upcoming
+                            </span>
+                          )}
+                          {e.status === "postponed" && (
+                            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                              Postponed
+                            </span>
+                          )}
+                          {e.status === "cancelled" && (
+                            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">
+                              Cancelled
+                            </span>
+                          )}
+                        </div>
+                        <span className={`text-xs font-semibold px-3 py-1 rounded-full shrink-0 ${
+                          isPast ? "bg-gray-100 text-gray-600" : "bg-[#4CAF50]/10 text-[#4CAF50]"
+                        }`}>
+                          {isPast ? "Concluded" : e.seats}
+                        </span>
+                      </div>
+                      <div className="font-bold text-gray-900 text-lg mb-3 group-hover:text-[#0B5D3F] transition-colors">{e.title}</div>
+                      <div className="flex items-center gap-4 text-xs text-gray-400 mb-4">
+                        <span className="flex items-center gap-1.5"><Calendar size={13} className="text-[#4CAF50]" /> {e.date}</span>
+                        <span className="flex items-center gap-1.5"><MapPin size={13} className="text-[#4CAF50]" /> {e.location}</span>
+                      </div>
+                    </div>
+                    <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs font-bold text-[#0B5D3F] group-hover:text-[#4CAF50] transition-colors">
+                      <span>{isPast ? "Event Recap & Impact" : "View Event Details"}</span>
+                      <span className="inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                        {isPast ? "View Details" : "Learn More & Register"} <ArrowRight size={13} />
+                      </span>
+                    </div>
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {displayEvents.length === 0 && (
+            <div className="bg-white rounded-3xl p-12 text-center border border-gray-100 shadow-sm">
+              <Calendar size={40} className="mx-auto mb-3 text-gray-300" />
+              <h4 className="text-gray-800 font-bold mb-1">No Events Found</h4>
+              <p className="text-xs text-gray-500 mb-4">There are currently no events matching this filter category.</p>
+              <button
+                onClick={() => setActiveTab("all")}
+                className="text-xs font-bold text-[#0B5D3F] bg-emerald-50 px-4 py-2 rounded-xl hover:bg-emerald-100 transition-colors"
+              >
+                View All Events
+              </button>
+            </div>
+          )}
         </div>
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
           className="bg-gradient-to-r from-[#0B5D3F] to-[#173B63] rounded-3xl p-12 text-white text-center">

@@ -122,7 +122,7 @@ const modeIcon = { "In-Person": MapPin, "Virtual": Video, "Hybrid": Globe2 };
 const blankEvent: Omit<ESNEvent, "id"> = {
   title: "", type: "Webinar", date: "", time: "", location: "", mode: "Virtual",
   capacity: 100, registered: 0, status: "upcoming", description: "", speaker: "", image: "",
-  projectId: undefined, projectName: "", campaignId: undefined, campaignName: "",
+  projectName: "", campaignName: "",
   programSlug: "youth", initiativeTitle: "Youth COP Delegation Support",
   impactTrees: 0, impactCommunities: 0, impactBeneficiaries: 0,
 };
@@ -180,6 +180,7 @@ export function EventsView() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<Omit<ESNEvent, "id">>(blankEvent);
   const [editId, setEditId] = useState<number | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const [detail, setDetail] = useState<ESNEvent | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const [showQR, setShowQR] = useState<ESNEvent | null>(null);
@@ -202,22 +203,36 @@ export function EventsView() {
   };
 
   const save = async (list: ESNEvent[]) => {
-    setEvents(list);
+    await setEvents(list);
     await saveFirestoreData("esn_events", list);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!form.title || !form.date) return;
-    if (editId !== null) {
-      save(events.map((e) => e.id === editId ? { ...form, id: editId } : e));
-      logAdminActivity("Updated Event", "Events", `Saved updates to event "${form.title}" (${form.status || "upcoming"}).`, "info");
-    } else {
-      save([{ ...form, id: Date.now() }, ...events]);
-      logAdminActivity("Created Event", "Events", `Created event "${form.title}" (${form.status || "upcoming"}).`, "success");
+    setIsSaving(true);
+    try {
+      const cleanForm: any = { ...form };
+      if (!cleanForm.projectId) delete cleanForm.projectId;
+      if (!cleanForm.campaignId) delete cleanForm.campaignId;
+
+      if (editId !== null) {
+        const updatedList = events.map((e) => e.id === editId ? { ...cleanForm, id: editId } : e);
+        await save(updatedList);
+        await logAdminActivity("Updated Event", "Events", `Saved updates to event "${form.title}" (${form.status || "upcoming"}).`, "info");
+      } else {
+        const newEvent: ESNEvent = { ...cleanForm, id: Date.now() };
+        const updatedList = [newEvent, ...events];
+        await save(updatedList);
+        await logAdminActivity("Created Event", "Events", `Created event "${form.title}" (${form.status || "upcoming"}).`, "success");
+      }
+      setShowForm(false);
+      setEditId(null);
+      setForm(blankEvent);
+    } catch (err) {
+      console.error("Failed to save event:", err);
+    } finally {
+      setIsSaving(false);
     }
-    setShowForm(false);
-    setEditId(null);
-    setForm(blankEvent);
   };
 
   const startEdit = (ev: ESNEvent) => {
@@ -509,10 +524,20 @@ export function EventsView() {
                 </div>
               </div>
               <div className="flex gap-3 mt-6">
-                <button onClick={handleSubmit} className="flex-1 bg-[#0B5D3F] text-white py-3 rounded-xl font-semibold hover:bg-[#0a5237] transition-all">
-                  {editId ? "Save Changes" : "Create Event"}
+                <button
+                  onClick={handleSubmit}
+                  disabled={isSaving}
+                  className="flex-1 bg-[#0B5D3F] text-white py-3 rounded-xl font-semibold hover:bg-[#0a5237] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isSaving ? "Saving to Cloud..." : editId ? "Save Changes" : "Create Event"}
                 </button>
-                <button onClick={() => setShowForm(false)} className="px-6 py-3 rounded-xl text-gray-500 hover:bg-gray-100 transition-all font-semibold">Cancel</button>
+                <button
+                  onClick={() => setShowForm(false)}
+                  disabled={isSaving}
+                  className="px-6 py-3 rounded-xl text-gray-500 hover:bg-gray-100 transition-all font-semibold"
+                >
+                  Cancel
+                </button>
               </div>
             </motion.div>
           </motion.div>

@@ -2,10 +2,26 @@ import { useState, useEffect } from "react";
 import { doc, getDoc, setDoc, onSnapshot } from "firebase/firestore";
 import { db } from "./firebase";
 
+function removeUndefinedDeep(val: any): any {
+  if (val === undefined) return null;
+  if (val === null || typeof val !== "object") return val;
+  if (Array.isArray(val)) {
+    return val.filter((v) => v !== undefined).map(removeUndefinedDeep);
+  }
+  const clean: Record<string, any> = {};
+  for (const [k, v] of Object.entries(val)) {
+    if (v !== undefined) {
+      clean[k] = removeUndefinedDeep(v);
+    }
+  }
+  return clean;
+}
+
 function sanitizeData<T>(val: T): T {
   if (val === null || val === undefined) return val;
   try {
-    const str = JSON.stringify(val);
+    const withoutUndefined = removeUndefinedDeep(val);
+    let str = JSON.stringify(withoutUndefined);
     if (
       str.includes("esnbd.org") ||
       str.includes("environmentalshapersnetwork.org") ||
@@ -15,7 +31,7 @@ function sanitizeData<T>(val: T): T {
       str.includes("legal@esn.org") ||
       str.includes("accessibility@esn.org")
     ) {
-      const updated = str
+      str = str
         .replace(/esnbd\.org/g, "esnglobal.org")
         .replace(/@environmentalshapersnetwork\.org/g, "@esnglobal.org")
         .replace(/contact@environmentalnetwork\.org/g, "enviro.sn@gmail.com")
@@ -23,8 +39,10 @@ function sanitizeData<T>(val: T): T {
         .replace(/privacy@esn\.org/g, "privacy@esnglobal.org")
         .replace(/legal@esn\.org/g, "legal@esnglobal.org")
         .replace(/accessibility@esn\.org/g, "accessibility@esnglobal.org");
-      return JSON.parse(updated) as T;
     }
+    // Roundtripping through JSON ensures undefined values are stripped out,
+    // preventing Firestore setDoc from throwing 'Unsupported field value: undefined'
+    return JSON.parse(str) as T;
   } catch {}
   return val;
 }
@@ -291,12 +309,18 @@ export async function fetchFirestoreData<T>(key: string, defaultValue: T): Promi
     } else {
       const localItem = typeof window !== "undefined" ? localStorage.getItem(`esn_cache_${key}`) : null;
       if (localItem === null) {
-        await setDoc(docRef, { value: defaultValue }, { merge: true }).catch(() => {});
-        setLocalCache(key, defaultValue);
+        const cleanDefault = sanitizeData(defaultValue);
+        if (cleanDefault !== undefined) {
+          await setDoc(docRef, { value: cleanDefault }, { merge: true }).catch(() => {});
+        }
+        setLocalCache(key, cleanDefault);
       } else {
         const cached = getLocalCache(key, defaultValue);
-        await setDoc(docRef, { value: cached }, { merge: true }).catch(() => {});
-        return cached;
+        const cleanCached = sanitizeData(cached);
+        if (cleanCached !== undefined) {
+          await setDoc(docRef, { value: cleanCached }, { merge: true }).catch(() => {});
+        }
+        return cleanCached;
       }
     }
   } catch (e: any) {
@@ -309,7 +333,15 @@ export async function fetchFirestoreData<T>(key: string, defaultValue: T): Promi
 }
 
 export async function saveFirestoreData<T>(key: string, newData: T): Promise<boolean> {
+  if (newData === undefined) {
+    console.error(`[Firestore Error] Blocked attempt to write undefined data for key "${key}"`);
+    return false;
+  }
   const cleanData = sanitizeData(newData);
+  if (cleanData === undefined) {
+    console.error(`[Firestore Error] Blocked attempt to write undefined cleanData for key "${key}"`);
+    return false;
+  }
   setLocalCache(key, cleanData);
 
   // Safety guard against Firestore 1MB document limit

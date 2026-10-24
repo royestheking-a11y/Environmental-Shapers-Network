@@ -109,7 +109,7 @@ const blankCampaign: Omit<Campaign, "id"> = {
   title: "", category: "Forest Restoration", status: "draft",
   volunteers: 0, startDate: "", endDate: "",
   description: "", sdgs: [], lead: "", image: "", color: "#0B5D3F",
-  projectId: undefined, projectName: "", eventId: undefined, eventName: "",
+  projectName: "", eventName: "",
   programSlug: "forest-restoration", initiativeTitle: "Amazon Revival",
   impactTrees: 0, impactCO2: 0, impactCommunities: 0, impactBeneficiaries: 0,
 };
@@ -140,37 +140,51 @@ export function CampaignsView() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<Omit<Campaign, "id">>(blankCampaign);
   const [editId, setEditId] = useState<number | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const [detail, setDetail] = useState<Campaign | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const [showQR, setShowQR] = useState<Campaign | null>(null);
   const [shareSuccess, setShareSuccess] = useState(false);
 
   const save = async (list: Campaign[]) => {
-    setCampaigns(list);
+    await setCampaigns(list);
     await saveFirestoreData("esn_campaigns_admin", list);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!form.title) return;
-    const cleanForm: Omit<Campaign, "id"> = {
-      ...form,
-      volunteers: Number(form.volunteers || 0),
-      projectId: form.projectId ? Number(form.projectId) : undefined,
-      projectName: form.projectName || "",
-      eventId: form.eventId ? Number(form.eventId) : undefined,
-      eventName: form.eventName || "",
-      sdgs: Array.isArray(form.sdgs) ? form.sdgs : String(form.sdgs || "").split(",").map(s => s.trim()).filter(Boolean),
-    };
-    if (editId !== null) {
-      save(campaigns.map((c) => c.id === editId ? { ...cleanForm, id: editId } : c));
-      logAdminActivity("Updated Campaign", "Campaigns", `Updated campaign "${cleanForm.title}"${cleanForm.projectName ? ` (Connected to ${cleanForm.projectName})` : ""}.`, "success");
-    } else {
-      save([{ ...cleanForm, id: Date.now() }, ...campaigns]);
-      logAdminActivity("Created Campaign", "Campaigns", `Launched campaign "${cleanForm.title}"${cleanForm.projectName ? ` (Connected to ${cleanForm.projectName})` : ""}.`, "success");
+    setIsSaving(true);
+    try {
+      const cleanForm: any = {
+        ...form,
+        volunteers: Number(form.volunteers || 0),
+        projectName: form.projectName || "",
+        eventName: form.eventName || "",
+        sdgs: Array.isArray(form.sdgs) ? form.sdgs : String(form.sdgs || "").split(",").map(s => s.trim()).filter(Boolean),
+      };
+      if (form.projectId) cleanForm.projectId = Number(form.projectId);
+      else delete cleanForm.projectId;
+      if (form.eventId) cleanForm.eventId = Number(form.eventId);
+      else delete cleanForm.eventId;
+
+      if (editId !== null) {
+        const updatedList = campaigns.map((c) => c.id === editId ? { ...cleanForm, id: editId } : c);
+        await save(updatedList);
+        await logAdminActivity("Updated Campaign", "Campaigns", `Updated campaign "${cleanForm.title}"${cleanForm.projectName ? ` (Connected to ${cleanForm.projectName})` : ""}.`, "success");
+      } else {
+        const newCampaign = { ...cleanForm, id: Date.now() };
+        const updatedList = [newCampaign, ...campaigns];
+        await save(updatedList);
+        await logAdminActivity("Created Campaign", "Campaigns", `Launched campaign "${cleanForm.title}"${cleanForm.projectName ? ` (Connected to ${cleanForm.projectName})` : ""}.`, "success");
+      }
+      setShowForm(false);
+      setEditId(null);
+      setForm(blankCampaign);
+    } catch (err) {
+      console.error("Failed to save campaign:", err);
+    } finally {
+      setIsSaving(false);
     }
-    setShowForm(false);
-    setEditId(null);
-    setForm(blankCampaign);
   };
 
   const startEdit = (c: Campaign) => {
@@ -503,8 +517,20 @@ export function CampaignsView() {
                 </div>
               </div>
               <div className="flex gap-3 mt-6">
-                <button onClick={handleSubmit} className="flex-1 bg-[#0B5D3F] text-white py-3 rounded-xl font-semibold hover:bg-[#0a5237] transition-all">{editId ? "Save Changes" : "Create Campaign"}</button>
-                <button onClick={() => setShowForm(false)} className="px-6 py-3 rounded-xl text-gray-500 hover:bg-gray-100 font-semibold">Cancel</button>
+                <button
+                  onClick={handleSubmit}
+                  disabled={isSaving}
+                  className="flex-1 bg-[#0B5D3F] text-white py-3 rounded-xl font-semibold hover:bg-[#0a5237] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isSaving ? "Saving to Cloud..." : editId ? "Save Changes" : "Create Campaign"}
+                </button>
+                <button
+                  onClick={() => setShowForm(false)}
+                  disabled={isSaving}
+                  className="px-6 py-3 rounded-xl text-gray-500 hover:bg-gray-100 font-semibold"
+                >
+                  Cancel
+                </button>
               </div>
             </motion.div>
           </motion.div>
