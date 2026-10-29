@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Megaphone, Plus, Search, Target, Users, Calendar, Edit3,
   Trash2, Eye, Heart, TreePine, Droplets, Wind, X,
   TrendingUp, CheckCircle2, Clock, AlertCircle, Share2, QrCode,
-  AlertTriangle, Copy, Check, Globe2
+  AlertTriangle, Copy, Check, Globe2, Sparkles
 } from "lucide-react";
 import { ImageUploadField } from "../../../components/ui/ImageUploadField";
 
@@ -255,6 +256,32 @@ export function CampaignsView() {
         <button onClick={() => { setForm(blankCampaign); setEditId(null); setShowForm(true); setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50); }} className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all">
           <Plus size={16} /> New Campaign
         </button>
+      </div>
+
+      {/* Quick link to Events & Campaigns Public Page CMS */}
+      <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#0B5D3F] text-white flex items-center justify-center shrink-0">
+            <Calendar size={18} />
+          </div>
+          <div>
+            <h4 className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
+              <span>Events & Campaigns Public Page CMS</span>
+              <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-extrabold uppercase">
+                Stats & Digits
+              </span>
+            </h4>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Looking to edit the 4 highlight stats digits (120+, 2.8M+, 190+, 48) and content on the /events page?
+            </p>
+          </div>
+        </div>
+        <Link
+          to="/admin/events?tab=cms"
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0B5D3F] hover:bg-[#0a5237] text-white rounded-xl text-xs font-bold transition-all shrink-0 w-fit"
+        >
+          <Edit3 size={13} /> Edit Page & Stats CMS
+        </Link>
       </div>
 
       {/* Stats */}

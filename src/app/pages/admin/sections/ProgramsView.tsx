@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import {
   TreePine, Waves, Sun, ShieldAlert, Bug, GraduationCap, Microscope, UsersRound,
-  Plus, Search, Edit3, Trash2, X, AlertTriangle, Download, CheckCircle2, Leaf
+  Plus, Search, Edit3, Trash2, X, AlertTriangle, Download, CheckCircle2, Leaf,
+  Calendar, Sparkles
 } from "lucide-react";
 import * as Icons from "lucide-react";
 import { ImageUploadField } from "../../../components/ui/ImageUploadField";
@@ -373,6 +375,32 @@ export function ProgramsView() {
         <button onClick={() => { setForm(blankProgram); setEditId(null); setShowForm(true); }} className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all">
           <Plus size={16} /> Add Program
         </button>
+      </div>
+
+      {/* Quick link to Events & Campaigns Program CMS */}
+      <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#0B5D3F] text-white flex items-center justify-center shrink-0">
+            <Calendar size={18} />
+          </div>
+          <div>
+            <h4 className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
+              <span>Events & Campaigns (Program Page)</span>
+              <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-extrabold uppercase">
+                4 Metric Digits & CMS
+              </span>
+            </h4>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Edit the 4 highlight stats digits (120+, 2.8M+, 190+, 48), about story, hero banner, and event mobilizations on /events.
+            </p>
+          </div>
+        </div>
+        <Link
+          to="/admin/events?tab=cms"
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0B5D3F] hover:bg-[#0a5237] text-white rounded-xl text-xs font-bold transition-all shrink-0 w-fit"
+        >
+          <Edit3 size={13} /> Edit Page & Stats CMS
+        </Link>
       </div>
 
       <AnimatePresence>

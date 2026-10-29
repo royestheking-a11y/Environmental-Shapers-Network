@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Link, useSearchParams } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Calendar, Plus, Search, MapPin, Users, Clock, Edit3,
   Trash2, Eye, Video, Globe2, CheckCircle2, AlertCircle,
-  ChevronRight, QrCode, Download, X, Leaf, AlertTriangle
+  ChevronRight, QrCode, Download, X, Leaf, AlertTriangle,
+  Sliders, Sparkles, ExternalLink, Save, RefreshCw, BarChart3,
+  Layers, ArrowRight
 } from "lucide-react";
 import { ImageUploadField } from "../../../components/ui/ImageUploadField";
 
@@ -40,16 +43,24 @@ export interface EventsPageSettings {
   label: string;
   badge: string;
   tagline: string;
+  aboutBadge?: string;
   aboutHeading: string;
   description: string;
   heroImage: string;
   stats: { value: string; label: string }[];
+  sectionBadge?: string;
+  sectionHeading?: string;
+  ctaTitle?: string;
+  ctaDescription?: string;
+  ctaButtonText?: string;
+  ctaButtonLink?: string;
 }
 
 export const DEFAULT_EVENTS_PAGE_SETTINGS: EventsPageSettings = {
   label: "Events & Campaigns",
   badge: "ESN Programs",
   tagline: "Mobilizing Action Through Powerful Collective Moments",
+  aboutBadge: "About",
   aboutHeading: "Building the Movement Together",
   description: "ESN hosts and supports a year-round calendar of events, campaigns, and mobilization opportunities that bring together communities, organizations, governments, and individuals to take action for the environment.",
   heroImage: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1400",
@@ -59,6 +70,12 @@ export const DEFAULT_EVENTS_PAGE_SETTINGS: EventsPageSettings = {
     { value: "190+", label: "Countries Reached" },
     { value: "48", label: "Major Summits" },
   ],
+  sectionBadge: "Global Network",
+  sectionHeading: "Events & Mobilizations",
+  ctaTitle: "Register for an Event",
+  ctaDescription: "Host, sponsor, or attend ESN events worldwide. Contact us to learn about partnership and participation opportunities.",
+  ctaButtonText: "Contact Our Events Team",
+  ctaButtonLink: "/contact?subject=Event%20Registration",
 };
 
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
@@ -172,6 +189,9 @@ export function EventsView() {
   const [projects] = useFirestoreData<Project[]>("esn_projects_admin", getInitialProjects());
   const [campaigns] = useFirestoreData<Campaign[]>("esn_campaigns_admin", getInitialCampaigns());
   const [pageSettings, setPageSettings] = useFirestoreData<EventsPageSettings>("esn_events_page_settings", DEFAULT_EVENTS_PAGE_SETTINGS);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab") === "cms" ? "cms" : "events";
+  const [activeTab, setActiveTab] = useState<"events" | "cms">(initialTab);
   const [showPageSettingsModal, setShowPageSettingsModal] = useState(false);
   const [settingsForm, setSettingsForm] = useState<EventsPageSettings>(DEFAULT_EVENTS_PAGE_SETTINGS);
   const [pageSettingsSaved, setPageSettingsSaved] = useState(false);
@@ -185,6 +205,21 @@ export function EventsView() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const [showQR, setShowQR] = useState<ESNEvent | null>(null);
 
+  useEffect(() => {
+    if (pageSettings) {
+      setSettingsForm(pageSettings);
+    }
+  }, [pageSettings]);
+
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    if (tabParam === "cms") {
+      setActiveTab("cms");
+    } else if (tabParam === "events") {
+      setActiveTab("events");
+    }
+  }, [searchParams]);
+
   const openPageSettings = () => {
     setSettingsForm(pageSettings || DEFAULT_EVENTS_PAGE_SETTINGS);
     setShowPageSettingsModal(true);
@@ -192,14 +227,15 @@ export function EventsView() {
   };
 
   const savePageSettings = async () => {
+    setIsSaving(true);
     setPageSettings(settingsForm);
     await saveFirestoreData("esn_events_page_settings", settingsForm);
     logAdminActivity("Updated Events Page CMS", "Events", "Updated Events & Campaigns page banner, heading, description, and stats.", "success");
+    setIsSaving(false);
     setPageSettingsSaved(true);
     setTimeout(() => {
-      setShowPageSettingsModal(false);
       setPageSettingsSaved(false);
-    }, 1200);
+    }, 3000);
   };
 
   const save = async (list: ESNEvent[]) => {
@@ -277,36 +313,553 @@ export function EventsView() {
 
   return (
     <div className="flex flex-col gap-7">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h3 className="font-black text-gray-900" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Events Manager</h3>
-          <p className="text-sm text-gray-400 mt-0.5">{events.length} events total · {counts.upcoming} upcoming · {counts.ongoing} live</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={openPageSettings}
-            className="flex items-center gap-2 bg-white text-[#0B5D3F] border border-[#0B5D3F]/25 hover:border-[#0B5D3F] px-4 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0B5D3F]/5 transition-all shadow-sm"
-          >
-            <Edit3 size={15} /> Page Banner & Content
-          </button>
-          <button
-            onClick={() => { setForm(blankEvent); setEditId(null); setShowForm(true); }}
-            className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all shadow-sm"
-          >
-            <Plus size={16} /> Create Event
-          </button>
-        </div>
+      {/* Top View Mode Navigation Tabs */}
+      <div className="flex items-center gap-3 border-b border-gray-200 pb-2">
+        <button
+          onClick={() => {
+            setActiveTab("events");
+            setSearchParams({});
+          }}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
+            activeTab === "events"
+              ? "bg-[#0B5D3F] text-white shadow-sm"
+              : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
+          }`}
+        >
+          <Calendar size={16} /> Events Manager ({events.length})
+        </button>
+        <button
+          onClick={() => {
+            setActiveTab("cms");
+            setSearchParams({ tab: "cms" });
+          }}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
+            activeTab === "cms"
+              ? "bg-[#0B5D3F] text-white shadow-sm"
+              : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
+          }`}
+        >
+          <Sliders size={16} /> Events & Campaigns Page & Stats (CMS)
+          <span className="text-[10px] bg-emerald-500/20 text-emerald-800 px-2 py-0.5 rounded-full font-extrabold uppercase">
+            Edit Digits & Content
+          </span>
+        </button>
       </div>
 
-      {/* Stat pills */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: "Total Events", value: events.length, icon: Calendar, color: "#0B5D3F" },
-          { label: "Upcoming", value: counts.upcoming, icon: Clock, color: "#173B63" },
-          { label: "Live Now", value: counts.ongoing, icon: CheckCircle2, color: "#4CAF50" },
-          { label: "Total Registered", value: events.reduce((s, e) => s + e.registered, 0).toLocaleString(), icon: Users, color: "#D6A95A" },
-        ].map((s) => (
+      {activeTab === "cms" ? (
+        /* ══════════════════════════════════════════════════════
+           EVENTS & CAMPAIGNS PAGE CMS & STATS EDITOR
+           ══════════════════════════════════════════════════════ */
+        <div className="flex flex-col gap-6">
+          {/* Header Bar */}
+          <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-[#0B5D3F]/10 text-[#0B5D3F] flex items-center justify-center shrink-0">
+                <Sparkles size={24} />
+              </div>
+              <div>
+                <h3 className="font-black text-gray-900 text-lg" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  Events & Campaigns Page Settings & Metric Stats
+                </h3>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Live CMS editor for <span className="font-bold text-[#0B5D3F]">/events</span>. Modify the 4 highlight stats digits (e.g. 120+, 2.8M+, 190+, 48), about story, hero banner, and call-to-action.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+              <Link
+                to="/events"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold transition-all"
+              >
+                <Eye size={14} /> View Live Page <ExternalLink size={12} />
+              </Link>
+              <button
+                type="button"
+                onClick={() => setSettingsForm(DEFAULT_EVENTS_PAGE_SETTINGS)}
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 text-xs font-semibold transition-all"
+              >
+                <RefreshCw size={13} /> Defaults
+              </button>
+              <button
+                type="button"
+                onClick={savePageSettings}
+                disabled={isSaving}
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#0B5D3F] hover:bg-[#0a5237] text-white text-xs font-bold shadow-md transition-all hover:scale-[1.02]"
+              >
+                <Save size={14} /> {isSaving ? "Saving..." : "Save All Changes"}
+              </button>
+            </div>
+          </div>
+
+          {pageSettingsSaved && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-bold flex items-center gap-2.5 shadow-sm"
+            >
+              <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
+              <span>Events & Campaigns page settings updated successfully! Live page (/events) is synchronized in real-time.</span>
+            </motion.div>
+          )}
+
+          {/* Section 1: 4 Highlight Metric Stats (The Digits & Labels) */}
+          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-gray-100 shadow-sm flex flex-col gap-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-[#0B5D3F] text-white flex items-center justify-center shrink-0">
+                  <BarChart3 size={18} />
+                </div>
+                <div>
+                  <h4 className="font-black text-gray-900 text-base" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    Top Highlight Metric Stats (Digits & Labels)
+                  </h4>
+                  <p className="text-xs text-gray-500">
+                    These prominent digits appear right beneath the hero banner on the public Events & Campaigns page.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newStats = [...(settingsForm.stats || [])];
+                    newStats.push({ value: "100+", label: "New Metric" });
+                    setSettingsForm({ ...settingsForm, stats: newStats });
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#0B5D3F] text-xs font-bold transition-colors"
+                >
+                  <Plus size={13} /> Add Stat Card
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSettingsForm({
+                      ...settingsForm,
+                      stats: [
+                        { value: "120+", label: "Events Per Year" },
+                        { value: "2.8M+", label: "Campaign Participants" },
+                        { value: "190+", label: "Countries Reached" },
+                        { value: "48", label: "Major Summits" },
+                      ]
+                    });
+                  }}
+                  className="text-xs font-semibold text-gray-500 hover:text-gray-800 underline px-2"
+                >
+                  Reset 4 Standard Digits
+                </button>
+              </div>
+            </div>
+
+            {/* Visual Live Preview of the Cards */}
+            <div>
+              <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Live Visual Preview (Editable Below)</div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-[#F6FBF8] p-4 rounded-2xl border border-gray-200/80 mb-2">
+                {(settingsForm.stats || []).map((s, idx) => (
+                  <div key={idx} className="bg-white rounded-xl p-4 border border-gray-100 text-center shadow-xs">
+                    <div className="text-2xl font-black text-[#0B5D3F] mb-0.5" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                      {s.value || "—"}
+                    </div>
+                    <div className="text-xs text-gray-500 font-medium">{s.label || "Untitled"}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Stat Cards Inputs */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {(settingsForm.stats || []).map((s, idx) => (
+                <div
+                  key={idx}
+                  className="p-4 bg-[#F9FBFA] hover:bg-white rounded-2xl border border-gray-200/90 hover:border-[#4CAF50] transition-all shadow-xs flex flex-col gap-3 relative group"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-extrabold text-[#0B5D3F] uppercase tracking-wider flex items-center gap-1.5">
+                      <span className="w-5 h-5 rounded-full bg-[#0B5D3F] text-white flex items-center justify-center text-[10px]">
+                        {idx + 1}
+                      </span>
+                      Stat Counter #{idx + 1}
+                    </span>
+                    {(settingsForm.stats || []).length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newStats = [...settingsForm.stats].filter((_, i) => i !== idx);
+                          setSettingsForm({ ...settingsForm, stats: newStats });
+                        }}
+                        className="text-gray-400 hover:text-red-600 p-1 rounded-lg transition-colors"
+                        title="Remove stat"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold text-gray-700 block mb-1">
+                      Display Digit / Value *
+                    </label>
+                    <input
+                      type="text"
+                      value={s.value}
+                      onChange={(e) => {
+                        const newStats = [...settingsForm.stats];
+                        newStats[idx] = { ...newStats[idx], value: e.target.value };
+                        setSettingsForm({ ...settingsForm, stats: newStats });
+                      }}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-lg font-black text-[#0B5D3F] bg-white focus:outline-none focus:border-[#4CAF50] transition-colors"
+                      placeholder="e.g. 120+, 2.8M+, 190+, 48"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold text-gray-700 block mb-1">
+                      Label / Description *
+                    </label>
+                    <input
+                      type="text"
+                      value={s.label}
+                      onChange={(e) => {
+                        const newStats = [...settingsForm.stats];
+                        newStats[idx] = { ...newStats[idx], label: e.target.value };
+                        setSettingsForm({ ...settingsForm, stats: newStats });
+                      }}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-800 bg-white focus:outline-none focus:border-[#4CAF50] transition-colors"
+                      placeholder="e.g. Events Per Year"
+                    />
+                  </div>
+
+                  {/* Quick Preset Buttons */}
+                  <div className="pt-2 border-t border-gray-200/60 flex flex-wrap gap-1">
+                    <span className="text-[10px] text-gray-400 font-medium block w-full mb-0.5">Quick Suggestions:</span>
+                    {[
+                      { val: "120+", lbl: "Events Per Year" },
+                      { val: "2.8M+", lbl: "Campaign Participants" },
+                      { val: "190+", lbl: "Countries Reached" },
+                      { val: "48", lbl: "Major Summits" },
+                      { val: "500K+", lbl: "Volunteers" },
+                      { val: "100%", lbl: "Impact Verified" },
+                    ].map((pre) => (
+                      <button
+                        key={pre.lbl}
+                        type="button"
+                        onClick={() => {
+                          const newStats = [...settingsForm.stats];
+                          newStats[idx] = { value: pre.val, label: pre.lbl };
+                          setSettingsForm({ ...settingsForm, stats: newStats });
+                        }}
+                        className="text-[10px] font-medium bg-white hover:bg-emerald-50 text-gray-600 hover:text-[#0B5D3F] px-2 py-0.5 rounded-md border border-gray-200 transition-colors"
+                      >
+                        {pre.val}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Section 2: About Section Content */}
+          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-gray-100 shadow-sm flex flex-col gap-4">
+            <div className="flex items-center gap-2.5 pb-3 border-b border-gray-100">
+              <div className="w-9 h-9 rounded-xl bg-[#4CAF50]/15 text-[#4CAF50] flex items-center justify-center shrink-0">
+                <Leaf size={18} />
+              </div>
+              <div>
+                <h4 className="font-black text-gray-900 text-base" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  About Section (Story & Movement Mission)
+                </h4>
+                <p className="text-xs text-gray-500">
+                  Appears directly below the 4 stat cards on the Events & Campaigns page.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid sm:grid-cols-3 gap-4">
+              <div>
+                <label className="text-xs font-bold text-gray-700 block mb-1">About Badge (e.g. ABOUT)</label>
+                <input
+                  type="text"
+                  value={settingsForm.aboutBadge || "About"}
+                  onChange={(e) => setSettingsForm({ ...settingsForm, aboutBadge: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-[#4CAF50] focus:outline-none focus:border-[#4CAF50]"
+                  placeholder="e.g. ABOUT"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="text-xs font-bold text-gray-700 block mb-1">About Heading</label>
+                <input
+                  type="text"
+                  value={settingsForm.aboutHeading}
+                  onChange={(e) => setSettingsForm({ ...settingsForm, aboutHeading: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-900 focus:outline-none focus:border-[#4CAF50]"
+                  placeholder="e.g. Building the Movement Together"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-gray-700 block mb-1">About Description Narrative</label>
+              <textarea
+                rows={4}
+                value={settingsForm.description}
+                onChange={(e) => setSettingsForm({ ...settingsForm, description: e.target.value })}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:border-[#4CAF50] leading-relaxed"
+                placeholder="ESN hosts and supports a year-round calendar of events, campaigns, and mobilization opportunities..."
+              />
+            </div>
+          </div>
+
+          {/* Section 3: Hero Header Banner & Breadcrumb */}
+          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-gray-100 shadow-sm flex flex-col gap-4">
+            <div className="flex items-center gap-2.5 pb-3 border-b border-gray-100">
+              <div className="w-9 h-9 rounded-xl bg-[#173B63]/10 text-[#173B63] flex items-center justify-center shrink-0">
+                <Layers size={18} />
+              </div>
+              <div>
+                <h4 className="font-black text-gray-900 text-base" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  Hero Header & Banner Image
+                </h4>
+                <p className="text-xs text-gray-500">
+                  Top hero banner, breadcrumb badge, and overarching tagline.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-bold text-gray-700 block mb-1">Hero Badge (Breadcrumb)</label>
+                <input
+                  type="text"
+                  value={settingsForm.badge}
+                  onChange={(e) => setSettingsForm({ ...settingsForm, badge: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold focus:outline-none focus:border-[#4CAF50]"
+                  placeholder="e.g. ESN Programs"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-700 block mb-1">Page Title / Main Heading</label>
+                <input
+                  type="text"
+                  value={settingsForm.label}
+                  onChange={(e) => setSettingsForm({ ...settingsForm, label: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-900 focus:outline-none focus:border-[#4CAF50]"
+                  placeholder="e.g. Events & Campaigns"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-gray-700 block mb-1">Hero Subheading / Tagline</label>
+              <input
+                type="text"
+                value={settingsForm.tagline}
+                onChange={(e) => setSettingsForm({ ...settingsForm, tagline: e.target.value })}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]"
+                placeholder="e.g. Mobilizing Action Through Powerful Collective Moments"
+              />
+            </div>
+
+            <div>
+              <ImageUploadField
+                label="Hero Banner Image"
+                value={settingsForm.heroImage}
+                onChange={(url) => setSettingsForm({ ...settingsForm, heroImage: url })}
+                folder="events"
+                aspectRatio="video"
+                helpText="High-resolution banner photo for the top of the Events & Campaigns page (/events)"
+              />
+            </div>
+          </div>
+
+          {/* Section 4: Events List Header & Section CTA */}
+          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-gray-100 shadow-sm flex flex-col gap-4">
+            <div className="flex items-center gap-2.5 pb-3 border-b border-gray-100">
+              <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+                <Globe2 size={18} />
+              </div>
+              <div>
+                <h4 className="font-black text-gray-900 text-base" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  Events Listing Section Header & Contact Link
+                </h4>
+                <p className="text-xs text-gray-500">
+                  Header above the filterable events calendar list.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-bold text-gray-700 block mb-1">Section Subtitle / Badge</label>
+                <input
+                  type="text"
+                  value={settingsForm.sectionBadge || "Global Network"}
+                  onChange={(e) => setSettingsForm({ ...settingsForm, sectionBadge: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]"
+                  placeholder="e.g. Global Network"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-700 block mb-1">Section Heading</label>
+                <input
+                  type="text"
+                  value={settingsForm.sectionHeading || "Events & Mobilizations"}
+                  onChange={(e) => setSettingsForm({ ...settingsForm, sectionHeading: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold focus:outline-none focus:border-[#4CAF50]"
+                  placeholder="e.g. Events & Mobilizations"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-700 block mb-1">Contact Button Label</label>
+                <input
+                  type="text"
+                  value={settingsForm.ctaButtonText || "Contact Our Events Team"}
+                  onChange={(e) => setSettingsForm({ ...settingsForm, ctaButtonText: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]"
+                  placeholder="e.g. Contact Our Events Team"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-700 block mb-1">Contact Button Link URL</label>
+                <input
+                  type="text"
+                  value={settingsForm.ctaButtonLink || "/contact?subject=Event%20Registration"}
+                  onChange={(e) => setSettingsForm({ ...settingsForm, ctaButtonLink: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]"
+                  placeholder="e.g. /contact?subject=Event%20Registration"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Section 5: Bottom Call-To-Action Banner */}
+          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-gray-100 shadow-sm flex flex-col gap-4">
+            <div className="flex items-center gap-2.5 pb-3 border-b border-gray-100">
+              <div className="w-9 h-9 rounded-xl bg-[#0B5D3F] text-white flex items-center justify-center shrink-0">
+                <Calendar size={18} />
+              </div>
+              <div>
+                <h4 className="font-black text-gray-900 text-base" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  Bottom Call-To-Action Banner
+                </h4>
+                <p className="text-xs text-gray-500">
+                  Registration box at the bottom of the Events & Campaigns page.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-gray-700 block mb-1">CTA Card Title</label>
+              <input
+                type="text"
+                value={settingsForm.ctaTitle || "Register for an Event"}
+                onChange={(e) => setSettingsForm({ ...settingsForm, ctaTitle: e.target.value })}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm font-bold focus:outline-none focus:border-[#4CAF50]"
+                placeholder="e.g. Register for an Event"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-gray-700 block mb-1">CTA Description</label>
+              <textarea
+                rows={2}
+                value={settingsForm.ctaDescription || "Host, sponsor, or attend ESN events worldwide. Contact us to learn about partnership and participation opportunities."}
+                onChange={(e) => setSettingsForm({ ...settingsForm, ctaDescription: e.target.value })}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]"
+                placeholder="Host, sponsor, or attend ESN events worldwide..."
+              />
+            </div>
+          </div>
+
+          {/* Sticky Bottom Actions Bar */}
+          <div className="sticky bottom-6 bg-white/95 backdrop-blur-md rounded-2xl p-4 border border-gray-200 shadow-xl flex items-center justify-between gap-4 z-20">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-xs font-semibold text-gray-600 hidden sm:inline">
+                All changes synchronize directly with the public /events page
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Link
+                to="/events"
+                target="_blank"
+                rel="noreferrer"
+                className="px-4 py-2 rounded-xl text-gray-600 hover:text-gray-900 text-xs font-bold hover:bg-gray-100 transition-colors"
+              >
+                Preview Live
+              </Link>
+              <button
+                type="button"
+                onClick={savePageSettings}
+                disabled={isSaving}
+                className="inline-flex items-center gap-2 px-7 py-2.5 rounded-xl bg-[#0B5D3F] hover:bg-[#0a5237] text-white text-xs font-black shadow-md transition-all hover:scale-105"
+              >
+                <Save size={15} /> {isSaving ? "Saving..." : "Save All Changes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* ══════════════════════════════════════════════════════
+           EVENTS MANAGER (ALL EVENTS TABLE & CARDS)
+           ══════════════════════════════════════════════════════ */
+        <>
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="font-black text-gray-900" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Events Manager</h3>
+              <p className="text-sm text-gray-400 mt-0.5">{events.length} events total · {counts.upcoming} upcoming · {counts.ongoing} live</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => {
+                  setActiveTab("cms");
+                  setSearchParams({ tab: "cms" });
+                }}
+                className="flex items-center gap-2 bg-emerald-50 text-[#0B5D3F] border border-emerald-300 hover:border-[#0B5D3F] px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-emerald-100 transition-all shadow-sm"
+              >
+                <Sliders size={15} /> Edit Page Digits & CMS
+              </button>
+              <button
+                onClick={() => { setForm(blankEvent); setEditId(null); setShowForm(true); }}
+                className="flex items-center gap-2 bg-[#0B5D3F] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0a5237] transition-all shadow-sm"
+              >
+                <Plus size={16} /> Create Event
+              </button>
+            </div>
+          </div>
+
+          {/* Quick Notice to Edit Page Digits */}
+          <div className="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#0B5D3F] text-white flex items-center justify-center shrink-0">
+                <Sparkles size={18} />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-gray-900">Events & Campaigns Page Settings & Metric Stats (120+, 2.8M+, 190+, 48)</h4>
+                <p className="text-xs text-gray-500">Edit the 4 top impact stat cards, about story narrative, and hero banner for the public page.</p>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                setActiveTab("cms");
+                setSearchParams({ tab: "cms" });
+              }}
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0B5D3F] hover:bg-[#0a5237] text-white rounded-xl text-xs font-bold transition-all shrink-0 w-fit"
+            >
+              <Edit3 size={13} /> Edit Page & Stats CMS
+            </button>
+          </div>
+
+          {/* Stat pills */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { label: "Total Events", value: events.length, icon: Calendar, color: "#0B5D3F" },
+              { label: "Upcoming", value: counts.upcoming, icon: Clock, color: "#173B63" },
+              { label: "Live Now", value: counts.ongoing, icon: CheckCircle2, color: "#4CAF50" },
+              { label: "Total Registered", value: events.reduce((s, e) => s + e.registered, 0).toLocaleString(), icon: Users, color: "#D6A95A" },
+            ].map((s) => (
           <div key={s.label} className="bg-white rounded-2xl p-5 border border-gray-100 flex items-center gap-4">
             <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: s.color + "15" }}>
               <s.icon size={20} style={{ color: s.color }} />
@@ -774,6 +1327,8 @@ export function EventsView() {
           </motion.div>
         )}
       </AnimatePresence>
+        </>
+      )}
 
       {/* Page Banner & Content Settings Modal */}
       <AnimatePresence>
