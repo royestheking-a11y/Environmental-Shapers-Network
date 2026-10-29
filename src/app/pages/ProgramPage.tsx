@@ -1,15 +1,13 @@
 import { useParams, Link, useLocation } from "react-router";
-import { motion, useInView, AnimatePresence } from "motion/react";
-import { useRef, useMemo, useState, useEffect } from "react";
+import { motion, useInView } from "motion/react";
+import { useRef, useMemo, useState } from "react";
 import {
   ArrowRight, Users, BookOpen, Calendar, ChevronRight, Globe2,
   CheckCircle2, MapPin, Star, TrendingUp, TreePine, Waves, Sun,
-  ShieldAlert, Bug, GraduationCap, Microscope, Edit3, Sparkles,
-  X, Sliders, Save, Plus, Trash2, ExternalLink
+  ShieldAlert, Bug, GraduationCap, Microscope
 } from "lucide-react";
 import { ImageWithFallback } from "../components/ui/ImageWithFallback";
-import { useFirestoreData, saveFirestoreData } from "../../lib/useFirestore";
-import { logAdminActivity } from "../../lib/activityLogger";
+import { useFirestoreData } from "../../lib/useFirestore";
 import { getInitialPrograms, resolveIcon, ProgramData } from "./admin/sections/ProgramsView";
 import { getInitialEvents, ESNEvent, DEFAULT_EVENTS_PAGE_SETTINGS, EventsPageSettings } from "./admin/sections/EventsView";
 import { getInitialProjects, Project } from "./admin/sections/ProjectsView";
@@ -760,38 +758,12 @@ function InsightsPage() {
 }
 
 function EventsPage() {
-  const [pageSettings, setPageSettings] = useFirestoreData<EventsPageSettings>("esn_events_page_settings", DEFAULT_EVENTS_PAGE_SETTINGS);
+  const [pageSettings] = useFirestoreData<EventsPageSettings>("esn_events_page_settings", DEFAULT_EVENTS_PAGE_SETTINGS);
   const d = pageSettings || DEFAULT_EVENTS_PAGE_SETTINGS;
   const Icon = Calendar;
   const [eventsList] = useFirestoreData<ESNEvent[]>("esn_events", getInitialEvents());
   const typeColors: Record<string, string> = { Summit: "#0B5D3F", Campaign: "#4CAF50", Hackathon: "#173B63", Forum: "#1565C0", Delegation: "#E65100", Gala: "#D6A95A" };
   const [activeTab, setActiveTab] = useState<"all" | "upcoming" | "ongoing" | "completed">("all");
-  
-  // Quick in-page edit modal states
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editForm, setEditForm] = useState<EventsPageSettings>(DEFAULT_EVENTS_PAGE_SETTINGS);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
-  const [modalTab, setModalTab] = useState<"digits" | "about" | "hero">("digits");
-
-  useEffect(() => {
-    if (pageSettings) {
-      setEditForm(pageSettings);
-    }
-  }, [pageSettings]);
-
-  const handleSavePageSettings = async () => {
-    setIsSaving(true);
-    setPageSettings(editForm);
-    await saveFirestoreData("esn_events_page_settings", editForm);
-    logAdminActivity("Updated Events Page CMS", "Events", "Updated Events & Campaigns page digits, about story, and settings.", "success");
-    setIsSaving(false);
-    setSaveSuccess(true);
-    setTimeout(() => {
-      setSaveSuccess(false);
-      setShowEditModal(false);
-    }, 1200);
-  };
 
   const rawList = eventsList && eventsList.length > 0 ? eventsList : getInitialEvents();
 
@@ -831,69 +803,17 @@ function EventsPage() {
         breadcrumb={d.badge || "ESN Programs"}
       />
       <div className="max-w-6xl mx-auto px-6 py-16 flex flex-col gap-16">
-        {/* Quick Edit Bar for Digits & Section */}
-        <div className="flex items-center justify-between flex-wrap gap-3 -mb-8 bg-white/95 backdrop-blur-md border border-emerald-100 rounded-2xl p-3 px-5 shadow-xs">
-          <div className="flex items-center gap-2.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-            <span className="text-xs font-bold text-gray-800 tracking-tight">
-              Events & Campaigns · Key Movement Digits & Content
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                setEditForm(d);
-                setModalTab("digits");
-                setShowEditModal(true);
-              }}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#0B5D3F] hover:bg-[#0a5237] text-white text-xs font-bold transition-all shadow-xs"
-            >
-              <Edit3 size={13} /> Edit Digits & Content
-            </button>
-            <Link
-              to="/admin/events?tab=cms"
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold transition-colors"
-            >
-              Admin CMS <ArrowRight size={12} />
-            </Link>
-          </div>
-        </div>
-
         {/* 4 Stat Cards */}
-        <div className="relative group/stats">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-            {activeStats.map((s, i) => (
-              <StatCard key={s.label + i} {...s} i={i} />
-            ))}
-          </div>
-          <button
-            onClick={() => {
-              setEditForm(d);
-              setModalTab("digits");
-              setShowEditModal(true);
-            }}
-            className="absolute top-2 right-2 opacity-0 group-hover/stats:opacity-100 transition-opacity bg-white/90 hover:bg-white text-[#0B5D3F] border border-emerald-200 px-3 py-1.5 rounded-xl text-xs font-bold shadow-md flex items-center gap-1.5"
-          >
-            <Edit3 size={12} /> Edit Digits
-          </button>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+          {activeStats.map((s, i) => (
+            <StatCard key={s.label + i} {...s} i={i} />
+          ))}
         </div>
 
         {/* About Section */}
-        <div className="group/about relative">
-          <div className="flex items-center justify-between">
-            <div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider mb-2">
-              {d.aboutBadge || "About"}
-            </div>
-            <button
-              onClick={() => {
-                setEditForm(d);
-                setModalTab("about");
-                setShowEditModal(true);
-              }}
-              className="opacity-0 group-hover/about:opacity-100 transition-opacity inline-flex items-center gap-1 text-xs font-bold text-[#0B5D3F] hover:underline"
-            >
-              <Edit3 size={13} /> Edit About Section
-            </button>
+        <div>
+          <div className="text-[#4CAF50] text-sm font-bold uppercase tracking-wider mb-2">
+            {d.aboutBadge || "About"}
           </div>
           <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: "clamp(1.4rem, 2.5vw, 2rem)", fontWeight: 800 }} className="text-gray-900 mb-5">
             {d.aboutHeading || "Building the Movement Together"}
@@ -1061,280 +981,6 @@ function EventsPage() {
           </Link>
         </motion.div>
       </div>
-
-      {/* In-Page Quick Edit Modal for Digits and Section */}
-      <AnimatePresence>
-        {showEditModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs"
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 15 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 15 }}
-              className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 sm:p-8"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-6">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-10 h-10 rounded-xl bg-[#0B5D3F]/10 text-[#0B5D3F] flex items-center justify-center shrink-0">
-                    <Edit3 size={20} />
-                  </div>
-                  <div>
-                    <h3 className="font-black text-gray-900 text-lg" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                      Edit Events & Campaigns Section
-                    </h3>
-                    <p className="text-xs text-gray-500 mt-0.5">Quickly edit the metric digits, story narrative, and page settings</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowEditModal(false)}
-                  className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-
-              {saveSuccess && (
-                <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2">
-                  <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
-                  Section and digits updated successfully! Live page refreshed.
-                </div>
-              )}
-
-              {/* Tabs inside modal */}
-              <div className="flex items-center gap-2 border-b border-gray-100 pb-3 mb-5">
-                {[
-                  { id: "digits" as const, label: "Stat Digits (120+, 2.8M+, etc.)" },
-                  { id: "about" as const, label: "About Narrative" },
-                  { id: "hero" as const, label: "Hero Banner & Labels" },
-                ].map((t) => (
-                  <button
-                    key={t.id}
-                    onClick={() => setModalTab(t.id)}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                      modalTab === t.id
-                        ? "bg-[#0B5D3F] text-white shadow-xs"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                  >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Tab 1: Digits */}
-              {modalTab === "digits" && (
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-xs font-bold text-gray-800">4 Highlight Metric Counters</h4>
-                      <p className="text-[11px] text-gray-500">Edit values and labels for the cards displayed at the top of the section.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const newStats = [...(editForm.stats || [])];
-                        newStats.push({ value: "100+", label: "New Stat" });
-                        setEditForm({ ...editForm, stats: newStats });
-                      }}
-                      className="inline-flex items-center gap-1 text-xs font-bold text-[#0B5D3F] bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-xl transition-colors"
-                    >
-                      <Plus size={13} /> Add Stat
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {(editForm.stats || []).map((s, idx) => (
-                      <div key={idx} className="p-3.5 bg-[#F6FBF8] rounded-2xl border border-gray-200 flex flex-col gap-2 relative group">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-bold text-[#0B5D3F] uppercase tracking-wider">
-                            Stat #{idx + 1}
-                          </span>
-                          {(editForm.stats || []).length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const newStats = [...editForm.stats].filter((_, i) => i !== idx);
-                                setEditForm({ ...editForm, stats: newStats });
-                              }}
-                              className="text-gray-400 hover:text-red-500 p-0.5 rounded"
-                            >
-                              <Trash2 size={13} />
-                            </button>
-                          )}
-                        </div>
-                        <div>
-                          <label className="text-[10px] font-bold text-gray-600 block mb-0.5">Value / Digit</label>
-                          <input
-                            type="text"
-                            value={s.value}
-                            onChange={(e) => {
-                              const newStats = [...editForm.stats];
-                              newStats[idx] = { ...newStats[idx], value: e.target.value };
-                              setEditForm({ ...editForm, stats: newStats });
-                            }}
-                            className="w-full px-3 py-1.5 rounded-lg border border-gray-200 text-sm font-black text-[#0B5D3F] bg-white focus:outline-none focus:border-[#4CAF50]"
-                            placeholder="e.g. 120+, 2.8M+, 190+, 48"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-[10px] font-bold text-gray-600 block mb-0.5">Label</label>
-                          <input
-                            type="text"
-                            value={s.label}
-                            onChange={(e) => {
-                              const newStats = [...editForm.stats];
-                              newStats[idx] = { ...newStats[idx], label: e.target.value };
-                              setEditForm({ ...editForm, stats: newStats });
-                            }}
-                            className="w-full px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold bg-white focus:outline-none focus:border-[#4CAF50]"
-                            placeholder="e.g. Events Per Year"
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="flex justify-end pt-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditForm({
-                          ...editForm,
-                          stats: [
-                            { value: "120+", label: "Events Per Year" },
-                            { value: "2.8M+", label: "Campaign Participants" },
-                            { value: "190+", label: "Countries Reached" },
-                            { value: "48", label: "Major Summits" },
-                          ]
-                        });
-                      }}
-                      className="text-xs text-gray-500 hover:text-gray-800 underline"
-                    >
-                      Reset to Standard 4 Digits (120+, 2.8M+, 190+, 48)
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Tab 2: About Narrative */}
-              {modalTab === "about" && (
-                <div className="flex flex-col gap-4">
-                  <div>
-                    <label className="text-xs font-bold text-gray-700 block mb-1">About Section Badge</label>
-                    <input
-                      type="text"
-                      value={editForm.aboutBadge || "About"}
-                      onChange={(e) => setEditForm({ ...editForm, aboutBadge: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]"
-                      placeholder="e.g. ABOUT"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-gray-700 block mb-1">About Heading</label>
-                    <input
-                      type="text"
-                      value={editForm.aboutHeading}
-                      onChange={(e) => setEditForm({ ...editForm, aboutHeading: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm font-bold focus:outline-none focus:border-[#4CAF50]"
-                      placeholder="e.g. Building the Movement Together"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-gray-700 block mb-1">About Description</label>
-                    <textarea
-                      rows={4}
-                      value={editForm.description}
-                      onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50] leading-relaxed"
-                      placeholder="Describe the movement, events, and campaigns..."
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Tab 3: Hero & Header */}
-              {modalTab === "hero" && (
-                <div className="flex flex-col gap-4">
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs font-bold text-gray-700 block mb-1">Hero Badge</label>
-                      <input
-                        type="text"
-                        value={editForm.badge}
-                        onChange={(e) => setEditForm({ ...editForm, badge: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]"
-                        placeholder="e.g. ESN Programs"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-bold text-gray-700 block mb-1">Page Title</label>
-                      <input
-                        type="text"
-                        value={editForm.label}
-                        onChange={(e) => setEditForm({ ...editForm, label: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm font-bold focus:outline-none focus:border-[#4CAF50]"
-                        placeholder="e.g. Events & Campaigns"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-gray-700 block mb-1">Tagline / Subheading</label>
-                    <input
-                      type="text"
-                      value={editForm.tagline}
-                      onChange={(e) => setEditForm({ ...editForm, tagline: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]"
-                      placeholder="e.g. Mobilizing Action Through Powerful Collective Moments"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-gray-700 block mb-1">Hero Image URL</label>
-                    <input
-                      type="text"
-                      value={editForm.heroImage}
-                      onChange={(e) => setEditForm({ ...editForm, heroImage: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-[#4CAF50]"
-                      placeholder="https://..."
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Action buttons */}
-              <div className="flex items-center justify-between pt-5 border-t border-gray-100 mt-6">
-                <Link
-                  to="/admin/events?tab=cms"
-                  className="text-xs font-bold text-[#0B5D3F] hover:underline flex items-center gap-1"
-                >
-                  Open Full Admin CMS <ExternalLink size={12} />
-                </Link>
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setShowEditModal(false)}
-                    className="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-xs font-semibold hover:bg-gray-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleSavePageSettings}
-                    disabled={isSaving}
-                    className="px-6 py-2.5 rounded-xl bg-[#0B5D3F] hover:bg-[#0a5237] text-white text-xs font-bold shadow-md transition-all"
-                  >
-                    {isSaving ? "Saving..." : "Save Changes"}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
