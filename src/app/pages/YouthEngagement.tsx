@@ -184,51 +184,55 @@ export default function YouthEngagement() {
                 <div key={e.id} className="h-full">
                   <Link
                     to={`/events/${e.id}`}
-                    className="group bg-[#F8FCF9] rounded-2xl overflow-hidden border border-gray-100 hover:border-[#4CAF50]/40 hover:shadow-xl transition-all flex flex-col h-full cursor-pointer"
+                    className="group bg-[#F8FCF9] rounded-2xl overflow-hidden border border-gray-100 hover:border-[#4CAF50]/40 hover:shadow-xl transition-all flex flex-col h-full cursor-pointer p-6"
                   >
-                    <div className="relative h-48 overflow-hidden bg-gray-100">
+                    <div className="flex items-center justify-between gap-2 mb-2.5">
+                      <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-white shadow-xs" style={{ color: typeColors[e.type] || "#0B5D3F" }}>
+                        {e.type}
+                      </span>
+                      {e.status === "completed" && (
+                        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-slate-900/80 text-white backdrop-blur-sm shadow-xs">
+                          Concluded
+                        </span>
+                      )}
+                      {e.status === "ongoing" && (
+                        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-600 text-white backdrop-blur-sm shadow-xs flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> Live
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Title on Top */}
+                    <h3 className="font-black text-gray-900 text-base sm:text-lg mb-2 group-hover:text-[#0B5D3F] transition-colors line-clamp-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                      {e.title}
+                    </h3>
+
+                    <div className="flex items-center gap-4 text-[11px] font-bold text-gray-500 mb-3">
+                      <span className="flex items-center gap-1"><BookOpen size={12} className="text-[#4CAF50]" /> {e.date}</span>
+                      <span className="flex items-center gap-1"><MapPin size={12} className="text-[#4CAF50]" /> {e.location}</span>
+                    </div>
+
+                    {/* Photo in the Middle */}
+                    <div className="relative h-44 rounded-xl overflow-hidden bg-gray-100 my-2">
                       <ImageWithFallback
                         src={e.image || "https://images.unsplash.com/photo-1540575467063-178a50c2df87?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1400"}
                         alt={e.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
-                      <div className="absolute top-3 right-3 flex items-center gap-1.5">
-                        <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-white shadow-sm" style={{ color: typeColors[e.type] || "#0B5D3F" }}>
-                          {e.type}
-                        </span>
-                        {e.status === "completed" && (
-                          <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-slate-900/80 text-white backdrop-blur-sm shadow-sm">
-                            Concluded
-                          </span>
-                        )}
-                        {e.status === "ongoing" && (
-                          <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-600 text-white backdrop-blur-sm shadow-sm flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> Live
-                          </span>
-                        )}
-                      </div>
                     </div>
-                    <div className="p-6 flex-1 flex flex-col justify-between">
-                      <div>
-                        <div className="flex items-center gap-4 text-[11px] font-bold text-gray-500 mb-2">
-                          <span className="flex items-center gap-1"><BookOpen size={12} className="text-[#4CAF50]" /> {e.date}</span>
-                          <span className="flex items-center gap-1"><MapPin size={12} className="text-[#4CAF50]" /> {e.location}</span>
-                        </div>
-                        <h3 className="font-black text-gray-900 text-lg mb-2 group-hover:text-[#0B5D3F] transition-colors line-clamp-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                          {e.title}
-                        </h3>
-                        <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed mb-4">
-                          {e.description}
-                        </p>
-                      </div>
-                      <div className="pt-4 border-t border-gray-100 flex items-center justify-between text-xs">
-                        <span className="font-bold text-[#4CAF50]">
-                          {e.status === "completed" ? "Concluded Event" : `${e.registered}/${e.capacity} Registered`}
-                        </span>
-                        <span className="text-[#0B5D3F] font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                          {e.status === "completed" ? "Event Recap" : "Learn More"} <ChevronRight size={14} />
-                        </span>
-                      </div>
+
+                    {/* Written Description */}
+                    <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed my-2">
+                      {e.description}
+                    </p>
+
+                    <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between text-xs">
+                      <span className="font-bold text-[#4CAF50]">
+                        {e.status === "completed" ? "Concluded Event" : `${e.registered}/${e.capacity} Registered`}
+                      </span>
+                      <span className="text-[#0B5D3F] font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                        {e.status === "completed" ? "Event Recap" : "Learn More"} <ChevronRight size={14} />
+                      </span>
                     </div>
                   </Link>
                 </div>

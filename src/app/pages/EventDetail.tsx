@@ -1,18 +1,22 @@
 import { useParams, Link, Navigate } from "react-router";
 import { useFirestoreData } from "../../lib/useFirestore";
 import { getInitialEvents, ESNEvent } from "./admin/sections/EventsView";
-import { Calendar, MapPin, Users, Clock, Video, Globe2, ArrowRight, ChevronRight } from "lucide-react";
+import { Calendar, MapPin, Users, Clock, Video, Globe2, ArrowRight, ChevronRight, Sparkles } from "lucide-react";
 import { motion } from "motion/react";
+import { ImageWithFallback } from "../components/ui/ImageWithFallback";
 
-function PageHero({ title, sub, image }: { title: string; sub: string; image: string }) {
+function PageHero({ title, sub }: { title: string; sub: string }) {
   return (
-    <section className="relative py-28 bg-gradient-to-br from-[#0B5D3F] via-[#0E4733] to-[#173B63] overflow-hidden text-white">
-      <div className="absolute inset-0">
-        <img src={image} alt="" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0B5D3F]/70 to-[#173B63]/70" />
-      </div>
+    <section className="relative py-20 sm:py-24 bg-gradient-to-br from-[#0B5D3F] via-[#0E4733] to-[#173B63] overflow-hidden text-white">
+      <div className="absolute inset-0 opacity-20" style={{
+        backgroundImage: "radial-gradient(circle at 20% 50%, #4CAF50 0%, transparent 50%), radial-gradient(circle at 80% 50%, #D6A95A 0%, transparent 50%)"
+      }} />
       <div className="relative z-10 max-w-6xl mx-auto px-6">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="inline-flex items-center gap-2 bg-white/15 border border-white/20 text-white text-xs font-bold px-3.5 py-1.5 rounded-full mb-4 uppercase tracking-wider backdrop-blur-xs">
+            <Sparkles size={13} className="text-emerald-300" />
+            <span>ESN Events & Mobilizations</span>
+          </div>
           <h1 className="text-white mb-4 text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             {title}
           </h1>
@@ -56,7 +60,6 @@ export default function EventDetail() {
       <PageHero 
         title={event.title} 
         sub={`${event.type} • ${event.mode}`} 
-        image={event.image || "https://images.unsplash.com/photo-1540575467063-178a50c2df87?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1400"} 
       />
 
       <div className="max-w-6xl mx-auto px-6 py-12">
@@ -69,9 +72,39 @@ export default function EventDetail() {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-8"
           >
-            <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
-              <h2 className="text-2xl font-bold text-[#0B5D3F] mb-6">About this Event</h2>
-              <div className="prose prose-lg text-gray-600 max-w-none">
+            <div className="bg-white rounded-3xl p-8 sm:p-10 border border-gray-100 shadow-sm">
+              <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
+                <span className="text-xs font-bold px-3.5 py-1.5 rounded-full bg-emerald-50 text-[#0B5D3F] border border-emerald-200">
+                  {event.type} • {event.mode}
+                </span>
+                <span className="text-xs font-semibold text-gray-500">
+                  {event.registered} / {event.capacity} seats registered
+                </span>
+              </div>
+
+              {/* Title on Top (Upore thakbe title) */}
+              <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                {event.title}
+              </h2>
+
+              <div className="flex items-center gap-4 text-xs sm:text-sm text-gray-500 mb-6 flex-wrap">
+                <span className="flex items-center gap-1.5"><Calendar size={14} className="text-[#4CAF50]" /> {event.date} · {event.time}</span>
+                <span className="flex items-center gap-1.5"><MapPin size={14} className="text-[#4CAF50]" /> {event.location} ({event.mode})</span>
+              </div>
+
+              {/* Photo in the Middle (written r majkhane thakbe Photo) */}
+              {event.image && (
+                <div className="w-full h-72 sm:h-[420px] rounded-2xl overflow-hidden my-6 border border-gray-100/90 shadow-sm bg-gray-50">
+                  <ImageWithFallback
+                    src={event.image}
+                    alt={event.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+
+              <h3 className="text-xl font-bold text-[#0B5D3F] mb-4">About this Event</h3>
+              <div className="prose prose-lg text-gray-600 max-w-none leading-relaxed">
                 <p className="whitespace-pre-line">{event.description}</p>
               </div>
               
