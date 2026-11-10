@@ -11,16 +11,13 @@ import { ScrollProgress } from "./components/ui/ScrollProgress";
 import { PageTransition } from "./components/ui/PageTransition";
 import { MaintenancePage } from "./pages/MaintenancePage";
 import { FloatingAI } from "./components/ui/FloatingAI";
-import { useFirestoreData } from "../lib/useFirestore";
+import { useFirestoreData, saveFirestoreData } from "../lib/useFirestore";
 
 import { PlantSproutLoader } from "./components/ui/PlantSproutLoader";
 
 const initialSettings = {
   maintenanceMode: false,
 };
-
-import { saveFirestoreData } from "../lib/useFirestore";
-import { Link } from "react-router";
 
 export function Root() {
   const location = useLocation();
