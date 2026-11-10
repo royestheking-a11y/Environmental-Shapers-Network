@@ -1,6 +1,7 @@
 import { Suspense } from "react";
-import { Outlet, useLocation } from "react-router";
+import { Outlet, useLocation, Link } from "react-router";
 import { AnimatePresence } from "motion/react";
+import { AlertTriangle } from "lucide-react";
 import { Navbar } from "./components/layout/Navbar";
 import { Footer } from "./components/layout/Footer";
 import { ScrollToTop } from "./components/layout/ScrollToTop";
@@ -54,7 +55,7 @@ export function Root() {
         {isMaintenance && !isAdmin && (
           <div className="bg-amber-500 text-slate-900 px-4 py-2 text-xs font-bold flex flex-wrap items-center justify-between gap-2 z-[99999] shadow-md">
             <span className="flex items-center gap-1.5">
-              <span>⚠️</span>
+              <AlertTriangle size={15} className="text-slate-900 shrink-0" />
               <span>Maintenance Mode is Active (Public visitors see the maintenance page). You are viewing as Admin.</span>
             </span>
             <div className="flex items-center gap-3">

@@ -909,8 +909,8 @@ function EventsPage() {
                             </span>
                           )}
                           {isPast && (
-                            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
-                              ✓ Past Event
+                            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 flex items-center gap-1">
+                              <CheckCircle2 size={11} className="text-slate-600" /> Past Event
                             </span>
                           )}
                           {e.status === "upcoming" && (

@@ -6,7 +6,7 @@ import {
   Trash2, Eye, Video, Globe2, CheckCircle2, AlertCircle,
   ChevronRight, QrCode, Download, X, Leaf, AlertTriangle,
   Sliders, Sparkles, ExternalLink, Save, RefreshCw, BarChart3,
-  Layers, ArrowRight
+  Layers, ArrowRight, TreePine, Building2
 } from "lucide-react";
 import { ImageUploadField } from "../../../components/ui/ImageUploadField";
 
@@ -1220,10 +1220,10 @@ export function EventsView() {
                     </div>
                   )}
                   {((ev.impactTrees || 0) > 0 || (ev.impactCommunities || 0) > 0 || (ev.impactBeneficiaries || 0) > 0) && (
-                    <div className="flex items-center gap-3 text-[11px] font-medium text-emerald-700 bg-emerald-50/70 border border-emerald-100 px-2.5 py-1 rounded-lg w-fit mb-2">
-                      {(ev.impactTrees || 0) > 0 && <span>🌲 {(ev.impactTrees || 0).toLocaleString()} trees</span>}
-                      {(ev.impactCommunities || 0) > 0 && <span>🏘️ {ev.impactCommunities} communities</span>}
-                      {(ev.impactBeneficiaries || 0) > 0 && <span>👥 {(ev.impactBeneficiaries || 0).toLocaleString()} beneficiaries</span>}
+                    <div className="flex items-center gap-3 text-[11px] font-semibold text-emerald-800 bg-emerald-50/80 border border-emerald-100 px-2.5 py-1 rounded-lg w-fit mb-2 flex-wrap">
+                      {(ev.impactTrees || 0) > 0 && <span className="inline-flex items-center gap-1"><TreePine size={12} className="text-[#0B5D3F]" /> {(ev.impactTrees || 0).toLocaleString()} trees</span>}
+                      {(ev.impactCommunities || 0) > 0 && <span className="inline-flex items-center gap-1"><Building2 size={12} className="text-[#173B63]" /> {ev.impactCommunities} communities</span>}
+                      {(ev.impactBeneficiaries || 0) > 0 && <span className="inline-flex items-center gap-1"><Users size={12} className="text-[#D6A95A]" /> {(ev.impactBeneficiaries || 0).toLocaleString()} beneficiaries</span>}
                     </div>
                   )}
                   <div className="flex items-center gap-2">

@@ -52,7 +52,7 @@ export function getInitialYouthInitiatives(): YouthInitiative[] {
       num: "03",
       title: "Youth Shapers COP Delegation",
       desc: "Providing rigorous negotiation training and accredited seats at UNFCCC COP summits, CBD COPs, and other key multilateral environmental forums — ensuring youth voices shape global climate agreements.",
-      impact: "Active in 60 nations · COP29 ✓",
+      impact: "Active in 60 nations · COP29 Accredited",
       image: "/Commonwealth Secretariat at COP27.jpeg",
       details: "We remove systemic financial and geopolitical barriers preventing frontline youth from engaging in high-level multilateral treaties. ESN provides comprehensive training in treaty language, negotiation protocol, and bilateral drafting prior to each UNFCCC and CBD COP.",
       audience: "Selected youth delegates from 60+ countries with emphasis on climate-vulnerable coastal and island territories.",

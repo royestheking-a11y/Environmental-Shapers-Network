@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   GraduationCap, Plus, Search, Edit3, Trash2, CheckCircle2,
-  MapPin, Users, Calendar, Mail, ExternalLink, Globe2, AlertCircle, TreePine, FolderKanban
+  MapPin, Users, Calendar, Mail, ExternalLink, Globe2, AlertCircle, TreePine, FolderKanban, X
 } from "lucide-react";
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 import { ImageUploadField } from "../../../components/ui/ImageUploadField";
@@ -622,9 +622,9 @@ export default function CampusChaptersAdminView() {
                 </div>
                 <button
                   onClick={() => setShowAddModal(false)}
-                  className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 flex items-center justify-center text-sm font-bold"
+                  className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 flex items-center justify-center transition-colors"
                 >
-                  ✕
+                  <X size={16} />
                 </button>
               </div>
 

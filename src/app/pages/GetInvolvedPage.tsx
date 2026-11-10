@@ -767,8 +767,9 @@ function CampusPage() {
                   {/* Modal Actions */}
                   <div className="pt-2 flex flex-col sm:flex-row gap-3">
                     {joinSubmitted ? (
-                      <div className="w-full bg-[#E8F5E9] text-[#0B5D3F] p-3.5 rounded-xl text-center text-xs font-bold">
-                        🎉 Membership request sent to {selectedChapter.name}! The student coordinator will reach out soon.
+                      <div className="w-full bg-[#E8F5E9] text-[#0B5D3F] p-3.5 rounded-xl text-center text-xs font-bold flex items-center justify-center gap-2">
+                        <CheckCircle2 size={16} className="text-[#0B5D3F] shrink-0" />
+                        <span>Membership request sent to {selectedChapter.name}! The student coordinator will reach out soon.</span>
                       </div>
                     ) : (
                       <>

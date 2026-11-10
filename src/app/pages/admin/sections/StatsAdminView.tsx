@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { 
   Plus, Search, Edit3, Trash2, AlertCircle, CheckCircle2, Sparkles,
   TreePine, Droplets, Users, Globe2, Target, Award, Save, RefreshCw,
-  ExternalLink, Eye, Info
+  ExternalLink, Eye, Info, X
 } from "lucide-react";
 import { resolveIcon } from "./ProgramsView";
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
@@ -269,8 +269,8 @@ export default function StatsAdminView() {
                 <h4 className="font-bold text-gray-900 text-sm">{editingId ? "Edit Impact Stat Details" : "Add New Website-Wide Impact Stat"}</h4>
                 <p className="text-xs text-gray-400">Updates the stat on Homepage, /impact, and all connected pages</p>
               </div>
-              <button onClick={() => setShowAdd(false)} className="text-gray-400 hover:text-gray-600 text-xs font-bold">
-                ✕ Close
+              <button onClick={() => setShowAdd(false)} className="text-gray-400 hover:text-gray-600 text-xs font-bold flex items-center gap-1 transition-colors">
+                <X size={14} /> Close
               </button>
             </div>
 

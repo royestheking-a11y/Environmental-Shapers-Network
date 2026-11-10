@@ -564,8 +564,8 @@ export function WorkHoursView({ currentStaffId, currentSessionElapsed = 0 }: Wor
               className="px-3 py-2 rounded-xl bg-white border border-gray-200 text-xs font-semibold text-gray-600 focus:outline-none"
             >
               <option value="All">All Statuses</option>
-              <option value="online">🟢 Working Now</option>
-              <option value="offline">⚪ Offline</option>
+              <option value="online">● Working Now</option>
+              <option value="offline">○ Offline</option>
             </select>
           </div>
         </div>

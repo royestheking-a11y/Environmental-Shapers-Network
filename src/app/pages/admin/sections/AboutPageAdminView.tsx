@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Plus, Edit3, Trash2, AlertCircle, Save, LayoutTemplate, Users, History, AlignLeft, Image as ImageIcon, Target, Globe2, BarChart3, ArrowRight, Award, TreePine, Calendar, ExternalLink, Link2 } from "lucide-react";
+import { Plus, Edit3, Trash2, AlertCircle, Save, LayoutTemplate, Users, History, AlignLeft, Image as ImageIcon, Target, Globe2, BarChart3, ArrowRight, Award, TreePine, Calendar, ExternalLink, Link2, Sparkles } from "lucide-react";
 import { useFirestoreData, saveFirestoreData } from "../../../../lib/useFirestore";
 import { logAdminActivity } from "../../../../lib/activityLogger";
 import { resolveIcon } from "./ProgramsView";
@@ -495,8 +495,9 @@ export default function AboutPageAdminView() {
                     );
                   })}
                 </div>
-                <p className="text-[11px] text-gray-400 mt-3 text-center">
-                  ✦ To change these numbers, go to <a href="/admin/stats" className="text-[#0B5D3F] font-semibold underline">Admin → Impact Stats</a> and edit the values there.
+                <p className="text-[11px] text-gray-400 mt-3 text-center flex items-center justify-center gap-1">
+                  <Sparkles size={12} className="text-[#0B5D3F]" />
+                  <span>To change these numbers, go to <a href="/admin/stats" className="text-[#0B5D3F] font-semibold underline">Admin → Impact Stats</a> and edit the values there.</span>
                 </p>
               </div>
             );

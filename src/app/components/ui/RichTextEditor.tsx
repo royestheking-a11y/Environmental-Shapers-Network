@@ -232,15 +232,15 @@ export function RichTextEditor({
   const insertCallout = (type: "note" | "tip" | "warning") => {
     let bg = "rgba(11, 93, 63, 0.06)";
     let border = "#0B5D3F";
-    let title = "📌 Key Takeaway";
+    let title = "Key Takeaway";
     if (type === "tip") {
       bg = "rgba(2, 132, 199, 0.06)";
       border = "#0284c7";
-      title = "💡 Pro Tip";
+      title = "Pro Tip";
     } else if (type === "warning") {
       bg = "rgba(234, 88, 12, 0.06)";
       border = "#ea580c";
-      title = "⚠️ Important Notice";
+      title = "Important Notice";
     }
 
     const calloutHtml = `
@@ -531,7 +531,7 @@ export function RichTextEditor({
                         style={{ backgroundColor: h.hex === "transparent" ? "#fff" : h.hex }}
                         title={h.name}
                       >
-                        {h.hex === "transparent" ? "✕" : ""}
+                        {h.hex === "transparent" ? <X size={12} className="text-gray-400" /> : ""}
                       </button>
                     ))}
                   </div>
@@ -653,23 +653,23 @@ export function RichTextEditor({
                 <button
                   type="button"
                   onClick={() => insertCallout("note")}
-                  className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-green-50 text-xs font-semibold text-green-800 block"
+                  className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-green-50 text-xs font-semibold text-green-800 flex items-center gap-2"
                 >
-                  🌱 Key Takeaway / Note
+                  <Info size={13} className="text-emerald-600" /> Key Takeaway
                 </button>
                 <button
                   type="button"
                   onClick={() => insertCallout("tip")}
-                  className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-blue-50 text-xs font-semibold text-blue-800 block"
+                  className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-blue-50 text-xs font-semibold text-blue-800 flex items-center gap-2"
                 >
-                  💡 Pro Tip
+                  <Sparkles size={13} className="text-sky-600" /> Pro Tip
                 </button>
                 <button
                   type="button"
                   onClick={() => insertCallout("warning")}
-                  className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-orange-50 text-xs font-semibold text-orange-800 block"
+                  className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-orange-50 text-xs font-semibold text-orange-800 flex items-center gap-2"
                 >
-                  ⚠️ Important Notice
+                  <AlertCircle size={13} className="text-amber-600" /> Important Notice
                 </button>
               </div>
             </div>

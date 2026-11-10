@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import {
   Settings, Palette, Bell, Lock, Mail, Shield,
   Search, Code, Save, CheckCircle2, Upload, LogOut, AlertTriangle, Send,
-  Database, Cloud, RefreshCw, HardDrive, Check
+  Database, Cloud, RefreshCw, HardDrive, Check, X, AlertCircle
 } from "lucide-react";
 import { ImageUploadField } from "../../../components/ui/ImageUploadField";
 
@@ -78,7 +78,7 @@ export function SettingsView() {
   const [syncingCloud, setSyncingCloud] = useState(false);
   const [syncSummary, setSyncSummary] = useState<{ synced: string[]; errors: string[] } | null>(null);
   const [testingConnection, setTestingConnection] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<string | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<{ ok: boolean; message: string } | null>(null);
 
   const handleSyncAllToCloud = async () => {
     setSyncingCloud(true);
@@ -100,12 +100,12 @@ export function SettingsView() {
       const testDoc = { ping: "ok", checkedAt: new Date().toISOString() };
       const success = await saveFirestoreData("esn_test_connection", testDoc);
       if (success) {
-        setConnectionStatus("✔ Connected! Cloud Firestore accepted read & write queries.");
+        setConnectionStatus({ ok: true, message: "Connected! Cloud Firestore accepted read & write queries." });
       } else {
-        setConnectionStatus("❌ Firestore connection failed or write permissions denied.");
+        setConnectionStatus({ ok: false, message: "Firestore connection failed or write permissions denied." });
       }
     } catch (e: any) {
-      setConnectionStatus(`❌ Error: ${e?.message || e}`);
+      setConnectionStatus({ ok: false, message: `Error: ${e?.message || e}` });
     } finally {
       setTestingConnection(false);
       setTimeout(() => setConnectionStatus(null), 6000);
@@ -275,9 +275,9 @@ export function SettingsView() {
           <button
             type="button"
             onClick={() => setSyncWarning(null)}
-            className="text-amber-700 hover:text-black font-bold text-sm px-1.5 py-0.5"
+            className="text-amber-700 hover:text-black font-bold p-1 rounded-md"
           >
-            ✕
+            <X size={14} />
           </button>
         </div>
       )}
@@ -451,8 +451,9 @@ export function SettingsView() {
               </div>
 
               {connectionStatus && (
-                <div className={`p-4 rounded-2xl text-xs font-bold border ${connectionStatus.startsWith("✔") ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-red-50 text-red-800 border-red-200"}`}>
-                  {connectionStatus}
+                <div className={`p-4 rounded-2xl text-xs font-bold border flex items-center gap-2.5 ${connectionStatus.ok ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-red-50 text-red-800 border-red-200"}`}>
+                  {connectionStatus.ok ? <CheckCircle2 size={16} className="text-emerald-600 shrink-0" /> : <AlertTriangle size={16} className="text-red-600 shrink-0" />}
+                  <span>{connectionStatus.message}</span>
                 </div>
               )}
 
