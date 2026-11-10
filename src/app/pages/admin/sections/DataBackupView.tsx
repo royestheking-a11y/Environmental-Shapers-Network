@@ -93,6 +93,7 @@ export function DataBackupView() {
       "esn_programs",
       "esn_programs_admin",
       "esn_events",
+      "esn_events_page_settings",
       "esn_cms_content",
       "esn_about_team",
       "esn_about_hero",

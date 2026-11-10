@@ -163,8 +163,9 @@ async function offloadBlobsDeep<T>(val: T, parentKey: string, pathPrefix = ""): 
         : `${pathPrefix ? pathPrefix + "_" : ""}${i}`;
 
       if (typeof item === "string" && item.startsWith("data:") && item.length > 500) {
-        const cleanParent = parentKey.replace(/^esn_/, "");
-        const blobKey = `blob_${cleanParent}_${itemPath}`;
+        const cleanParent = parentKey.replace(/^esn_/, "").replace(/[^a-zA-Z0-9_]/g, "_");
+        const safeItemPath = String(itemPath).replace(/[^a-zA-Z0-9_]/g, "_").slice(0, 80);
+        const blobKey = `blob_${cleanParent}_${safeItemPath}`;
         try {
           await setDoc(doc(db, "site_data", blobKey), { value: item }, { merge: true });
           memoryCache.set(blobKey, item);
@@ -188,8 +189,9 @@ async function offloadBlobsDeep<T>(val: T, parentKey: string, pathPrefix = ""): 
   for (const [k, v] of Object.entries(val)) {
     const fieldPath = pathPrefix ? `${pathPrefix}_${k}` : k;
     if (typeof v === "string" && v.startsWith("data:") && v.length > 500) {
-      const cleanParent = parentKey.replace(/^esn_/, "");
-      const blobKey = `blob_${cleanParent}_${fieldPath}`;
+      const cleanParent = parentKey.replace(/^esn_/, "").replace(/[^a-zA-Z0-9_]/g, "_");
+      const safeFieldPath = String(fieldPath).replace(/[^a-zA-Z0-9_]/g, "_").slice(0, 80);
+      const blobKey = `blob_${cleanParent}_${safeFieldPath}`;
       try {
         await setDoc(doc(db, "site_data", blobKey), { value: v }, { merge: true });
         memoryCache.set(blobKey, v);
@@ -252,6 +254,7 @@ export const ESN_FIRESTORE_COLLECTIONS = [
   "esn_testimonials_admin",
   "esn_faq_admin",
   "esn_events",
+  "esn_events_page_settings",
   "esn_donations",
   "esn_cms_content",
   "esn_career_jobs",

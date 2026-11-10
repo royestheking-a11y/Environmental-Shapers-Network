@@ -165,6 +165,23 @@ function processImageSrc(
   img.src = src;
 }
 
+function dataUrlToBlob(dataUrl: string): Blob | null {
+  try {
+    const parts = dataUrl.split(",");
+    if (parts.length < 2) return null;
+    const mimeMatch = parts[0].match(/:(.*?);/);
+    const mime = mimeMatch ? mimeMatch[1] : "image/jpeg";
+    const binary = atob(parts[1]);
+    const array = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      array[i] = binary.charCodeAt(i);
+    }
+    return new Blob([array], { type: mime });
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Uploads a file with instant local compression and Firebase Storage sync.
  * Zero-delay fallback so uploads never hang or crash the browser.
@@ -212,7 +229,7 @@ export async function uploadMediaFile(
 
   if (onProgress) onProgress(60);
 
-  // 2. Try Firebase Cloud Storage with a fast 1.2-second timeout (never blocks or freezes UI)
+  // 2. Try Firebase Cloud Storage using the lightweight compressed payload with an 8-second timeout
   try {
     const storagePromise = new Promise<UploadResult>((resolve) => {
       const timeoutId = setTimeout(() => {
@@ -225,11 +242,13 @@ export async function uploadMediaFile(
           savings: savingsPct,
           type: mediaType,
         });
-      }, 1200);
+      }, 8000);
 
       try {
+        const compressedBlob = (isImage && instantUrl) ? dataUrlToBlob(instantUrl) : null;
+        const uploadPayload = compressedBlob || file;
         const storageRef = ref(storage, storagePath);
-        const uploadTask = uploadBytesResumable(storageRef, file);
+        const uploadTask = uploadBytesResumable(storageRef, uploadPayload);
 
         uploadTask.on(
           "state_changed",

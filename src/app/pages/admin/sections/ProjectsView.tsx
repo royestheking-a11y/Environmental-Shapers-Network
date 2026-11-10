@@ -6,6 +6,7 @@ import {
   Clock, PauseCircle, Filter, Calendar, Image as ImageIcon, Link2, Megaphone
 } from "lucide-react";
 import { ImageUploadField } from "../../../components/ui/ImageUploadField";
+import { uploadMediaFile } from "../../../../lib/storageService";
 
 type ProjectStatus = "Active" | "Planning" | "Completed" | "On Hold";
 
@@ -938,7 +939,6 @@ export function ProjectsView() {
                           if (!file) return;
                           setGalleryUploading(true);
                           try {
-                            const { uploadMediaFile } = await import("../../../../lib/storageService");
                             const result = await uploadMediaFile(file, "projects");
                             if (result?.url) {
                               setForm((prev: any) => ({ ...prev, galleryImgs: [...(prev.galleryImgs || []), result.url] }));
