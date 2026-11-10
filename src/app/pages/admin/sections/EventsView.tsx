@@ -239,33 +239,42 @@ export function EventsView() {
   };
 
   const save = async (list: ESNEvent[]) => {
-    await setEvents(list);
-    await saveFirestoreData("esn_events", list);
+    return await setEvents(list);
   };
 
   const handleSubmit = async () => {
-    if (!form.title || !form.date) return;
+    if (!form.title || !form.title.trim()) {
+      alert("Please enter an Event Title.");
+      return;
+    }
+    if (!form.date || !form.date.trim()) {
+      alert("Please enter an Event Date (e.g. Aug 15, 2026).");
+      return;
+    }
     setIsSaving(true);
     try {
       const cleanForm: any = { ...form };
       if (!cleanForm.projectId) delete cleanForm.projectId;
       if (!cleanForm.campaignId) delete cleanForm.campaignId;
 
+      let updatedList: ESNEvent[];
       if (editId !== null) {
-        const updatedList = events.map((e) => e.id === editId ? { ...cleanForm, id: editId } : e);
+        updatedList = events.map((e) => (e.id === editId || String(e.id) === String(editId)) ? { ...cleanForm, id: editId } : e);
         await save(updatedList);
         await logAdminActivity("Updated Event", "Events", `Saved updates to event "${form.title}" (${form.status || "upcoming"}).`, "info");
       } else {
         const newEvent: ESNEvent = { ...cleanForm, id: Date.now() };
-        const updatedList = [newEvent, ...events];
+        updatedList = [newEvent, ...events];
         await save(updatedList);
         await logAdminActivity("Created Event", "Events", `Created event "${form.title}" (${form.status || "upcoming"}).`, "success");
       }
       setShowForm(false);
       setEditId(null);
       setForm(blankEvent);
-    } catch (err) {
+      alert(editId !== null ? "Event updated successfully!" : "New event created successfully!");
+    } catch (err: any) {
       console.error("Failed to save event:", err);
+      alert("Failed to save event: " + (err?.message || "Please check connection and try again."));
     } finally {
       setIsSaving(false);
     }
@@ -284,10 +293,10 @@ export function EventsView() {
   const currentProgramInitiatives = DEFAULT_PROGRAM_INITIATIVES[form.programSlug || "youth"] || [];
 
   const confirmDelete = (id: number) => setDeleteConfirmId(id);
-  const doDelete = () => {
+  const doDelete = async () => {
     if (deleteConfirmId === null) return;
-    const doomed = events.find((e) => e.id === deleteConfirmId);
-    save(events.filter((e) => e.id !== deleteConfirmId));
+    const doomed = events.find((e) => e.id === deleteConfirmId || String(e.id) === String(deleteConfirmId));
+    await save(events.filter((e) => e.id !== deleteConfirmId && String(e.id) !== String(deleteConfirmId)));
     logAdminActivity("Deleted Event", "Events", `Deleted event "${doomed?.title || deleteConfirmId}".`, "warning");
     setDeleteConfirmId(null);
     setDetail(null);

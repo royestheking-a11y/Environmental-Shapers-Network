@@ -257,35 +257,55 @@ export function ProgramsView() {
 
   const save = async (list: ProgramData[]) => {
     setIsSaving(true);
-    setPrograms(list);
     try {
-      await saveFirestoreData("esn_programs", list);
-      await saveFirestoreData("esn_programs_admin", list);
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3500);
-    } catch (err) {
+      const ok = await setPrograms(list);
+      if (ok !== false) {
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3500);
+      }
+      return ok;
+    } catch (err: any) {
       console.error("Failed to save programs to Firestore:", err);
+      alert("Failed to save program: " + (err?.message || "Please check connection and try again."));
+      return false;
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleSubmit = async () => {
-    if (!form.title || !form.slug) return;
+    if (!form.title || !form.title.trim()) {
+      alert("Please enter a Program Title.");
+      return;
+    }
+    const slugToUse = (form.slug && form.slug.trim())
+      ? form.slug.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")
+      : form.title.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+
+    if (!slugToUse) {
+      alert("Please enter a valid URL Slug or Title.");
+      return;
+    }
+
+    const cleanProgram = { ...form, slug: slugToUse };
+
     let updatedList: ProgramData[];
     if (editId !== null) {
       updatedList = programs.map((p) => 
-        (p.id === editId || String(p.id) === String(editId) || p.slug === form.slug)
-          ? { ...form, id: editId }
+        (p.id === editId || String(p.id) === String(editId) || p.slug === slugToUse)
+          ? { ...cleanProgram, id: editId }
           : p
       );
     } else {
-      updatedList = [...programs, { ...form, id: Date.now() }];
+      updatedList = [...programs, { ...cleanProgram, id: Date.now() }];
     }
-    await save(updatedList);
-    setShowForm(false);
-    setEditId(null);
-    setForm(blankProgram);
+    const ok = await save(updatedList);
+    if (ok !== false) {
+      setShowForm(false);
+      setEditId(null);
+      setForm(blankProgram);
+      alert(editId !== null ? "Program updated successfully!" : "New program created successfully!");
+    }
   };
 
   const startEdit = (p: ProgramData) => {
@@ -415,11 +435,30 @@ export function ProgramsView() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-bold text-gray-600 mb-1.5 block">Program Title *</label>
-                  <input type="text" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="E.g., Forest Restoration" className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
+                  <input
+                    type="text"
+                    value={form.title}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (editId === null && (!form.slug || form.slug === form.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""))) {
+                        setForm({ ...form, title: val, slug: val.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") });
+                      } else {
+                        setForm({ ...form, title: val });
+                      }
+                    }}
+                    placeholder="E.g., Forest Restoration"
+                    className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]"
+                  />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-gray-600 mb-1.5 block">URL Slug *</label>
-                  <input type="text" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} placeholder="E.g., forest-restoration" className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]" />
+                  <input
+                    type="text"
+                    value={form.slug}
+                    onChange={(e) => setForm({ ...form, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, "") })}
+                    placeholder="E.g., forest-restoration"
+                    className="w-full px-4 py-2.5 rounded-xl bg-[#F6FBF8] border border-gray-200 text-sm focus:outline-none focus:border-[#4CAF50]"
+                  />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-gray-600 mb-1.5 block">Category</label>

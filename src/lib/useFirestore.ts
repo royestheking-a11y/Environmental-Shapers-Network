@@ -72,6 +72,120 @@ const memoryCache = new Map<string, any>();
 const inflightRequests = new Map<string, Promise<any>>();
 let firestoreDisabledUntil = 0;
 
+// Blob storage helpers to prevent any Firestore document from exceeding the 1MB limit
+async function getBlobValue(blobKey: string): Promise<string> {
+  if (memoryCache.has(blobKey)) return memoryCache.get(blobKey);
+  if (typeof window !== "undefined") {
+    try {
+      const local = localStorage.getItem(`esn_blob_${blobKey}`);
+      if (local) {
+        memoryCache.set(blobKey, local);
+        return local;
+      }
+    } catch {}
+  }
+  try {
+    const snap = await getDoc(doc(db, "site_data", blobKey));
+    if (snap.exists()) {
+      const docData = snap.data();
+      const val = docData?.value || "";
+      if (val) {
+        memoryCache.set(blobKey, val);
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.setItem(`esn_blob_${blobKey}`, val);
+          } catch {}
+        }
+        return val;
+      }
+    }
+  } catch (err) {
+    console.error(`[Blob Load Error] Failed to load blob "${blobKey}":`, err);
+  }
+  return "";
+}
+
+function hasBlobRef(val: any): boolean {
+  if (!val) return false;
+  if (typeof val === "string") return val.startsWith("blob:");
+  if (typeof val !== "object") return false;
+  if (Array.isArray(val)) return val.some(hasBlobRef);
+  return Object.values(val).some(hasBlobRef);
+}
+
+async function resolveBlobsDeep<T>(val: T): Promise<T> {
+  if (!val || typeof val !== "object") {
+    if (typeof val === "string" && (val as string).startsWith("blob:")) {
+      const blobKey = (val as string).slice(5);
+      const resolved = await getBlobValue(blobKey);
+      return (resolved || val) as any;
+    }
+    return val;
+  }
+  if (Array.isArray(val)) {
+    const list = await Promise.all(val.map((item) => resolveBlobsDeep(item)));
+    return list as any;
+  }
+  const result: Record<string, any> = {};
+  for (const [k, v] of Object.entries(val)) {
+    result[k] = await resolveBlobsDeep(v);
+  }
+  return result as any;
+}
+
+async function offloadBlobsDeep<T>(val: T, parentKey: string): Promise<T> {
+  if (!val || typeof val !== "object") return val;
+  if (Array.isArray(val)) {
+    const list = [];
+    for (let i = 0; i < val.length; i++) {
+      const item = val[i];
+      if (item && typeof item === "object") {
+        const itemCopy = { ...item };
+        for (const [k, v] of Object.entries(itemCopy)) {
+          if (typeof v === "string" && v.startsWith("data:image/") && v.length > 500) {
+            const blobId = (item.id !== undefined && item.id !== null) ? String(item.id) : (item.slug ? String(item.slug) : `${i}_${Date.now()}`);
+            const blobKey = `blob_${parentKey.replace(/^esn_/, "")}_${blobId}`;
+            try {
+              await setDoc(doc(db, "site_data", blobKey), { value: v }, { merge: true });
+              memoryCache.set(blobKey, v);
+              if (typeof window !== "undefined") {
+                try { localStorage.setItem(`esn_blob_${blobKey}`, v); } catch {}
+              }
+              itemCopy[k] = `blob:${blobKey}`;
+            } catch (err) {
+              console.error(`[Blob Offload Error] Failed to offload "${blobKey}":`, err);
+            }
+          }
+        }
+        list.push(itemCopy);
+      } else {
+        list.push(item);
+      }
+    }
+    return list as any;
+  }
+  if (val && typeof val === "object") {
+    const objCopy = { ...(val as Record<string, any>) };
+    for (const [k, v] of Object.entries(objCopy)) {
+      if (typeof v === "string" && v.startsWith("data:image/") && v.length > 500) {
+        const blobKey = `blob_${parentKey.replace(/^esn_/, "")}_${k}`;
+        try {
+          await setDoc(doc(db, "site_data", blobKey), { value: v }, { merge: true });
+          memoryCache.set(blobKey, v);
+          if (typeof window !== "undefined") {
+            try { localStorage.setItem(`esn_blob_${blobKey}`, v); } catch {}
+          }
+          objCopy[k] = `blob:${blobKey}`;
+        } catch (err) {
+          console.error(`[Blob Offload Error] Failed to offload "${blobKey}":`, err);
+        }
+      }
+    }
+    return objCopy as any;
+  }
+  return val;
+}
+
 // Key aliases that should always remain mirrored in Firestore
 const KEY_ALIASES: Record<string, string> = {
   esn_projects_admin: "esn_projects",
@@ -236,10 +350,28 @@ export function useFirestoreData<T>(key: string, defaultValue: T): [T, (val: T |
             const docData = docSnap.data();
             const rawVal = docData?.value !== undefined ? docData.value : docData;
             const cleanVal = sanitizeData(rawVal);
-            memoryCache.set(key, cleanVal);
-            setData(cleanVal);
-            setLocalCache(key, cleanVal);
-            setLoading(false);
+            if (hasBlobRef(cleanVal)) {
+              resolveBlobsDeep(cleanVal).then((resolved) => {
+                if (isMounted) {
+                  memoryCache.set(key, resolved);
+                  setData(resolved);
+                  setLocalCache(key, resolved);
+                  setLoading(false);
+                }
+              }).catch(() => {
+                if (isMounted) {
+                  memoryCache.set(key, cleanVal);
+                  setData(cleanVal);
+                  setLocalCache(key, cleanVal);
+                  setLoading(false);
+                }
+              });
+            } else {
+              memoryCache.set(key, cleanVal);
+              setData(cleanVal);
+              setLocalCache(key, cleanVal);
+              setLoading(false);
+            }
           } else if (isMounted) {
             // Document does not exist in Firestore yet:
             // Auto-persist the default / local cached content into the main database!
@@ -300,11 +432,13 @@ export async function fetchFirestoreData<T>(key: string, defaultValue: T): Promi
     if (docSnap.exists()) {
       const docData = docSnap.data();
       const rawVal = docData?.value !== undefined ? docData.value : docData;
-      const cleanVal = sanitizeData(rawVal);
-      setLocalCache(key, cleanVal);
-      if (JSON.stringify(rawVal) !== JSON.stringify(cleanVal)) {
-        setDoc(docRef, { value: cleanVal }, { merge: true }).catch(() => {});
+      let cleanVal = sanitizeData(rawVal);
+      if (hasBlobRef(cleanVal)) {
+        try {
+          cleanVal = await resolveBlobsDeep(cleanVal);
+        } catch {}
       }
+      setLocalCache(key, cleanVal);
       return cleanVal;
     } else {
       const localItem = typeof window !== "undefined" ? localStorage.getItem(`esn_cache_${key}`) : null;
@@ -344,9 +478,16 @@ export async function saveFirestoreData<T>(key: string, newData: T): Promise<boo
   }
   setLocalCache(key, cleanData);
 
+  let dataToWrite: any = cleanData;
+  try {
+    dataToWrite = await offloadBlobsDeep(cleanData, key);
+  } catch (err) {
+    console.warn(`[Blob Offload Warn] Offload fallback for key "${key}":`, err);
+  }
+
   // Safety guard against Firestore 1MB document limit
   try {
-    const serialized = JSON.stringify(cleanData);
+    const serialized = JSON.stringify(dataToWrite);
     if (serialized && serialized.length > 950000) {
       console.warn(`[Firestore Warning] Key "${key}" document size is ${(serialized.length / 1024).toFixed(0)}KB. Approaching the 1024KB Firestore limit.`);
     }
@@ -354,14 +495,14 @@ export async function saveFirestoreData<T>(key: string, newData: T): Promise<boo
 
   try {
     const docRef = doc(db, "site_data", key);
-    await setDoc(docRef, { value: cleanData }, { merge: true });
+    await setDoc(docRef, { value: dataToWrite }, { merge: true });
 
     // Sync alias key if applicable (e.g. esn_projects <-> esn_projects_admin)
     const aliasKey = KEY_ALIASES[key];
     if (aliasKey) {
       setLocalCache(aliasKey, cleanData);
       const aliasRef = doc(db, "site_data", aliasKey);
-      await setDoc(aliasRef, { value: cleanData }, { merge: true }).catch(() => {});
+      await setDoc(aliasRef, { value: dataToWrite }, { merge: true }).catch(() => {});
     }
 
     return true;
