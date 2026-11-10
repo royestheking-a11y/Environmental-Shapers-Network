@@ -28,6 +28,7 @@ export function ImageUploadField({
   const [uploadPercent, setUploadPercent] = useState(0);
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [savingsBadge, setSavingsBadge] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleUpload = async (files: FileList | null) => {
@@ -47,6 +48,11 @@ export function ImageUploadField({
       });
       if (result && result.url) {
         onChange(result.url);
+        if (result.savings) {
+          setSavingsBadge(`${result.size} → ${result.optimizedSize || "25 KB"} (${result.savings} saved)`);
+        } else {
+          setSavingsBadge(null);
+        }
       }
     } catch (err) {
       console.error("Image upload failed:", err);
@@ -112,7 +118,7 @@ export function ImageUploadField({
                 </button>
                 <button
                   type="button"
-                  onClick={() => onChange("")}
+                  onClick={() => { onChange(""); setSavingsBadge(null); }}
                   className="p-1.5 bg-red-500/90 hover:bg-red-600 text-white rounded-lg text-xs font-semibold shadow transition-all"
                   title="Remove Image"
                 >
@@ -131,12 +137,18 @@ export function ImageUploadField({
               </button>
               <button
                 type="button"
-                onClick={() => onChange("")}
+                onClick={() => { onChange(""); setSavingsBadge(null); }}
                 className="text-[11px] px-2.5 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg font-semibold flex items-center gap-1 transition-all"
               >
                 <X size={11} /> Remove Image
               </button>
             </div>
+            {savingsBadge && (
+              <div className="flex items-center gap-1.5 text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-2.5 py-1 rounded-full font-bold w-fit mt-0.5">
+                <Sparkles size={11} className="text-emerald-600 shrink-0" />
+                <span>Optimized: {savingsBadge}</span>
+              </div>
+            )}
           </div>
         ) : null}
 

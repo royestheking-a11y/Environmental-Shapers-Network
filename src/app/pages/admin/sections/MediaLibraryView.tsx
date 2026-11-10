@@ -154,10 +154,10 @@ export function MediaLibraryView() {
           type: res.type,
           url: res.url,
           storagePath: res.storagePath,
-          size: res.size,
+          size: res.optimizedSize ? `${res.optimizedSize} (${res.savings || "optimized"})` : res.size,
           uploadedBy: "Admin",
           date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-          tags: ["upload"],
+          tags: ["upload", "optimized"],
         });
       } catch (err) {
         console.error("Failed to upload file:", f.name, err);

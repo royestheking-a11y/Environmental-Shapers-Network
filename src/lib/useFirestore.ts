@@ -133,57 +133,80 @@ async function resolveBlobsDeep<T>(val: T): Promise<T> {
   return result as any;
 }
 
-async function offloadBlobsDeep<T>(val: T, parentKey: string): Promise<T> {
-  if (!val || typeof val !== "object") return val;
+async function offloadBlobsDeep<T>(val: T, parentKey: string, pathPrefix = ""): Promise<T> {
+  if (!val || typeof val !== "object") {
+    if (typeof val === "string" && (val as string).startsWith("data:") && (val as string).length > 500) {
+      const cleanParent = parentKey.replace(/^esn_/, "");
+      const cleanPath = pathPrefix ? `_${pathPrefix.replace(/[^a-zA-Z0-9_]/g, "_")}` : "";
+      const blobKey = `blob_${cleanParent}${cleanPath}`;
+      try {
+        await setDoc(doc(db, "site_data", blobKey), { value: val }, { merge: true });
+        memoryCache.set(blobKey, val);
+        if (typeof window !== "undefined") {
+          try { localStorage.setItem(`esn_blob_${blobKey}`, val as string); } catch {}
+        }
+        return `blob:${blobKey}` as any;
+      } catch (err) {
+        console.error(`[Blob Offload Error] Failed to offload "${blobKey}":`, err);
+        return val;
+      }
+    }
+    return val;
+  }
+
   if (Array.isArray(val)) {
     const list = [];
     for (let i = 0; i < val.length; i++) {
       const item = val[i];
-      if (item && typeof item === "object") {
-        const itemCopy = { ...item };
-        for (const [k, v] of Object.entries(itemCopy)) {
-          if (typeof v === "string" && v.startsWith("data:image/") && v.length > 500) {
-            const blobId = (item.id !== undefined && item.id !== null) ? String(item.id) : (item.slug ? String(item.slug) : `${i}_${Date.now()}`);
-            const blobKey = `blob_${parentKey.replace(/^esn_/, "")}_${blobId}`;
-            try {
-              await setDoc(doc(db, "site_data", blobKey), { value: v }, { merge: true });
-              memoryCache.set(blobKey, v);
-              if (typeof window !== "undefined") {
-                try { localStorage.setItem(`esn_blob_${blobKey}`, v); } catch {}
-              }
-              itemCopy[k] = `blob:${blobKey}`;
-            } catch (err) {
-              console.error(`[Blob Offload Error] Failed to offload "${blobKey}":`, err);
-            }
+      const itemPath = (item && typeof item === "object" && (item.id !== undefined || item.slug !== undefined))
+        ? String(item.id || item.slug)
+        : `${pathPrefix ? pathPrefix + "_" : ""}${i}`;
+
+      if (typeof item === "string" && item.startsWith("data:") && item.length > 500) {
+        const cleanParent = parentKey.replace(/^esn_/, "");
+        const blobKey = `blob_${cleanParent}_${itemPath}`;
+        try {
+          await setDoc(doc(db, "site_data", blobKey), { value: item }, { merge: true });
+          memoryCache.set(blobKey, item);
+          if (typeof window !== "undefined") {
+            try { localStorage.setItem(`esn_blob_${blobKey}`, item); } catch {}
           }
+          list.push(`blob:${blobKey}`);
+        } catch {
+          list.push(item);
         }
-        list.push(itemCopy);
+      } else if (item && typeof item === "object") {
+        list.push(await offloadBlobsDeep(item, parentKey, itemPath));
       } else {
         list.push(item);
       }
     }
     return list as any;
   }
-  if (val && typeof val === "object") {
-    const objCopy = { ...(val as Record<string, any>) };
-    for (const [k, v] of Object.entries(objCopy)) {
-      if (typeof v === "string" && v.startsWith("data:image/") && v.length > 500) {
-        const blobKey = `blob_${parentKey.replace(/^esn_/, "")}_${k}`;
-        try {
-          await setDoc(doc(db, "site_data", blobKey), { value: v }, { merge: true });
-          memoryCache.set(blobKey, v);
-          if (typeof window !== "undefined") {
-            try { localStorage.setItem(`esn_blob_${blobKey}`, v); } catch {}
-          }
-          objCopy[k] = `blob:${blobKey}`;
-        } catch (err) {
-          console.error(`[Blob Offload Error] Failed to offload "${blobKey}":`, err);
+
+  const objCopy: Record<string, any> = {};
+  for (const [k, v] of Object.entries(val)) {
+    const fieldPath = pathPrefix ? `${pathPrefix}_${k}` : k;
+    if (typeof v === "string" && v.startsWith("data:") && v.length > 500) {
+      const cleanParent = parentKey.replace(/^esn_/, "");
+      const blobKey = `blob_${cleanParent}_${fieldPath}`;
+      try {
+        await setDoc(doc(db, "site_data", blobKey), { value: v }, { merge: true });
+        memoryCache.set(blobKey, v);
+        if (typeof window !== "undefined") {
+          try { localStorage.setItem(`esn_blob_${blobKey}`, v); } catch {}
         }
+        objCopy[k] = `blob:${blobKey}`;
+      } catch (err) {
+        objCopy[k] = v;
       }
+    } else if (v && typeof v === "object") {
+      objCopy[k] = await offloadBlobsDeep(v, parentKey, fieldPath);
+    } else {
+      objCopy[k] = v;
     }
-    return objCopy as any;
   }
-  return val;
+  return objCopy as any;
 }
 
 // Key aliases that should always remain mirrored in Firestore
