@@ -67,20 +67,28 @@ export function RollingCarousel({
     });
   };
 
-  // Optional auto-play rolling
+  // Continuous auto-play rolling with seamless loop
   useEffect(() => {
-    if (!autoPlay || isHovered || !canScrollRight) return;
+    if (!autoPlay || isHovered) return;
     const timer = setInterval(() => {
       const el = scrollRef.current;
       if (!el) return;
-      if (el.scrollLeft >= el.scrollWidth - el.clientWidth - 20) {
+      // If content does not overflow, no scroll needed
+      if (el.scrollWidth <= el.clientWidth + 10) return;
+
+      // If reached the end, loop smoothly back to start
+      if (el.scrollLeft >= el.scrollWidth - el.clientWidth - 25) {
         el.scrollTo({ left: 0, behavior: "smooth" });
       } else {
-        scroll("right");
+        const scrollAmount = Math.max(280, el.clientWidth * 0.82);
+        el.scrollBy({
+          left: scrollAmount,
+          behavior: "smooth",
+        });
       }
     }, autoPlayInterval);
     return () => clearInterval(timer);
-  }, [autoPlay, autoPlayInterval, isHovered, canScrollRight]);
+  }, [autoPlay, autoPlayInterval, isHovered]);
 
   // Drag to scroll for desktop mouse users
   const handleMouseDown = (e: React.MouseEvent) => {

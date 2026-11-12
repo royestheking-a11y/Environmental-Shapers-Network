@@ -25,6 +25,8 @@ export function CampaignsSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* Rolling Campaigns Carousel */}
         <RollingCarousel
+          autoPlay={true}
+          autoPlayInterval={4500}
           badge={
             <div className="inline-flex items-center gap-2 bg-[#4CAF50]/10 text-[#4CAF50] text-sm font-semibold px-5 py-2 rounded-full">
               <Heart size={14} fill="currentColor" />
