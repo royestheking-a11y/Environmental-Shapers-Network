@@ -50,98 +50,100 @@ export function CampaignsSection() {
             return (
               <div key={campaign.id} className="h-full">
                 <div
-                  className="group bg-white rounded-3xl overflow-hidden border border-gray-100 hover:border-[#0B5D3F]/20 hover:shadow-2xl hover:shadow-[#0B5D3F]/10 transition-all duration-500 hover:-translate-y-2 h-full flex flex-col justify-between"
+                  className="group bg-white rounded-3xl p-6 border border-gray-100 hover:border-[#0B5D3F]/20 hover:shadow-2xl hover:shadow-[#0B5D3F]/10 transition-all duration-500 hover:-translate-y-2 h-full flex flex-col justify-between"
                 >
                   <div>
-                    {/* Image */}
-                    <div className="relative h-52 overflow-hidden">
-                      <ImageWithFallback
-                        src={campaign.image}
-                        alt={campaign.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                      <div className="absolute top-4 left-4">
-                        <span className="bg-white/90 backdrop-blur-sm text-[#0B5D3F] text-xs font-bold px-3 py-1.5 rounded-full">
-                          {campaign.category}
-                        </span>
-                      </div>
-                      <div className="absolute top-4 right-4 flex gap-1">
-                        {campaign.sdgs.map((sdg) => (
-                          <span key={sdg} className="bg-[#D6A95A] text-white text-xs font-bold px-2 py-1 rounded-full">{sdg}</span>
-                        ))}
-                      </div>
-                      <div className="absolute bottom-4 left-4 right-4">
-                        <div className="flex items-center gap-2 text-white text-sm">
-                          <Calendar size={14} />
-                          <span>{campaign.endDate}</span>
-                        </div>
+                    {/* Top Badges & Date */}
+                    <div className="flex items-center justify-between gap-2 mb-3">
+                      <span className="bg-[#4CAF50]/15 text-[#0B5D3F] text-xs font-bold px-3 py-1 rounded-full">
+                        {campaign.category}
+                      </span>
+                      <div className="flex items-center gap-1.5 text-xs text-gray-500 font-medium">
+                        <Calendar size={13} className="text-[#4CAF50]" />
+                        <span>{campaign.endDate}</span>
                       </div>
                     </div>
 
-                    {/* Content */}
-                    <div className="p-6">
-                      <h4 className="font-bold text-gray-900 mb-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                        {campaign.title}
-                      </h4>
-                      <p className="text-gray-500 text-sm mb-5 leading-relaxed line-clamp-2">{campaign.description}</p>
+                    {/* Title on Top (Upore thakbe title) */}
+                    <h4 className="font-extrabold text-gray-900 text-lg mb-2 group-hover:text-[#0B5D3F] transition-colors leading-snug" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                      {campaign.title}
+                    </h4>
 
-                      {/* Connected Project Link */}
-                      {campaign.projectName && campaign.projectId ? (
-                        <div className="mb-5 bg-[#F6FBF8] border border-emerald-100 rounded-2xl p-3 flex items-center justify-between">
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="w-8 h-8 rounded-xl bg-[#0B5D3F] text-white flex items-center justify-center shrink-0">
-                              <Target size={14} />
-                            </div>
-                            <div className="min-w-0">
-                              <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-800">Connected Project</div>
-                              <Link
-                                to={`/projects/${campaign.projectId}`}
-                                className="text-xs font-bold text-gray-900 hover:text-[#0B5D3F] transition-colors flex items-center gap-1 truncate"
-                              >
-                                <span className="truncate">{campaign.projectName}</span>
-                                <ArrowRight size={11} className="shrink-0" />
-                              </Link>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="mb-5 bg-[#F6FBF8] border border-gray-100 rounded-2xl p-3 flex items-center gap-2.5 text-xs font-medium text-gray-500">
-                          <div className="w-8 h-8 rounded-xl bg-gray-100 text-[#0B5D3F] flex items-center justify-center shrink-0">
-                            <Target size={14} />
-                          </div>
-                          <div>
-                            <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Campaign Scope</div>
-                            <div className="text-xs font-bold text-gray-700">Global Standalone Initiative</div>
-                          </div>
+                    {/* Photo in the Middle (R majkhane thakbe Photo) */}
+                    <div className="relative h-48 sm:h-52 rounded-2xl overflow-hidden my-3 border border-gray-100/90 shadow-xs bg-gray-50">
+                      <ImageWithFallback
+                        src={campaign.image}
+                        alt={campaign.title}
+                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+                      {campaign.sdgs && campaign.sdgs.length > 0 && (
+                        <div className="absolute top-3 right-3 flex gap-1 z-10">
+                          {campaign.sdgs.map((sdg) => (
+                            <span key={sdg} className="bg-[#D6A95A] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs">{sdg}</span>
+                          ))}
                         </div>
                       )}
+                    </div>
 
-                      {/* Stats Row */}
-                      <div className="flex items-center justify-between mb-5 py-3 border-t border-gray-50">
-                        <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                          <Users size={13} />
-                          <span>{campaign.volunteers.toLocaleString()} volunteers</span>
+                    {/* Content below photo */}
+                    <p className="text-gray-600 text-xs sm:text-sm mb-4 leading-relaxed line-clamp-2">{campaign.description}</p>
+
+                    {/* Connected Project Link */}
+                    {campaign.projectName && campaign.projectId ? (
+                      <div className="mb-4 bg-[#F6FBF8] border border-emerald-100 rounded-2xl p-2.5 flex items-center justify-between">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-7 h-7 rounded-lg bg-[#0B5D3F] text-white flex items-center justify-center shrink-0">
+                            <Target size={13} />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-[9px] font-bold uppercase tracking-wider text-emerald-800">Connected Project</div>
+                            <Link
+                              to={`/projects/${campaign.projectId}`}
+                              className="text-xs font-bold text-gray-900 hover:text-[#0B5D3F] transition-colors flex items-center gap-1 truncate"
+                            >
+                              <span className="truncate">{campaign.projectName}</span>
+                              <ArrowRight size={11} className="shrink-0" />
+                            </Link>
+                          </div>
                         </div>
+                      </div>
+                    ) : (
+                      <div className="mb-4 bg-[#F6FBF8] border border-gray-100 rounded-2xl p-2.5 flex items-center gap-2.5 text-xs font-medium text-gray-500">
+                        <div className="w-7 h-7 rounded-lg bg-gray-100 text-[#0B5D3F] flex items-center justify-center shrink-0">
+                          <Target size={13} />
+                        </div>
+                        <div>
+                          <div className="text-[9px] font-bold uppercase tracking-wider text-gray-400">Campaign Scope</div>
+                          <div className="text-xs font-bold text-gray-700">Global Standalone Initiative</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Stats Row */}
+                    <div className="flex items-center justify-between mb-4 py-2.5 border-t border-gray-100">
+                      <div className="flex items-center gap-1.5 text-xs text-gray-500 font-medium">
+                        <Users size={13} className="text-[#0B5D3F]" />
+                        <span>{campaign.volunteers.toLocaleString()} volunteers</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Actions */}
-                  <div className="px-6 pb-6 pt-0 flex gap-2.5">
+                  <div className="pt-2 flex gap-2.5">
                     <Link
                       to={`/donate?campaign=${encodeURIComponent(campaign.title)}`}
-                      className="flex-1 text-center py-3 rounded-xl font-semibold text-sm text-white transition-all duration-300 hover:scale-105 shadow-md flex items-center justify-center gap-1.5"
+                      className="flex-1 text-center py-2.5 rounded-xl font-semibold text-xs sm:text-sm text-white transition-all duration-300 hover:opacity-95 shadow-xs flex items-center justify-center gap-1.5"
                       style={{ backgroundColor: campaign.color }}
                     >
                       <Heart size={14} fill="currentColor" /> Donate Now
                     </Link>
                     <Link
                       to={`/donate?campaign=${encodeURIComponent(campaign.title)}`}
-                      className="w-11 h-11 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center hover:bg-[#0B5D3F]/10 hover:border-[#0B5D3F]/30 transition-all text-[#0B5D3F]"
+                      className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center hover:bg-[#0B5D3F]/10 hover:border-[#0B5D3F]/30 transition-all text-[#0B5D3F] shrink-0"
                       title="Support this campaign"
                     >
-                      <Heart size={16} />
+                      <Heart size={15} />
                     </Link>
                   </div>
                 </div>

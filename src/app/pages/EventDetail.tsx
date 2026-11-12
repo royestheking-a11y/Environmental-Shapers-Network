@@ -98,7 +98,7 @@ export default function EventDetail() {
                   <ImageWithFallback
                     src={event.image}
                     alt={event.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-center"
                   />
                 </div>
               )}

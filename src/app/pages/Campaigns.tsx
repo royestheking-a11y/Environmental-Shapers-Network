@@ -70,54 +70,73 @@ export default function Campaigns() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="bg-white rounded-3xl overflow-hidden border border-gray-100 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] transition-all group flex flex-col h-full"
+                className="bg-white rounded-3xl p-6 sm:p-7 border border-gray-100 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] transition-all group flex flex-col justify-between h-full"
               >
-                <div className="relative h-48 overflow-hidden">
-                  <ImageWithFallback src={campaign.image} alt={campaign.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-bold" style={{ color: campaign.color }}>
-                    {campaign.category}
-                  </div>
-                  <div className="absolute top-4 right-4">
+                <div>
+                  {/* Top: Category & Status */}
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <span className="bg-[#4CAF50]/15 text-[#0B5D3F] text-xs font-bold px-3 py-1 rounded-full">
+                      {campaign.category}
+                    </span>
                     <span className="bg-emerald-600 text-white text-xs font-bold px-2.5 py-1 rounded-full capitalize">{campaign.status}</span>
                   </div>
+
+                  {/* Title on Top (Upore thakbe title) */}
+                  <h3 className="text-xl font-extrabold text-gray-900 mb-2 group-hover:text-[#0B5D3F] transition-colors leading-snug" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    {campaign.title}
+                  </h3>
+
+                  <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-3 font-medium">
+                    <Calendar size={13} className="text-[#4CAF50]" />
+                    <span>Target: {campaign.endDate}</span>
+                  </div>
+
+                  {/* Photo in the Middle (R majkhane thakbe Photo) */}
+                  <div className="relative h-48 sm:h-52 rounded-2xl overflow-hidden my-3 border border-gray-100/90 shadow-xs bg-gray-50">
+                    <ImageWithFallback
+                      src={campaign.image}
+                      alt={campaign.title}
+                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
+                    />
+                  </div>
+
+                  {/* Written Description below photo */}
+                  <p className="text-gray-600 text-xs sm:text-sm mb-5 line-clamp-2 leading-relaxed">{campaign.description}</p>
                 </div>
-                <div className="p-6 flex flex-col flex-grow">
-                  <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-[#0B5D3F] transition-colors">{campaign.title}</h3>
-                  <p className="text-gray-500 text-sm mb-6 line-clamp-2">{campaign.description}</p>
-                  
-                  <div className="mt-auto">
-                    {/* Connected Project Link */}
-                    {campaign.projectName && campaign.projectId ? (
-                      <div className="mb-5 bg-[#F6FBF8] border border-emerald-100 rounded-2xl p-3 flex items-center justify-between">
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-8 h-8 rounded-xl bg-[#0B5D3F] text-white flex items-center justify-center shrink-0">
-                            <Target size={14} />
-                          </div>
-                          <div className="min-w-0">
-                            <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-800">Connected Project</div>
-                            <Link
-                              to={`/projects/${campaign.projectId}`}
-                              className="text-xs font-bold text-gray-900 hover:text-[#0B5D3F] transition-colors flex items-center gap-1 truncate"
-                            >
-                              <span className="truncate">{campaign.projectName}</span>
-                              <ArrowRight size={11} className="shrink-0" />
-                            </Link>
-                          </div>
+
+                <div className="mt-auto">
+                  {/* Connected Project Link */}
+                  {campaign.projectName && campaign.projectId ? (
+                    <div className="mb-4 bg-[#F6FBF8] border border-emerald-100 rounded-2xl p-2.5 flex items-center justify-between">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-7 h-7 rounded-lg bg-[#0B5D3F] text-white flex items-center justify-center shrink-0">
+                          <Target size={13} />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-[9px] font-bold uppercase tracking-wider text-emerald-800">Connected Project</div>
+                          <Link
+                            to={`/projects/${campaign.projectId}`}
+                            className="text-xs font-bold text-gray-900 hover:text-[#0B5D3F] transition-colors flex items-center gap-1 truncate"
+                          >
+                            <span className="truncate">{campaign.projectName}</span>
+                            <ArrowRight size={11} className="shrink-0" />
+                          </Link>
                         </div>
                       </div>
-                    ) : (
-                      <div className="mb-5 bg-[#F6FBF8] border border-gray-100 rounded-2xl p-3 flex items-center gap-2.5 text-xs font-medium text-gray-500">
-                        <div className="w-8 h-8 rounded-xl bg-gray-100 text-[#0B5D3F] flex items-center justify-center shrink-0">
-                          <Megaphone size={14} />
-                        </div>
-                        <div>
-                          <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Campaign Scope</div>
-                          <div className="text-xs font-bold text-gray-700">Global Standalone Movement</div>
-                        </div>
+                    </div>
+                  ) : (
+                    <div className="mb-4 bg-[#F6FBF8] border border-gray-100 rounded-2xl p-2.5 flex items-center gap-2.5 text-xs font-medium text-gray-500">
+                      <div className="w-7 h-7 rounded-lg bg-gray-100 text-[#0B5D3F] flex items-center justify-center shrink-0">
+                        <Megaphone size={13} />
                       </div>
-                    )}
-                    
-                    <div className="grid grid-cols-2 gap-4 py-4 border-y border-gray-50 mb-6">
+                      <div>
+                        <div className="text-[9px] font-bold uppercase tracking-wider text-gray-400">Campaign Scope</div>
+                        <div className="text-xs font-bold text-gray-700">Global Standalone Movement</div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-4 py-3 border-y border-gray-100 mb-5">
                       <div>
                         <div className="text-xs text-gray-400 mb-1">Volunteers</div>
                         <div className="font-bold text-gray-900">{campaign.volunteers?.toLocaleString() || 0}</div>
@@ -138,7 +157,6 @@ export default function Campaigns() {
                       </Link>
                     </div>
                   </div>
-                </div>
               </motion.div>
             );
           })}

@@ -950,7 +950,7 @@ function EventsPage() {
                       {/* Photo in the Middle (R majkhane thakbe Photo) */}
                       {e.image && (
                         <div className="h-48 sm:h-52 rounded-2xl overflow-hidden my-3.5 border border-gray-100/90 shadow-xs bg-gray-50">
-                          <ImageWithFallback src={e.image} alt={e.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          <ImageWithFallback src={e.image} alt={e.title} className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500" />
                         </div>
                       )}
 
