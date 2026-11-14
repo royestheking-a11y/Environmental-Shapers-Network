@@ -58,7 +58,7 @@ export function ProjectsSection() {
               }`}
             >
               <Calendar size={14} className={activeTab === "events" ? "text-emerald-300" : "text-gray-500"} />
-              Upcoming Events
+              Featured Events
               <span className={`text-[10px] px-2 py-0.5 rounded-full ${activeTab === "events" ? "bg-white/20 text-white" : "bg-emerald-100 text-[#0B5D3F]"}`}>
                 {rawEvents.length}
               </span>
@@ -93,7 +93,7 @@ export function ProjectsSection() {
             }
             title={
               <span>
-                Upcoming <span className="text-[#4CAF50]">Events</span> & Campaigns
+                Featured <span className="text-[#4CAF50]">Events</span> & Campaigns
               </span>
             }
             action={
